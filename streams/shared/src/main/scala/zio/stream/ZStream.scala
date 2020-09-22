@@ -3479,25 +3479,24 @@ object ZStream extends ZStreamPlatformSpecificConstructors {
   def fromIterableM[R, E, O](iterable: ZIO[R, E, Iterable[O]]): ZStream[R, E, O] =
     fromEffect(iterable).mapConcat(identity)
 
-  def fromIterator[A](iterator: => Iterator[A]): ZStream[Any, Throwable, A] = {
+  def fromIterator[A](
+    iterator: => Iterator[A],
+    chunkSize: Int = ZStream.DefaultChunkSize
+  ): ZStream[Any, Throwable, A] = {
     object StreamEnd extends Throwable
-
-    ZStream.fromEffect(Task(iterator) <*> ZIO.runtime[Any]).flatMap {
+    ZStream.fromEffect(Task(iterator.grouped(chunkSize)) <*> ZIO.runtime[Any]).flatMap {
       case (it, rt) =>
-        ZStream.repeatEffectOption {
+        ZStream.repeatEffectChunkOption {
           Task {
             val hasNext: Boolean =
               try it.hasNext
               catch {
-                case e: Throwable if !rt.platform.fatal(e) =>
-                  throw e
+                case e: Throwable if !rt.platform.fatal(e) => throw e
               }
-
             if (hasNext) {
-              try it.next()
+              try Chunk.fromIterable(it.next())
               catch {
-                case e: Throwable if !rt.platform.fatal(e) =>
-                  throw e
+                case e: Throwable if !rt.platform.fatal(e) => throw e
               }
             } else throw StreamEnd
           }.mapError {
