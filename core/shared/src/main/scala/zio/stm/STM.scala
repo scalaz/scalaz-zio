@@ -78,12 +78,6 @@ object STM {
     ZSTM.dieMessage(m)
 
   /**
-   * @see See [[zio.stm.ZSTM.done]]
-   */
-  def done[E, A](exit: => ZSTM.internal.TExit[E, A]): STM[E, A] =
-    ZSTM.done(exit)
-
-  /**
    * @see See [[zio.stm.ZSTM.fail]]
    */
   def fail[E](e: => E): STM[E, Nothing] =

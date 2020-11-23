@@ -83,6 +83,13 @@ final class ZSTM[-R, +E, +A] private[stm] (
     self <*> that
 
   /**
+   * Sequentially zips this transaction with the specified one, discarding the
+   * first result; returns a failure with all errors if either transaction fails.
+   */
+  def &>[R1 <: R, E1 >: E, B](that: => ZSTM[R1, E1, B]): ZSTM[R1, E1, B] =
+    self zipParRight that
+
+  /**
    * Splits the environment, providing the first part to this effect and the
    * second part to that effect.
    */
@@ -102,6 +109,20 @@ final class ZSTM[-R, +E, +A] private[stm] (
    */
   def +++[R1, B, E1 >: E](that: ZSTM[R1, E1, B]): ZSTM[Either[R, R1], E1, Either[A, B]] =
     ZSTM.accessM[Either[R, R1]](_.fold(self.provide(_).map(Left(_)), that.provide(_).map(Right(_))))
+
+  /**
+   * Sequentially zips this transaction with the specified one, discarding the
+   * second result; returns a failure with all errors if either transaction fails.
+   */
+  def <&[R1 <: R, E1 >: E, B](that: => ZSTM[R1, E1, B]): ZSTM[R1, E1, A] =
+    self zipParLeft that
+
+  /**
+   * Sequentially zips this value with the specified one. Returns a failure with all
+   * errors if either transaction fails.
+   */
+  def <&>[R1 <: R, E1 >: E, B](that: => ZSTM[R1, E1, B]): ZSTM[R1, E1, (A, B)] =
+    self zipPar that
 
   /**
    * Sequentially zips this value with the specified one, discarding the
@@ -223,7 +244,7 @@ final class ZSTM[-R, +E, +A] private[stm] (
    */
   def collectM[R1 <: R, E1 >: E, B](pf: PartialFunction[A, ZSTM[R1, E1, B]]): ZSTM[R1, E1, B] =
     self.continueWithM {
-      case TExit.Fail(e)    => ZSTM.fail(e)
+      case TExit.Fail(c)    => ZSTM.halt(c)
       case TExit.Succeed(a) => if (pf.isDefinedAt(a)) pf(a) else ZSTM.retry
       case TExit.Retry      => ZSTM.retry
     }
@@ -328,7 +349,7 @@ final class ZSTM[-R, +E, +A] private[stm] (
   def flatMap[R1 <: R, E1 >: E, B](f: A => ZSTM[R1, E1, B]): ZSTM[R1, E1, B] =
     self.continueWithM {
       case TExit.Succeed(a) => f(a)
-      case TExit.Fail(e)    => ZSTM.fail(e)
+      case TExit.Fail(c)    => ZSTM.halt(c)
       case TExit.Retry      => ZSTM.retry
     }
 
@@ -371,8 +392,35 @@ final class ZSTM[-R, +E, +A] private[stm] (
    */
   def fold[B](f: E => B, g: A => B)(implicit ev: CanFail[E]): URSTM[R, B] =
     self.continueWithM {
-      case TExit.Fail(e)    => ZSTM.succeedNow(f(e))
+      case TExit.Fail(c)    => c.failureOrCause.fold(e => ZSTM.succeedNow(f(e)), ZSTM.halt(_))
       case TExit.Succeed(a) => ZSTM.succeedNow(g(a))
+      case TExit.Retry      => ZSTM.retry
+    }
+
+  /**
+   * A more powerful version of `fold` that allows recovering from any kind of failure.
+   * Note that as transactions, these failures could contain multiple parallel or sequential errors
+   * but will not contain interruption or die failures
+   */
+  def foldCause[B](f: Cause[E] => B, g: A => B)(implicit ev: CanFail[E]): URSTM[R, B] =
+    self.continueWithM {
+      case TExit.Fail(c)    => ZSTM.succeedNow(f(c))
+      case TExit.Succeed(a) => ZSTM.succeedNow(g(a))
+      case TExit.Retry      => ZSTM.retry
+    }
+
+  /**
+   * A more powerful version of `foldM` that allows recovering from any kind of failure.
+   * Note that as transactions, these failures could contain multiple parallel or sequential errors
+   * but will not contain interruption or die failures
+   */
+  def foldCauseM[R1 <: R, E2, B](
+    failure: Cause[E] => ZSTM[R1, E2, B],
+    success: A => ZSTM[R1, E2, B]
+  ): ZSTM[R1, E2, B] =
+    self.continueWithM {
+      case TExit.Fail(c)    => failure(c)
+      case TExit.Succeed(a) => success(a)
       case TExit.Retry      => ZSTM.retry
     }
 
@@ -384,7 +432,7 @@ final class ZSTM[-R, +E, +A] private[stm] (
     ev: CanFail[E]
   ): ZSTM[R1, E1, B] =
     self.continueWithM {
-      case TExit.Fail(e)    => f(e)
+      case TExit.Fail(c)    => c.failureOrCause.fold(f, ZSTM.halt(_))
       case TExit.Succeed(a) => g(a)
       case TExit.Retry      => ZSTM.retry
     }
@@ -476,7 +524,7 @@ final class ZSTM[-R, +E, +A] private[stm] (
   def map[B](f: A => B): ZSTM[R, E, B] =
     self.continueWithM {
       case TExit.Succeed(a) => ZSTM.succeedNow(f(a))
-      case TExit.Fail(e)    => ZSTM.fail(e)
+      case TExit.Fail(c)    => ZSTM.halt(c)
       case TExit.Retry      => ZSTM.retry
     }
 
@@ -486,7 +534,7 @@ final class ZSTM[-R, +E, +A] private[stm] (
   def mapError[E1](f: E => E1)(implicit ev: CanFail[E]): ZSTM[R, E1, A] =
     self.continueWithM {
       case TExit.Succeed(a) => ZSTM.succeedNow(a)
-      case TExit.Fail(e)    => ZSTM.fail(f(e))
+      case TExit.Fail(c)    => c.failureOrCause.fold(e => ZSTM.fail(f(e)), ZSTM.halt(_))
       case TExit.Retry      => ZSTM.retry
     }
 
@@ -645,7 +693,7 @@ final class ZSTM[-R, +E, +A] private[stm] (
    */
   def orTry[R1 <: R, E1 >: E, A1 >: A](that: => ZSTM[R1, E1, A1]): ZSTM[R1, E1, A1] =
     continueWithM {
-      case TExit.Fail(e)    => ZSTM.fail(e)
+      case TExit.Fail(c)    => ZSTM.halt(c)
       case TExit.Succeed(a) => ZSTM.succeedNow(a)
       case TExit.Retry      => that
     }
@@ -879,10 +927,28 @@ final class ZSTM[-R, +E, +A] private[stm] (
     (self zipWith that)((a, b) => a -> b)
 
   /**
+   * Named alias for `<&>`.
+   */
+  def zipPar[R1 <: R, E1 >: E, B](that: => ZSTM[R1, E1, B]): ZSTM[R1, E1, (A, B)] =
+    (self zipWithPar that)((a, b) => a -> b)
+
+  /**
    * Named alias for `<*`.
    */
   def zipLeft[R1 <: R, E1 >: E, B](that: => ZSTM[R1, E1, B]): ZSTM[R1, E1, A] =
     (self zip that) map (_._1)
+
+  /**
+   * Named alias for `<&`.
+   */
+  def zipParLeft[R1 <: R, E1 >: E, B](that: => ZSTM[R1, E1, B]): ZSTM[R1, E1, A] =
+    (self zipPar that) map (_._1)
+
+  /**
+   * Named alias for `&>`.
+   */
+  def zipParRight[R1 <: R, E1 >: E, B](that: => ZSTM[R1, E1, B]): ZSTM[R1, E1, B] =
+    (self zipPar that) map (_._2)
 
   /**
    * Named alias for `*>`.
@@ -896,6 +962,27 @@ final class ZSTM[-R, +E, +A] private[stm] (
    */
   def zipWith[R1 <: R, E1 >: E, B, C](that: => ZSTM[R1, E1, B])(f: (A, B) => C): ZSTM[R1, E1, C] =
     self flatMap (a => that map (b => f(a, b)))
+
+  /**
+   * Sequentially zips this value with the specified one, combining the values
+   * using the specified combiner function and collecting errors.
+   */
+  def zipWithPar[R1 <: R, E1 >: E, B, C](that: => ZSTM[R1, E1, B])(f: (A, B) => C): ZSTM[R1, E1, C] =
+    self.continueWithM {
+      case TExit.Succeed(a) =>
+        that.continueWithM {
+          case TExit.Succeed(b) => ZSTM.succeed(f(a, b))
+          case TExit.Fail(c2)   => ZSTM.halt(c2)
+          case TExit.Retry      => ZSTM.retry
+        }
+      case TExit.Fail(c1) =>
+        that.continueWithM {
+          case TExit.Fail(c2) => ZSTM.halt(c1 ++ c2)
+          case TExit.Retry    => ZSTM.retry
+          case _              => ZSTM.halt(c1)
+        }
+      case TExit.Retry => ZSTM.retry
+    }
 
   private def continueWithM[R1 <: R, E1, B](continueM: TExit[E, A] => ZSTM[R1, E1, B]): ZSTM[R1, E1, B] =
     new ZSTM((journal, fiberId, stackSize, r) => {
@@ -1049,12 +1136,6 @@ object ZSTM {
     die(new RuntimeException(m))
 
   /**
-   * Returns a value modelled on provided exit status.
-   */
-  def done[R, E, A](exit: => TExit[E, A]): ZSTM[R, E, A] =
-    suspend(done(exit))
-
-  /**
    * Retrieves the environment inside an stm.
    */
   def environment[R]: URSTM[R, R] =
@@ -1064,7 +1145,7 @@ object ZSTM {
    * Returns a value that models failure in the transaction.
    */
   def fail[E](e: => E): STM[E, Nothing] =
-    new ZSTM((_, _, _, _) => TExit.Fail(e))
+    halt(Cause.fail(e))
 
   /**
    * Returns the fiber id of the fiber committing the transaction.
@@ -1207,6 +1288,12 @@ object ZSTM {
         case Success(a) => STM.succeedNow(a)
       }
     }
+
+  /**
+   * Returns a value that models failure in the transaction with the specified `Cause`.
+   */
+  def halt[E](cause: => Cause[E]): STM[E, Nothing] =
+    new ZSTM((_, _, _, _) => TExit.Fail(cause))
 
   /**
    * Returns the identity effectful function, which performs no effects
@@ -1816,7 +1903,7 @@ object ZSTM {
 
       value match {
         case TExit.Succeed(a) => completeTodos(IO.succeedNow(a), journal, platform)
-        case TExit.Fail(e)    => completeTodos(IO.fail(e), journal, platform)
+        case TExit.Fail(c)    => completeTodos(IO.halt(c), journal, platform)
         case TExit.Retry      => TryCommit.Suspend(journal)
       }
     }
@@ -1831,9 +1918,9 @@ object ZSTM {
     object TExit {
       val unit: TExit[Nothing, Unit] = Succeed(())
 
-      final case class Fail[+A](value: A)    extends TExit[A, Nothing]
-      final case class Succeed[+B](value: B) extends TExit[Nothing, B]
-      case object Retry                      extends TExit[Nothing, Nothing]
+      final case class Fail[+A](cause: Cause[A]) extends TExit[A, Nothing]
+      final case class Succeed[+B](value: B)     extends TExit[Nothing, B]
+      case object Retry                          extends TExit[Nothing, Nothing]
     }
 
     abstract class Entry { self =>

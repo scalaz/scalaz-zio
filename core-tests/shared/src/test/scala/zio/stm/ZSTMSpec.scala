@@ -691,12 +691,31 @@ object ZSTMSpec extends ZIOBaseSpec {
           assertM(tx.provide(env).commit)(equalTo(env.swap))
         }
       ),
-      testM("zip to return a tuple of two computations") {
-        assertM((STM.succeed(1) <*> STM.succeed('A')).commit)(equalTo((1, 'A')))
-      },
-      testM("zipWith to perform an action to two computations") {
-        assertM(STM.succeed(578).zipWith(STM.succeed(2))(_ + _).commit)(equalTo(580))
-      }
+      suite("zip")(
+        testM("zip to return a tuple of two computations") {
+          assertM((STM.succeed(1) <*> STM.succeed('A')).commit)(equalTo((1, 'A')))
+        },
+        testM("zipPar to return a tuple of two computations") {
+          assertM((STM.succeed(1) <&> STM.succeed('A')).commit)(equalTo((1, 'A')))
+        },
+        testM("zipPar to collect errors") {
+          for {
+            failL    <- (STM.fail("oh :(") <&> STM.succeed('A')).commit.run
+            failR    <- (STM.succeed(1) <&> STM.fail("oh :(")).commit.run
+            failBoth <- (STM.fail("oh") <&> STM.fail("dear!")).commit.run
+          } yield assert(failL)(fails(equalTo("oh :("))) &&
+            assert(failR)(fails(equalTo("oh :("))) &&
+            assert(failBoth)(
+              failsCause(equalTo(Cause.fail("oh") ++ (Cause.fail("dear!"))))
+            )
+        },
+        testM("zipWith to perform an action to two computations") {
+          assertM(STM.succeed(578).zipWith(STM.succeed(2))(_ + _).commit)(equalTo(580))
+        },
+        testM("zipWithPar to perform an action to two computations") {
+          assertM(STM.succeed(578).zipWithPar(STM.succeed(2))(_ + _).commit)(equalTo(580))
+        }
+      )
     ),
     suite("Make a new `TRef` and")(
       testM("get its initial value") {
@@ -1320,6 +1339,9 @@ object ZSTMSpec extends ZIOBaseSpec {
       } @@ zioTag(errors),
       testM("long provide chains") {
         assertM(chain(10000)(_.provide(0)))(equalTo(0))
+      },
+      testM("long zipRightPar chains") {
+        assertM(chain(10000)(_.zipParRight(ZSTM.succeed(0))))(equalTo(0))
       }
     ),
     suite("STM environment")(
