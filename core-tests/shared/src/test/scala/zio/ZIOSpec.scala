@@ -2,7 +2,7 @@ package zio
 
 import scala.annotation.tailrec
 import scala.util.{ Failure, Success, Try }
-
+import scala.concurrent.ExecutionContext
 import zio.Cause._
 import zio.LatchOps._
 import zio.clock.Clock
@@ -3527,7 +3527,24 @@ object ZIOSpec extends ZIOBaseSpec {
           assert(value)(equalTo("Controlling side-effect of function passed to promise"))
         }
       }
-    )
+    ),
+    suite("fromFuture")(
+      testM("Should works using same execution context and return succeed") {
+        implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+        for {
+          future <- ZIO.effect(scala.concurrent.Future("hello zio"))
+          result <- ZIO.fromFutureOn(future).either
+        } yield assert(result)(isRight(equalTo("hello zio")))
+      },
+      testM("Should works using same execution context and return failure") {
+        implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+        val program = for {
+          future <- ZIO.fail(new Throwable(new IllegalArgumentException)).toFuture
+          result <- ZIO.fromFutureOn(future).either
+        } yield result
+        assertM(program)(isLeft(anything))
+      }
+    ) @@ zioTag(future)
   )
 
   def functionIOGen: Gen[Random with Sized, String => Task[Int]] =
@@ -3613,7 +3630,7 @@ object ZIOSpec extends ZIOBaseSpec {
         v2 <- f2.join
       } yield v1 + v2
 
-  def AsyncUnit[E]: IO[E, Unit] = IO.effectAsync[E, Unit](_(IO.unit))
+  def AsyncUnit[E] : IO[E,Unit] = IO.effectAsync[E, Unit](_(IO.unit))
 
   type Logging = Has[Logging.Service]
 

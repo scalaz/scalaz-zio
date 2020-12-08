@@ -3184,6 +3184,30 @@ object ZIO extends ZIOCompanionPlatformSpecific {
     }
 
   /**
+   * Imports a [[scala.concurrent.Future]] and an implicit [[scala.concurrent.ExecutionContext]] to transform into a `ZIO`.
+   * This operator it's meant to be used when you want to specify the execution context where you want to be the future
+   * executed.
+   */
+  def fromFutureOn[A](future: scala.concurrent.Future[A])(implicit ec: ExecutionContext): Task[A] =
+    ZIO.effect(future).flatMap { f =>
+      val canceler: UIO[Unit] = f match {
+        case cancelable: CancelableFuture[A] =>
+          UIO.effectSuspendTotal(if (f.isCompleted) ZIO.unit else ZIO.fromFuture(_ => cancelable.cancel()).ignore)
+        case _ => ZIO.unit
+      }
+      f.value
+        .fold(
+          Task.effectAsyncInterrupt { (k: Task[A] => Unit) =>
+            f.onComplete {
+              case Success(a) => k(Task(a))
+              case Failure(t) => k(Task.fail(t))
+            }(ec)
+            Left(canceler)
+          }
+        )(Task.fromTry(_))
+    }
+
+  /**
    * Imports a [[scala.concurrent.Promise]] we generate a future from promise,
    * and we pass to [fromFuture] to transform into Task[A]
    */
