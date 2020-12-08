@@ -1,5 +1,7 @@
 package zio.stm
 
+import java.util.UUID
+
 import zio._
 
 package object random {
@@ -23,6 +25,7 @@ package object random {
       def nextLongBounded(n: Long): STM[Nothing, Long]
       def nextPrintableChar: STM[Nothing, Char]
       def nextString(length: Int): STM[Nothing, String]
+      def nextUuid: STM[Nothing, UUID]
       def setSeed(seed: Long): STM[Nothing, Unit]
       def shuffle[A, Collection[+Element] <: Iterable[Element]](collection: Collection[A])(implicit
         bf: BuildFrom[Collection[A], A, Collection[A]]
@@ -87,6 +90,9 @@ package object random {
 
                 def nextString(length: Int): USTM[String] =
                   withSeed(rndString(_, length))
+
+                def nextUuid: USTM[UUID] =
+                  withSeed(rndUuid)
 
                 def setSeed(newSeed: Long): USTM[Unit] =
                   seed.set(newSeed)
@@ -258,6 +264,14 @@ package object random {
         val nextSeed = rng.nextLong()
         (str, nextSeed)
       }
+
+      def rndUuid(seed: Seed): (UUID, Seed) = {
+        val rng      = new SRandom(seed)
+        val msb      = rng.nextLong()
+        val lsb      = rng.nextLong()
+        val nextSeed = rng.nextLong()
+        (new UUID(msb, lsb), nextSeed)
+      }
     }
   }
 
@@ -354,6 +368,12 @@ package object random {
    */
   def nextString(length: => Int): URSTM[TRandom, String] =
     ZSTM.accessM(_.get.nextString(length))
+
+  /**
+   * Generates a pseudo-random UUID inside a transcation.
+   */
+  def nextUuid: URSTM[TRandom, UUID] =
+    ZSTM.accessM(_.get.nextUuid)
 
   /**
    * Sets the seed of this random number generator inside a transaction.

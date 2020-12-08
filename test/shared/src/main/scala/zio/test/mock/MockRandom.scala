@@ -16,6 +16,8 @@
 
 package zio.test.mock
 
+import java.util.UUID
+
 import zio.random.Random
 import zio.{ Chunk, Has, UIO, URLayer, ZLayer }
 
@@ -36,6 +38,7 @@ object MockRandom extends Mock[Random] {
   object NextLongBounded   extends Effect[Long, Nothing, Long]
   object NextPrintableChar extends Effect[Unit, Nothing, Char]
   object NextString        extends Effect[Int, Nothing, String]
+  object NextUuid          extends Effect[Unit, Nothing, UUID]
   object SetSeed           extends Effect[Long, Nothing, Unit]
   object Shuffle           extends Effect[Iterable[Any], Nothing, Iterable[Any]]
 
@@ -61,6 +64,7 @@ object MockRandom extends Mock[Random] {
         def nextLongBounded(n: Long): UIO[Long]  = proxy(NextLongBounded, n)
         val nextPrintableChar: UIO[Char]         = proxy(NextPrintableChar)
         def nextString(length: Int): UIO[String] = proxy(NextString, length)
+        def nextUuid: UIO[UUID]                  = proxy(NextUuid)
         def setSeed(seed: Long): UIO[Unit]       = proxy(SetSeed, seed)
         def shuffle[A, Collection[+Element] <: Iterable[Element]](
           collection: Collection[A]

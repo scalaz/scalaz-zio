@@ -1,5 +1,7 @@
 package zio.test.environment
 
+import java.util.UUID
+
 import scala.util.{ Random => SRandom }
 
 import zio._
@@ -22,6 +24,7 @@ object RandomSpec extends ZIOBaseSpec {
     testM("check clearInts")(checkClear(_.nextInt())(_.feedInts(_: _*))(_.clearInts)(_.nextInt)),
     testM("check clearLongs")(checkClear(_.nextLong())(_.feedLongs(_: _*))(_.clearLongs)(_.nextLong)),
     testM("check clearStrings")(checkClear(_.nextString(1))(_.feedStrings(_: _*))(_.clearStrings)(_.nextString(1))),
+    testM("check clearUuids")(checkClear(nextUuid)(_.feedUuids(_: _*))(_.clearUuids)(_.nextUuid)),
     testM("check feedBooleans")(checkFeed(_.nextBoolean())(_.feedBooleans(_: _*))(_.nextBoolean)),
     testM("check feedBytes")(checkFeed(nextBytes(1))(_.feedBytes(_: _*))(_.nextBytes(1))),
     testM("check feedChars")(checkFeed(_.nextPrintableChar())(_.feedChars(_: _*))(_.nextPrintableChar)),
@@ -30,6 +33,7 @@ object RandomSpec extends ZIOBaseSpec {
     testM("check feedInts")(checkFeed(_.nextInt())(_.feedInts(_: _*))(_.nextInt)),
     testM("check feedLongs")(checkFeed(_.nextLong())(_.feedLongs(_: _*))(_.nextLong)),
     testM("check feedStrings")(checkFeed(_.nextString(1))(_.feedStrings(_: _*))(_.nextString(1))),
+    testM("check feedUuids")(checkFeed(nextUuid)(_.feedUuids(_: _*))(_.nextUuid)),
     testM("check nextBoolean")(forAllEqual(_.nextBoolean)(_.nextBoolean())),
     testM("check nextBytes")(forAllEqualBytes),
     testM("check nextDouble")(forAllEqual(_.nextDouble)(_.nextDouble())),
@@ -39,6 +43,7 @@ object RandomSpec extends ZIOBaseSpec {
     testM("check nextLong")(forAllEqual(_.nextLong)(_.nextLong())),
     testM("check nextPrintableChar")(forAllEqual(_.nextPrintableChar)(_.nextPrintableChar())),
     testM("check nextString")(forAllEqualN(_.nextString(_))(_.nextString(_))),
+    testM("check nextUuid")(forAllEqual(_.nextUuid)(nextUuid)),
     testM("check nextIntBounded")(forAllEqualN(_.nextIntBounded(_))(_.nextInt(_))),
     testM("nextIntBounded generates values within the bounds")(forAllBounded(Gen.anyInt)(_.nextIntBounded(_))),
     testM("nextLongBounded generates values within the bounds")(forAllBounded(Gen.anyLong)(_.nextLongBounded(_))),
@@ -123,6 +128,9 @@ object RandomSpec extends ZIOBaseSpec {
     random.nextBytes(arr)
     Chunk.fromArray(arr)
   }
+
+  def nextUuid(random: SRandom): UUID =
+    new UUID(random.nextLong(), random.nextLong())
 
   def forAllEqual[A](
     f: ZRandom => UIO[A]

@@ -1,5 +1,7 @@
 package zio
 
+import java.util.UUID
+
 package object random {
   type Random = Has[Random.Service]
 
@@ -20,6 +22,7 @@ package object random {
       def nextLongBounded(n: Long): UIO[Long]
       def nextPrintableChar: UIO[Char]
       def nextString(length: Int): UIO[String]
+      def nextUuid: UIO[UUID]
       def setSeed(seed: Long): UIO[Unit]
       def shuffle[A, Collection[+Element] <: Iterable[Element]](collection: Collection[A])(implicit
         bf: BuildFrom[Collection[A], A, Collection[A]]
@@ -64,6 +67,8 @@ package object random {
           ZIO.effectTotal(SRandom.nextPrintableChar())
         def nextString(length: Int): UIO[String] =
           ZIO.effectTotal(SRandom.nextString(length))
+        def nextUuid: UIO[UUID] =
+          ZIO.effectTotal(new UUID(SRandom.nextLong(), SRandom.nextLong()))
         def setSeed(seed: Long): UIO[Unit] =
           ZIO.effectTotal(SRandom.setSeed(seed))
         def shuffle[A, Collection[+Element] <: Iterable[Element]](
@@ -258,6 +263,12 @@ package object random {
    */
   def nextString(length: => Int): URIO[Random, String] =
     ZIO.accessM(_.get.nextString(length))
+
+  /**
+   * Generates a pseudo-random UUID.
+   */
+  def nextUuid: URIO[Random, UUID] =
+    ZIO.accessM(_.get.nextUuid)
 
   /**
    * Sets the seed of this random number generator.
