@@ -19,7 +19,7 @@ package zio.test.mock
 import zio.internal.Executor
 import zio.stream.{ ZSink, ZStream }
 import zio.test.TestPlatform
-import zio.{ Has, Runtime, Tag, URIO, URLayer, ZIO }
+import zio.{ Has, Runtime, Tag, ULayer, URIO, URLayer, ZIO }
 
 /**
  * A `Mock[R]` represents a mockable environment `R`.
@@ -27,6 +27,8 @@ import zio.{ Has, Runtime, Tag, URIO, URLayer, ZIO }
 abstract class Mock[R <: Has[_]: Tag] { self =>
 
   protected[test] val compose: URLayer[Has[Proxy], R]
+
+  def empty: ULayer[R] = Expectation.NoCalls(self)
 
   /**
    * Replaces Runtime on JS platform to one with unyielding executor.

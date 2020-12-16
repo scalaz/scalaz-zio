@@ -9,6 +9,22 @@ import zio.{ clock, console, random }
 object MockExampleSpec extends DefaultRunnableSpec {
 
   def spec = suite("suite with mocks")(
+    testM("expect no call for overloaded method") {
+      def maybeConsole(invokeConsole: Boolean) =
+        zio.ZIO.when(invokeConsole)(console.putStrLn("foo"))
+
+      val maybeTest1 = maybeConsole(false).provideLayer(MockConsole.empty)
+      val maybeTest2 = maybeConsole(true).provideLayer(MockConsole.PutStrLn(equalTo("foo")))
+      assertM(maybeTest1)(isUnit) *> assertM(maybeTest2)(isUnit)
+    },
+    testM("should fail if call for unexpected method") {
+      def maybeConsole(invokeConsole: Boolean) =
+        zio.ZIO.when(invokeConsole)(console.putStrLn("foo"))
+
+      val maybeTest1 = maybeConsole(true).provideLayer(MockConsole.empty)
+      val maybeTest2 = maybeConsole(false).provideLayer(MockConsole.PutStrLn(equalTo("foo")))
+      assertM(maybeTest1)(isUnit) *> assertM(maybeTest2)(isUnit)
+    },
     testM("expect call returning output") {
       val app = clock.nanoTime
       val env = MockClock.NanoTime(value(1000L))

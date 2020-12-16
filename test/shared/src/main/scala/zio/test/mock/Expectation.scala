@@ -227,6 +227,14 @@ object Expectation {
     }
   }
 
+  private[test] case class NoCalls[R <: Has[_]: Tag](mock: Mock[R]) extends Expectation[R] {
+
+    override private[test] val invocations: List[Int] = Nil
+
+    override private[test] val state: ExpectationState = Satisfied
+
+  }
+
   /**
    * Models expectations disjunction on environment `R`. Expectations are checked in the order they are provided,
    * meaning that earlier expectations may shadow later ones.

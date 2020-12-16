@@ -56,6 +56,7 @@ private[mock] object Debug {
         renderRoot("Chain", children)
       case Expectation.Or(children, _, _, _) =>
         renderRoot("Or", children)
+      case Expectation.NoCalls(_) => renderRoot("NoCalls", Nil)
       case Expectation.Repeated(child, range, _, _, started, completed) =>
         val progress = s"progress = $started out of $completed,"
         ("Repeated(" :: state :: s"range = $range," :: progress :: invoked :: prettify(child, 1) :: ")" :: Nil)

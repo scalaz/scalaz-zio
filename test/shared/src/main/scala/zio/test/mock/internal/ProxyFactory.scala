@@ -51,6 +51,8 @@ object ProxyFactory {
                   debug("::: skipping saturated expectation")
                   findMatching(nextScopes)
 
+                case NoCalls(_) =>
+                  findMatching(nextScopes)
                 case call @ Call(capability, assertion, returns, _, invocations) if invoked isEqual capability =>
                   debug(s"::: matched call $capability")
                   assertion.asInstanceOf[Assertion[I]].test(args) match {
@@ -259,6 +261,7 @@ object ProxyFactory {
                 children = self.children.map(resetTree),
                 state = Unsatisfied
               )
+            case self: NoCalls[R] => self
             case self: Repeated[R] =>
               self.copy(
                 child = resetTree(self.child),
