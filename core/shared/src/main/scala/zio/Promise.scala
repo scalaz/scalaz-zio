@@ -18,6 +18,8 @@ package zio
 
 import java.util.concurrent.atomic.AtomicReference
 
+import scala.collection.immutable.LongMap
+
 import zio.Promise.internal._
 
 /**
@@ -54,10 +56,10 @@ final class Promise[E, A] private (private val state: AtomicReference[State[E, A
           val oldState = state.get
 
           val newState = oldState match {
-            case Pending(joiners) =>
-              result = Left(interruptJoiner(k))
+            case Pending(joiners, nextKey) =>
+              result = Left(interruptJoiner(nextKey))
 
-              Pending(k :: joiners)
+              Pending(joiners.updated(nextKey, k), next(nextKey))
             case s @ Done(value) =>
               result = Right(value)
 
@@ -116,8 +118,12 @@ final class Promise[E, A] private (private val state: AtomicReference[State[E, A
         val oldState = state.get
 
         val newState = oldState match {
-          case Pending(joiners) =>
-            action = () => { joiners.foreach(_(io)); true }
+          case Pending(joiners, _) =>
+            action = () => {
+              joiners.foreachValue { f =>
+                val _ = f(io)
+              }; true
+            }
 
             Done(io)
 
@@ -163,8 +169,8 @@ final class Promise[E, A] private (private val state: AtomicReference[State[E, A
    */
   def isDone: UIO[Boolean] =
     IO.effectTotal(state.get() match {
-      case Done(_)    => true
-      case Pending(_) => false
+      case Done(_)       => true
+      case Pending(_, _) => false
     })
 
   /**
@@ -173,8 +179,8 @@ final class Promise[E, A] private (private val state: AtomicReference[State[E, A
    */
   def poll: UIO[Option[IO[E, A]]] =
     IO.effectTotal(state.get).flatMap {
-      case Pending(_) => IO.succeedNow(None)
-      case Done(io)   => IO.succeedNow(Some(io))
+      case Pending(_, _) => IO.succeedNow(None)
+      case Done(io)      => IO.succeedNow(Some(io))
     }
 
   /**
@@ -182,15 +188,15 @@ final class Promise[E, A] private (private val state: AtomicReference[State[E, A
    */
   def succeed(a: A): UIO[Boolean] = completeWith(IO.succeedNow(a))
 
-  private def interruptJoiner(joiner: IO[E, A] => Any): Canceler[Any] = IO.effectTotal {
+  private def interruptJoiner(key: Long): Canceler[Any] = IO.effectTotal {
     var retry = true
 
     while (retry) {
       val oldState = state.get
 
       val newState = oldState match {
-        case Pending(joiners) =>
-          Pending(joiners.filter(j => !j.eq(joiner)))
+        case Pending(joiners, nextKey) =>
+          Pending(joiners - key, nextKey)
 
         case Done(_) =>
           oldState
@@ -201,14 +207,14 @@ final class Promise[E, A] private (private val state: AtomicReference[State[E, A
   }
 
   private[zio] def unsafeDone(io: IO[E, A]): Unit = {
-    var retry: Boolean                 = true
-    var joiners: List[IO[E, A] => Any] = null
+    var retry: Boolean                    = true
+    var joiners: LongMap[IO[E, A] => Any] = null
 
     while (retry) {
       val oldState = state.get
 
       val newState = oldState match {
-        case Pending(js) =>
+        case Pending(js, _) =>
           joiners = js
           Done(io)
         case _ => oldState
@@ -217,17 +223,23 @@ final class Promise[E, A] private (private val state: AtomicReference[State[E, A
       retry = !state.compareAndSet(oldState, newState)
     }
 
-    if (joiners ne null) joiners.reverse.foreach(_(io))
+    if (joiners ne null) joiners.foreachValue { f =>
+      val _ = f(io)
+    }
   }
 
+  private def next(l: Long): Long =
+    if (l == 0L) throw new RuntimeException("ReleaseMap wrapped around")
+    else if (l == Long.MinValue) Long.MaxValue
+    else l - 1
 }
 object Promise {
   private val ConstFalse: () => Boolean = () => false
 
   private[zio] object internal {
-    sealed abstract class State[E, A]                              extends Serializable with Product
-    final case class Pending[E, A](joiners: List[IO[E, A] => Any]) extends State[E, A]
-    final case class Done[E, A](value: IO[E, A])                   extends State[E, A]
+    sealed abstract class State[E, A]                                                extends Serializable with Product
+    final case class Pending[E, A](joiners: LongMap[IO[E, A] => Any], nextKey: Long) extends State[E, A]
+    final case class Done[E, A](value: IO[E, A])                                     extends State[E, A]
   }
 
   /**
@@ -248,5 +260,10 @@ object Promise {
     make[E, A].toManaged_
 
   private[zio] def unsafeMake[E, A](fiberId: Fiber.Id): Promise[E, A] =
-    new Promise[E, A](new AtomicReference[State[E, A]](new internal.Pending[E, A](Nil)), fiberId :: Nil)
+    new Promise[E, A](
+      new AtomicReference[State[E, A]](new internal.Pending[E, A](LongMap.empty, initialKey)),
+      fiberId :: Nil
+    )
+
+  private val initialKey: Long = -1L
 }

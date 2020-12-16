@@ -13,6 +13,7 @@ object MimaSettings {
       mimaPreviousArtifacts := Set(organization.value %% name.value % bincompatVersionToCompare),
       mimaBinaryIssueFilters ++= Seq(
         exclude[Problem]("zio.internal.*"),
+        exclude[Problem]("zio.Promise#internal#*"),
         exclude[DirectMissingMethodProblem]("zio.ZManaged.reserve"),
         exclude[DirectMissingMethodProblem]("zio.ZIO#Fork.this"),
         exclude[IncompatibleResultTypeProblem]("zio.stm.TSemaphore.assertNonNegative$extension")
