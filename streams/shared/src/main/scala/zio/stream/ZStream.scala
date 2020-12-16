@@ -8,7 +8,7 @@ import zio.duration._
 import zio.internal.UniqueKey
 import zio.stm.TQueue
 import zio.stream.internal.Utils.zipChunks
-import zio.stream.internal.{ ZInputStream, ZReader }
+import zio.stream.internal.{ Accumulating, ChunkNState, Done, Serving, ZInputStream, ZReader }
 
 import scala.reflect.ClassTag
 
@@ -561,31 +561,40 @@ abstract class ZStream[-R, +E, +O](val process: ZManaged[R, Nothing, ZIO[R, Opti
    * The last chunk might contain less than `n` elements
    */
   def chunkN(n: Int): ZStream[R, E, O] = {
-    case class State[X](buffer: Chunk[X], done: Boolean)
 
     def emitOrAccumulate(
-      buffer: Chunk[O],
-      done: Boolean,
-      ref: Ref[State[O]],
+      state: ChunkNState[O],
+      ref: Ref[ChunkNState[O]],
       pull: ZIO[R, Option[E], Chunk[O]]
     ): ZIO[R, Option[E], Chunk[O]] =
-      if (buffer.size < n) {
-        if (done) {
-          if (buffer.isEmpty)
-            Pull.end
-          else
-            ref.set(State(Chunk.empty, true)) *> Pull.emit(buffer)
-        } else
+      state match {
+        case Done() => Pull.`end`
+        case a: Accumulating[O] =>
           pull.foldM(
             {
               case Some(e) => Pull.fail(e)
-              case None    => emitOrAccumulate(buffer, true, ref, pull)
+              case None => {
+                val emit = a.drain() match {
+                  case Some(ch) => Pull.emit(ch)
+                  case None     => Pull.`end`
+                }
+                ref.set(Done()) *> emit
+              }
             },
-            ch => emitOrAccumulate(buffer ++ ch, false, ref, pull)
+            ch => {
+              val (chunkOpt, next) = a.append(ch)
+              chunkOpt match {
+                case Some(c) => ref.set(next) *> Pull.emit(c)
+                case None    => emitOrAccumulate(next, ref, pull)
+              }
+            }
           )
-      } else {
-        val (chunk, leftover) = buffer.splitAt(n)
-        ref.set(State(leftover, done)) *> Pull.emit(chunk)
+        case s: Serving[O] =>
+          val (chunkOpt, nextState) = s.tryTake()
+          chunkOpt match {
+            case Some(ch) => ref.set(nextState) *> Pull.emit(ch)
+            case None     => emitOrAccumulate(nextState, ref, pull)
+          }
       }
 
     if (n < 1)
@@ -593,11 +602,10 @@ abstract class ZStream[-R, +E, +O](val process: ZManaged[R, Nothing, ZIO[R, Opti
     else
       ZStream {
         for {
-          ref <- ZRef.make[State[O]](State(Chunk.empty, false)).toManaged_
+          ref <- ZRef.make[ChunkNState[O]](Accumulating(n, ChunkBuilder.make(n), 0)).toManaged_
           p   <- self.process
-          pull = ref.get.flatMap(s => emitOrAccumulate(s.buffer, s.done, ref, p))
+          pull = ref.get.flatMap(s => emitOrAccumulate(s, ref, p))
         } yield pull
-
       }
   }
 
