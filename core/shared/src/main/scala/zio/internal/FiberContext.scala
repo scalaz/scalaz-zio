@@ -21,7 +21,7 @@ import zio.Fiber.Status
 import zio._
 import zio.internal.FiberContext.FiberRefLocals
 import zio.internal.stacktracer.ZTraceElement
-import zio.internal.tracing.ZIOFn
+import zio.internal.tracing.ZIOFn.unwrap
 
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 import scala.annotation.{switch, tailrec}
@@ -89,20 +89,6 @@ private[zio] final class FiberContext[E, A](
   @noinline
   private[this] def inTracingRegion: Boolean =
     if (tracingStatus ne null) tracingStatus.peekOrElse(initialTracingStatus) else false
-
-  @noinline
-  private[this] def unwrap(lambda: AnyRef): AnyRef =
-    // This is a huge hot spot, hiding loop under
-    // the match allows a faster happy path
-    lambda match {
-      case fn: ZIOFn =>
-        var unwrapped = fn.underlying
-        while (unwrapped.isInstanceOf[ZIOFn]) {
-          unwrapped = unwrapped.asInstanceOf[ZIOFn].underlying
-        }
-        unwrapped
-      case _ => lambda
-    }
 
   @noinline
   private[this] def traceLocation(lambda: AnyRef): ZTraceElement =

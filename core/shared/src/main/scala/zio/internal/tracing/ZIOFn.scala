@@ -59,4 +59,19 @@ private[zio] object ZIOFn {
   @noinline
   def recordStackTrace[R, E, A](lambda: AnyRef)(zio: ZIO[R, E, A]): ZIO[R, E, A] =
     zio.map(ZIOFn(lambda)(ZIO.identityFn))
+
+  //todo check no performance implications for moving this to object?
+  @noinline
+  final def unwrap(lambda: AnyRef): AnyRef =
+    // This is a huge hot spot, hiding loop under
+    // the match allows a faster happy path
+    lambda match {
+      case fn: ZIOFn =>
+        var unwrapped = fn.underlying
+        while (unwrapped.isInstanceOf[ZIOFn]) {
+          unwrapped = unwrapped.asInstanceOf[ZIOFn].underlying
+        }
+        unwrapped
+      case _ => lambda
+    }
 }

@@ -605,8 +605,8 @@ sealed trait ZIO[-R, +E, +A] extends Serializable with ZIOPlatformSpecific[R, E,
    * val parsed = readFile("foo.txt").flatMap(file => parseFile(file))
    * }}}
    */
-  def flatMap[R1 <: R, E1 >: E, B](k: A => ZIO[R1, E1, B]): ZIO[R1, E1, B] =
-    new ZIO.FlatMap(self, k)
+  def flatMap[R1 <: R, E1 >: E, B](k: => A => ZIO[R1, E1, B]): ZIO[R1, E1, B] =
+    new ZIO.FlatMap(self, ZIOFn(() => k)(k))
 
   /**
    * Creates a composite effect that represents this effect followed by another
@@ -4385,7 +4385,7 @@ object ZIO extends ZIOCompanionPlatformSpecific {
     override def map[B](f: A => B): IO[E, B] =
       self.asInstanceOf[IO[E, B]]
 
-    override def flatMap[R1 <: Any, E1 >: E, B](k: A => ZIO[R1, E1, B]): ZIO[R1, E1, B] =
+    override def flatMap[R1 <: Any, E1 >: E, B](k: => A => ZIO[R1, E1, B]): ZIO[R1, E1, B] =
       self.asInstanceOf[ZIO[R1, E1, B]]
   }
 
