@@ -507,7 +507,8 @@ lazy val docs = project.module
       "dev.zio"            %% "zio-interop-monix"           % "3.0.0.0-RC7",
       "dev.zio"            %% "zio-interop-scalaz7x"        % "7.2.27.0-RC9",
       "dev.zio"            %% "zio-interop-reactivestreams" % "1.3.0.7-2",
-      "dev.zio"            %% "zio-interop-twitter"         % "20.10.0.0"
+      "dev.zio"            %% "zio-interop-twitter"         % "20.10.0.0",
+      "org.scalaz"         %% "scalaz-core"                 % "7.3.2",
     )
   )
   .settings(macroExpansionSettings)

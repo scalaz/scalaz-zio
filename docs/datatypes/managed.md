@@ -57,7 +57,7 @@ It is possible to combine multiple `Managed` using `flatMap` to obtain a single 
 import zio._
 ```
 
-```scala mdoc:invisible
+```scala mdoc
 import java.io.{ File, IOException }
 
 def openFile(s: String): IO[IOException, File] = IO.effect(???).refineToOrDie[IOException]

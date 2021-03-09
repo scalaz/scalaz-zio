@@ -37,14 +37,14 @@ because the `Nothing` type is _uninhabitable_, i.e. there can be no actual value
 
 You can use the `effectTotal` method of `IO` to import effectful synchronous code into your purely functional program:
 
-```scala mdoc:invisible
+```scala mdoc
 import zio.Task
 ```
 ```scala mdoc:silent
 val effectTotalTask: Task[Long] = IO.effectTotal(System.nanoTime())
 ```
 
-```scala mdoc:invisible
+```scala mdoc
 import java.io.File
 import org.apache.commons.io.FileUtils
 import java.io.IOException
@@ -61,7 +61,7 @@ def readFile(name: String): IO[IOException, Array[Byte]] =
 
 You can use the `effectAsync` method of `IO` to import effectful asynchronous code into your purely functional program:
 
-```scala mdoc:invisible
+```scala mdoc
 case class HttpException()
 case class Request()
 case class Response()
@@ -128,7 +128,7 @@ The release action is guaranteed to be executed by the runtime system, even if t
 import zio.{ UIO, IO }
 ```
 
-```scala mdoc:invisible
+```scala mdoc
 import java.io.{ File, IOException }
 
 def openFile(s: String): IO[IOException, File] = IO.effect(???).refineToOrDie[IOException]

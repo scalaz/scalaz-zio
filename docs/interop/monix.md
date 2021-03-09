@@ -30,7 +30,7 @@ needs to be available.
 
 ### Example
 
-```scala
+```scala mdoc
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import zio.{ IO, Runtime }
@@ -71,7 +71,7 @@ def fromCoeval[A](coeval: eval.Coeval[A]): Task[A]
 
 ### Example
 
-```scala
+```scala mdoc:reset
 import monix.eval.Coeval
 import zio.{ IO, Runtime }
 import zio.interop.monix._

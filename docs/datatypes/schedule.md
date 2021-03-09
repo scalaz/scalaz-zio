@@ -24,7 +24,7 @@ A `Schedule[R, A, B]` consumes input values of type `A` (errors in the case of `
 
 ## Base Schedules
 
-```scala mdoc:invisible
+```scala mdoc
 import zio.duration._
 ```
 

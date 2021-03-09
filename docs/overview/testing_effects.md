@@ -7,7 +7,7 @@ There are many approaches to testing functional effects, including using free mo
 
 This section introduces environmental effects and shows you how to write testable functional code using them.
 
-```scala mdoc:invisible
+```scala mdoc
 import zio._
 import zio.console._
 ```
@@ -89,7 +89,7 @@ In this section, we'll explore how to use environmental effects by developing a 
 
 We will define the database service with the help of a module, which is an interface that contains only a single field, which provides access to the service.
 
-```scala mdoc:invisible
+```scala mdoc
 trait UserID
 trait UserProfile
 val userId = new UserID { }

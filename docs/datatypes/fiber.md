@@ -11,7 +11,7 @@ You can `fork` any `IO[E, A]` to immediately yield an `UIO[Fiber[E, A]]`. The pr
 import zio._
 ```
 
-```scala mdoc:invisible
+```scala mdoc
 sealed trait Analysis
 case object Analyzed extends Analysis
 
@@ -83,7 +83,7 @@ There are no circumstances in which any errors will be "lost", which makes the `
 
 To execute actions in parallel, the `zipPar` method can be used:
 
-```scala mdoc:invisible
+```scala mdoc
 case class Matrix()
 def computeInverse(m: Matrix): UIO[Matrix] = IO.succeed(m)
 def applyMatrices(m1: Matrix, m2: Matrix, m3: Matrix): UIO[Matrix] = IO.succeed(m1)

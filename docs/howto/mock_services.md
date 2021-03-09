@@ -20,7 +20,7 @@ If the job of the _capability_ is to call on another _capability_, how should we
 A pure function is such a function which operates only on its inputs and produces only its output. Command-like methods, by definition are impure, as
 their job is to change state of the collaborating object (performing a _side effect_). For example:
 
-```scala mdoc:invisible
+```scala mdoc
 import scala.concurrent.ExecutionContext.Implicits.global
 
 trait Event
@@ -40,7 +40,7 @@ not the one you expected.
 
 Inside the future there may be happening any side effects. It may open a file, print to console, connect to databases. We simply don't know. Let's have a look how this problem would be solved using ZIO's effect system:
 
-```scala mdoc:invisible:reset
+```scala mdoc:reset
 trait Event
 ```
 
@@ -148,7 +148,7 @@ For overloaded methods we nest a list of numbered objects, each representing sub
 Finally we need to define a _compose layer_ that can create our environment from a `Proxy`.
 A `Proxy` holds the mock state and serves predefined responses to calls.
 
-```scala mdoc:invisible
+```scala mdoc
 def withRuntime[R]: URIO[R, Runtime[R]] = ???
 ```
 
@@ -185,7 +185,7 @@ multiple services.
 
 ## Complete example
 
-```scala mdoc:invisible:reset
+```scala mdoc:reset
 trait AccountEvent
 ```
 
@@ -259,7 +259,7 @@ For each built-in ZIO service you will find their mockable counterparts in `zio.
 
 To create expectations we use the previously defined _capability tags_:
 
-```scala mdoc:invisible
+```scala mdoc
 object Example {
   trait Service {
     def zeroArgs: UIO[Int]

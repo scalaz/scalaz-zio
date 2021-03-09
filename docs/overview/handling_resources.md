@@ -7,7 +7,7 @@ This section looks at some of the common ways to safely handle resources using Z
 
 ZIO's resource management features work across synchronous, asynchronous, concurrent, and other effect types, and provide strong guarantees even in the presence of failure, interruption, or defects in the application.
 
-```scala mdoc:invisible
+```scala mdoc
 import zio._
 ```
 
@@ -35,7 +35,7 @@ Unlike `try` / `finally`, `ensuring` works across all types of effects, includin
 
 A common use for `try` / `finally` is safely acquiring and releasing resources, such as new socket connections or opened files:
 
-```scala 
+```scala
 val handle = openFile(name)
 
 try {
@@ -47,7 +47,7 @@ ZIO encapsulates this common pattern with `ZIO#bracket`, which allows you to spe
 
 The release effect is guaranteed to be executed by the runtime system, even in the presence of errors or interruption.
 
-```scala mdoc:invisible
+```scala mdoc
 import zio._
 import java.io.{ File, IOException }
 

@@ -5,7 +5,7 @@ title:  "Handling Errors"
 
 This section looks at some of the common ways to detect and respond to failure.
 
-```scala mdoc:invisible
+```scala mdoc
 import zio._
 ```
 
@@ -34,7 +34,7 @@ def sqrt(io: UIO[Double]): IO[String, Double] =
 
 If you want to catch and recover from all types of errors and effectfully attempt recovery, you can use the `catchAll` method:
 
-```scala mdoc:invisible
+```scala mdoc
 import java.io.{ FileNotFoundException, IOException }
 
 def openFile(s: String): IO[IOException, Array[Byte]] = 
@@ -100,7 +100,7 @@ Nearly all error handling methods are defined in terms of `foldM`, because it is
 
 In the following example, `foldM` is used to handle both failure and success of the `readUrls` method:
 
-```scala mdoc:invisible
+```scala mdoc
 sealed trait Content
 case class NoContent(t: Throwable) extends Content
 case class OkContent(s: String) extends Content
@@ -130,10 +130,10 @@ val retriedOpenFile: ZIO[Clock, IOException, Array[Byte]] =
 
 The next most powerful function is `ZIO#retryOrElse`, which allows specification of a fallback to use, if the effect does not succeed with the specified policy:
 
-```scala
+```scala mdoc
   openFile("primary.data").retryOrElse(
     Schedule.recurs(5), 
-    (_, _) => ZIO.succeed(DefaultData))
+    (_, _: Long) => ZIO.succeed(DefaultData))
 ```
 
 The final method, `ZIO#retryOrElseEither`, allows returning a different type for the fallback.

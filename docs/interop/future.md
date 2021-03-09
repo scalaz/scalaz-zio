@@ -11,8 +11,11 @@ Basic interoperability with Scala's `Future` is now provided by ZIO, and does no
 
 Scala's `Future` can be converted into a ZIO effect with `ZIO.fromFuture`:
 
-```scala
-def loggedFuture[A](future: ExecutionContext => Future[A]): UIO[Task[A]] = {
+```scala mdoc
+import zio. { UIO, ZIO, Task }
+import scala.concurrent. { ExecutionContext, Future }
+
+def loggedFuture[A](future: ExecutionContext => Future[A]): Task[A] = {
   ZIO.fromFuture { implicit ec =>
     future(ec).flatMap { result =>
       Future("Future succeeded with " + result).map(_ => result)
@@ -23,7 +26,8 @@ def loggedFuture[A](future: ExecutionContext => Future[A]): UIO[Task[A]] = {
 
 Scala's `Future` can also be converted into a `Fiber` with `Fiber.fromFuture`:
 
-```scala
+```scala mdoc
+import zio.Fiber
 def futureToFiber[A](future: => Future[A]): Fiber[Throwable, A] = 
   Fiber.fromFuture(future)
 ```
@@ -34,7 +38,7 @@ This is a pure operation, given any sensible notion of fiber equality.
 
 A ZIO `Task` effect can be converted into a `Future` with `ZIO#toFuture`:
 
-```scala
+```scala mdoc
 def taskToFuture[A](task: Task[A]): UIO[Future[A]] = 
   task.toFuture
 ```
@@ -43,7 +47,7 @@ Because converting a `Task` into an (eager) `Future` is effectful, the return va
 
 A ZIO `Fiber` can be converted into a `Future` with `Fiber#toFuture`:
 
-```scala
+```scala mdoc
 def fiberToFuture[A](fiber: Fiber[Throwable, A]): UIO[Future[A]] = 
   fiber.toFuture
 ```

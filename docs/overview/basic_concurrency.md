@@ -30,7 +30,7 @@ The `Fiber[E, A]` data type in ZIO has two type parameters:
 
 Fibers do not have an `R` type parameter, because they model effects that are already running, and which already had their required environment provided to them.
 
-```scala mdoc:invisible
+```scala mdoc
 
 import zio._
 ```

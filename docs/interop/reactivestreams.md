@@ -15,7 +15,7 @@ conversions available.
 
 First, let's get a few imports out of the way.
 
-```scala
+```scala mdoc
 import org.reactivestreams.example.unicast._
 import zio._
 import zio.interop.reactivestreams._
@@ -26,7 +26,7 @@ val runtime = Runtime.default
 
 We use the following `Publisher` and `Subscriber` for the examples: 
 
-```scala
+```scala mdoc
 val publisher = new RangePublisher(3, 10)
 val subscriber = new SyncSubscriber[Int] {
   override protected def whenNext(v: Int): Boolean = {
@@ -41,7 +41,7 @@ val subscriber = new SyncSubscriber[Int] {
 A `Publisher` used as a `Stream` buffers up to `qSize` elements. If possible, `qSize` should be
 a power of two for best performance. The default is 16.
 
-```scala
+```scala mdoc
 val streamFromPublisher = publisher.toStream(qSize = 16)
 runtime.unsafeRun(
   streamFromPublisher.run(Sink.collectAll[Integer])
@@ -54,7 +54,7 @@ When running a `Stream` to a `Subscriber`, a side channel is needed for signalli
 For this reason `toSink` returns a tuple of `Promise` and `Sink`. The `Promise` must be failed
 on `Stream` failure. The type parameter on `toSink` is the error type of *the Stream*. 
 
-```scala
+```scala mdoc
 val asSink = subscriber.toSink[Throwable]
 val failingStream = Stream.range(3, 13) ++ Stream.fail(new RuntimeException("boom!"))
 runtime.unsafeRun(
@@ -66,7 +66,7 @@ runtime.unsafeRun(
 
 ### Stream to Publisher
 
-```scala
+```scala mdoc
 val stream = Stream.range(3, 13)
 runtime.unsafeRun(
   stream.toPublisher.flatMap { publisher =>

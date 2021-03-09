@@ -15,7 +15,7 @@ To access the DB we need a `DBConnection`, and each step in our program represen
 
 The result is a program that, in turn, depends on the `DBConnection`.
 
-```scala mdoc:invisible
+```scala mdoc
 import zio.{ Has, IO, Layer, UIO, URIO, ZEnv, ZIO, ZLayer }
 import zio.clock.Clock
 import zio.console.Console
@@ -91,7 +91,7 @@ object UserRepo {
 }
 ```
 
-```scala mdoc:reset:invisible
+```scala mdoc:reset
 import zio.{ Has, IO, Layer, UIO, URIO, ZEnv, ZIO, ZLayer }
 import zio.clock.Clock
 import zio.console.Console
@@ -112,7 +112,7 @@ We encountered two new data types: [`Has`][Has], and [`ZLayer`][ZLayer]. Let's g
 `Has[A]` represents a dependency on a service of type `A`. Some components in an application might depend upon more than
 one service. Two or more `Has[_]` elements can be combined _horizontally_ using their `++` operator:
 
-```scala mdoc:invisible
+```scala mdoc
 object Repo {
   trait Service {}
 }
@@ -362,13 +362,13 @@ No other code will need to be changed, because the previous implementation's dep
 
 However, if an upstream dependency is used by many other services, it can be convenient to "pass through" that dependency, and include it in the output of a layer. This can be done with the `>+>` operator, which provides the output of one layer to another layer, returning a new layer that outputs the services of _both_ layers.
 
-```scala
-val layer: ZLayer[Any, Nothing, Connection with UserRepo] = connection >+> userRepo
+```scala mdoc
+val updatedLayer2: ZLayer[Any, Nothing, Has[Connection] with UserRepo] = connection >+> userRepo
 ```
 
 Here, the `Connection` dependency has been passed through, and is available to all downstream services. This allows a style of composition where the `>+>` operator is used to build a progressively larger set of services, with each new service able to depend on all the services before it.
 
-```scala mdoc:invisible
+```scala mdoc
 type Baker = Has[Baker.Service]
 type Ingredients = Has[Ingredients.Service]
 type Oven = Has[Oven.Service]

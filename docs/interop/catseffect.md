@@ -13,7 +13,7 @@ libraryDependencies += "dev.zio" %% "zio-interop-cats" % "<version>"
 
 Most of the interop functionality resides in the following package:
 
-```scala
+```scala mdoc
 import zio.interop.catz._
 ```
 
@@ -32,7 +32,8 @@ type RIO[-R, +A] = ZIO[  R, Throwable, A]
 
 In order to use Cats Effect instances for these types, you should have an implicit `Runtime[R]` in scope for the environment type of your effects. The following code snippet creates an implicit `Runtime` for all the modules built into ZIO:
 
-```scala
+```scala mdoc
+import zio. { Runtime, ZEnv }
 implicit val runtime: Runtime[ZEnv] = Runtime.default
 ```
 
@@ -46,7 +47,7 @@ As a convenience, your application can extend `CatsApp`, which automatically bri
 
 In order to get a `cats.effect.Timer[Task]` instance, we need an extra import:
 
-```scala
+```scala mdoc
 import zio.interop.catz.implicits._
 ```
 

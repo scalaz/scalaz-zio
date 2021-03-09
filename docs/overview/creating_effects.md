@@ -5,7 +5,7 @@ title:  "Creating Effects"
 
 This section explores some of the common ways to create ZIO effects from values, from common Scala types, and from both synchronous and asynchronous side-effects.
 
-```scala mdoc:invisible
+```scala mdoc
 import zio.{ ZIO, Task, UIO, URIO, IO }
 ```
 
@@ -69,7 +69,7 @@ val zoption2: IO[String, Int] = zoption.mapError(_ => "It wasn't there!")
 
 You can also readily compose it with other operators while preserving the optional nature of the result (similar to an `OptionT`)
 
-```scala mdoc:invisible
+```scala mdoc
 trait Team
 ```
 
@@ -179,7 +179,7 @@ val getStrLn2: IO[IOException, String] =
 
 An asynchronous side-effect with a callback-based API can be converted into a ZIO effect using `ZIO.effectAsync`:
 
-```scala mdoc:invisible
+```scala mdoc
 trait User { 
   def teamId: String
 }

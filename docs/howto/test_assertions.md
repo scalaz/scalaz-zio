@@ -18,7 +18,7 @@ Assertion.hasAt[A](pos: Int)(assertion: Assertion[A]): Assertion[Seq[A]]
 
 I could start by writing:
 
-```scala mdoc:reset:invisible
+```scala mdoc:reset
 import zio.test._, zio.test.Assertion._
 ```
 
@@ -37,7 +37,7 @@ of the return type `Assertion[A]`.
 I could select `equalTo`, as it accepts an `A` as a parameter, allowing me to
 supply `5`:
 
-```scala mdoc:reset:invisible
+```scala mdoc:reset
 import zio.test._, zio.test.Assertion._
 ```
 
@@ -56,13 +56,21 @@ section. `approximatelyEquals` looks like what we want, as it permits the
 starting value `reference`, as well as a `tolerance`, for any `A` that is
 `Numeric`:
 
-```scala
-Assertion.approximatelyEquals[A: Numeric](reference: A, tolerance: A): Assertion[A]
+```scala mdoc:reset
+import zio.test._, zio.test.Assertion._
+```
+
+```scala mdoc
+val xs = 5.5
+
+test("Value is approximately equal to 5") {
+  assert(xs)(approximatelyEquals(5.0, 3.0))
+}
 ```
 
 Changing out `equalTo` with `approximatelyEquals` leaves us with:
 
-```scala mdoc:reset:invisible
+```scala mdoc:reset
 import zio.test._, zio.test.Assertion._
 ```
 
