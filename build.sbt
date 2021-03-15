@@ -46,7 +46,8 @@ addCommandAlias(
 )
 addCommandAlias(
   "testJVM",
-  ";coreTestsJVM/test;stacktracerJVM/test;streamsTestsJVM/test;testTestsJVM/test;testMagnoliaTestsJVM/test;testRefinedJVM/test;testRunnerJVM/test:run;examplesJVM/test:compile;benchmarks/test:compile;macrosTestsJVM/test;testJunitRunnerTestsJVM/test"
+//  ";coreTestsJVM/test;stacktracerJVM/test;streamsTestsJVM/test;testTestsJVM/test;testMagnoliaTestsJVM/test;testRefinedJVM/test;testRunnerJVM/test:run;examplesJVM/test:compile;benchmarks/test:compile;macrosTestsJVM/test;testJunitRunnerTestsJVM/test"
+  ";coreTestsJVM/test;stacktracerJVM/test;streamsTestsJVM/test;testTestsJVM/test;testMagnoliaTestsJVM/test;testRunnerJVM/test:run;examplesJVM/test:compile;macrosJVM/test;testJunitRunnerTestsJVM/test"
 )
 addCommandAlias(
   "testJVMNoBenchmarks",
@@ -99,7 +100,7 @@ lazy val root = project
     streamsNative,
     streamsTestsJVM,
     streamsTestsJS,
-    benchmarks,
+    // benchmarks,
     testJVM,
     testJS,
     testNative,
@@ -111,8 +112,8 @@ lazy val root = project
     testRunnerJS,
     testRunnerJVM,
     testRunnerNative,
-    testJunitRunnerJVM,
-    testJunitRunnerTestsJVM,
+//    testJunitRunnerJVM,
+//    testJunitRunnerTestsJVM,
     testMagnoliaJVM,
     testMagnoliaJS,
     testRefinedJVM,
@@ -359,6 +360,7 @@ lazy val stacktracerNative = stacktracer.native
   .settings(scalacOptions -= "-Xfatal-warnings") // Issue 3112
 
 lazy val testRunner = crossProject(JSPlatform, JVMPlatform, NativePlatform)
+// lazy val testRunner = crossProject(JVMPlatform)
   .in(file("test-sbt"))
   .settings(stdSettings("zio-test-sbt"))
   .settings(crossProjectSettings)
@@ -375,6 +377,7 @@ lazy val testRunnerNative = testRunner.native
   .settings(nativeSettings)
   .settings(libraryDependencies ++= Seq("org.scala-native" %%% "test-interface" % nativeVersion))
 
+/*
 lazy val testJunitRunner = crossProject(JVMPlatform)
   .in(file("test-junit"))
   .settings(stdSettings("zio-test-junit"))
@@ -428,6 +431,8 @@ lazy val testJunitRunnerTestsJVM = testJunitRunnerTests.jvm
         .dependsOn(stacktracerJVM / publishM2)
         .value
   )
+  .settings(scalaReflectTestSettings)
+ */
 
 /**
  * Examples sub-project that is not included in the root project.
@@ -444,11 +449,14 @@ lazy val examples = crossProject(JVMPlatform, JSPlatform)
   .dependsOn(macros, testRunner)
 
 lazy val examplesJS = examples.js
+/*
 lazy val examplesJVM = examples.jvm
   .settings(dottySettings)
   .dependsOn(testJunitRunnerJVM)
+ */
 
-lazy val benchmarks = project.module
+/*
+ lazy val benchmarks = project.module
   .dependsOn(coreJVM, streamsJVM, testJVM)
   .enablePlugins(JmhPlugin)
   .settings(replSettings)
@@ -496,6 +504,7 @@ lazy val benchmarks = project.module
       url("https://dl.bintray.com/hedgehogqa/scala-hedgehog")
     )(Resolver.ivyStylePatterns)
   )
+ */
 
 lazy val jsdocs = project
   .settings(libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "1.0.0")

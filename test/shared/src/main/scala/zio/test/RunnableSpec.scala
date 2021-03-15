@@ -17,7 +17,9 @@
 package zio.test
 
 import zio.clock.Clock
-import zio.{Has, URIO}
+import zio.{Has, URIO, ULayer}
+import zio.console.Console
+import zio.test.environment.testEnvironment
 
 /**
  * A `RunnableSpec` has a main function and can be run by the JVM / Scala.js.
@@ -26,7 +28,7 @@ abstract class RunnableSpec[R <: Has[_], E] extends AbstractRunnableSpec {
   override type Environment = R
   override type Failure     = E
 
-  private def run(spec: ZSpec[Environment, Failure]): URIO[TestLogger with Clock, Int] =
+  private def run(spec: ZSpec[Environment, Failure]): URIO[R with Annotations with TestLogger with Clock, Int] =
     for {
       results <- runSpec(spec)
       hasFailures = results.exists {
@@ -44,11 +46,21 @@ abstract class RunnableSpec[R <: Has[_], E] extends AbstractRunnableSpec {
     val testArgs     = TestArgs.parse(args)
     val filteredSpec = FilteredSpec(spec, testArgs)
     val runtime      = runner.runtime
+    val bootstrap =
+      (Console.live >>> TestLogger.fromConsole) ++ Clock.live ++ Annotations.live
+
+    val specEnv: ULayer[Environment] = (this match {
+      case crs: CustomRunnableSpec[_] => testEnvironment >+> crs.customLayer
+      case _                          => testEnvironment
+    }).asInstanceOf[ULayer[Environment]]
+
+    val env = specEnv ++ bootstrap
+
     if (TestPlatform.isJVM) {
-      val exitCode = runtime.unsafeRun(run(filteredSpec).provideLayer(runner.bootstrap))
+      val exitCode = runtime.unsafeRun(run(filteredSpec).provideLayer(env))
       doExit(exitCode)
     } else if (TestPlatform.isJS) {
-      runtime.unsafeRunAsync[Nothing, Int](run(filteredSpec).provideLayer(runner.bootstrap)) { exit =>
+      runtime.unsafeRunAsync[Nothing, Int](run(filteredSpec).provideLayer(env)) { exit =>
         val exitCode = exit.getOrElse(_ => 1)
         doExit(exitCode)
       }

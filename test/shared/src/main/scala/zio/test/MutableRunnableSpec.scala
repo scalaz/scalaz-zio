@@ -161,6 +161,6 @@ class MutableRunnableSpec[R <: Has[_]: Tag](
    */
   private[zio] override def runSpec(
     spec: ZSpec[Environment, Failure]
-  ): URIO[TestLogger with Clock, ExecutedSpec[Failure]] =
+  ): URIO[Environment with Annotations with TestLogger with Clock, ExecutedSpec[Failure]] =
     runner.run(aspects.foldLeft(spec)(_ @@ _) @@ TestAspect.fibers)
 }

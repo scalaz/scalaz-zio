@@ -19,7 +19,7 @@ package zio
 import zio.console.Console
 import zio.duration.Duration
 import zio.stream.{ZSink, ZStream}
-import zio.test.environment.{TestClock, TestConsole, TestEnvironment, TestRandom, TestSystem, testEnvironment}
+import zio.test.environment.{TestClock, TestConsole, TestEnvironment, TestRandom, TestSystem}
 
 import scala.collection.immutable.SortedSet
 import scala.util.Try
@@ -527,7 +527,10 @@ package object test extends CompileVariants {
    * A `Runner` that provides a default testable environment.
    */
   val defaultTestRunner: TestRunner[TestEnvironment, Any] =
-    TestRunner(TestExecutor.default(testEnvironment))
+    TestRunner(TestExecutor2.default)
+
+  def customTestRunner[R <: Has[_]]: TestRunner[R, Any] =
+    TestRunner(TestExecutor2.default)
 
   /**
    * Creates a failed test result with the specified runtime cause.

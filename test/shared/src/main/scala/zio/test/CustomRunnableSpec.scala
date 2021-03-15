@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 John A. De Goes and the ZIO Contributors
+ * Copyright 2019-2020 John A. De Goes and the ZIO Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,36 +16,25 @@
 
 package zio.test
 
-import org.portablescala.reflect.annotation.EnableReflectiveInstantiation
 import zio.clock.Clock
-import zio.{Has, URIO}
+import zio.{Has, URIO, URLayer}
+import zio.duration._
+import zio.test.environment.TestEnvironment
 
-@EnableReflectiveInstantiation
-abstract class AbstractRunnableSpec {
+abstract class CustomRunnableSpec[R <: Has[_]](
+  val customLayer: URLayer[TestEnvironment, R]
+) extends RunnableSpec[R with TestEnvironment, Any] {
 
-  type Environment <: Has[_]
-  type Failure
+  override def aspects: List[TestAspect[Nothing, Environment, Nothing, Any]] =
+    List(TestAspect.timeoutWarning(60.seconds))
 
-  def aspects: List[TestAspect[Nothing, Environment, Nothing, Any]]
-  def runner: TestRunner[Environment, Failure]
-  def spec: ZSpec[Environment, Failure]
-
-  /**
-   * Returns an effect that executes the spec, producing the results of the execution.
-   */
-  final def run: URIO[Environment with Annotations with TestLogger with Clock, ExecutedSpec[Failure]] =
-    runSpec(spec)
+  override def runner: TestRunner[Environment, Any] = customTestRunner
 
   /**
    * Returns an effect that executes a given spec, producing the results of the execution.
    */
-  private[zio] def runSpec(
+  private[zio] override def runSpec(
     spec: ZSpec[Environment, Failure]
   ): URIO[Environment with Annotations with TestLogger with Clock, ExecutedSpec[Failure]] =
-    runner.run(aspects.foldLeft(spec)(_ @@ _))
-
-  /**
-   * the platform used by the runner
-   */
-  final def platform = runner.platform
+    runner.run(aspects.foldLeft(spec)(_ @@ _) @@ TestAspect.fibers)
 }
