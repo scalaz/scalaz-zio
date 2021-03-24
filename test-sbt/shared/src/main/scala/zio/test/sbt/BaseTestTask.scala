@@ -37,24 +37,25 @@ abstract class BaseTestTask(
   override def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[Task] =
     try {
       Runtime((), specInstance.platform).unsafeRun {
-        (specInstance match {
+        specInstance match {
           case crs: CustomRunnableSpec[_] =>
             layerCache.awaitAvailable *> layerCache.debug *>
               layerCache
                 .getEnvironment(crs)
-                .tap(v =>
-                  UIO(
-                    println(s"using ${v.getClass.getCanonicalName}@${System.identityHashCode(v).toHexString}")
-                  )
-                )
-          case _ => UIO(testEnvironment)
-        }).flatMap { env0 =>
-          val env: specInstance.Environment =
-            env0.asInstanceOf[specInstance.Environment]
-          run(eventHandler)
-            .provideSomeLayer[specInstance.Environment](sbtTestLayer(loggers))
-            .provide(env)
-            .onError(e => UIO(println(e.prettyPrint)))
+                .flatMap { env0 =>
+                  val env: specInstance.Environment =
+                    env0.asInstanceOf[specInstance.Environment]
+                  run(eventHandler)
+                    .provideSomeLayer[specInstance.Environment](sbtTestLayer(loggers))
+                    .provide(env)
+                    .onError(e => UIO(println(e.prettyPrint)))
+                }
+
+          case _ =>
+            run(eventHandler)
+              .provideLayer(testEnvironment.asInstanceOf[ULayer[specInstance.Environment]] ++ sbtTestLayer(loggers))
+              .onError(e => UIO(println(e.prettyPrint)))
+
         }
       }
       Array()
