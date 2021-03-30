@@ -105,7 +105,9 @@ lint: &lint
     - <<: *install_jdk
     - run:
         name: Lint code
-        command: ./sbt ++${SCALA_VERSION} fmtCheck fixCheck
+        command: |
+          export SBT_OPTS="-Xmx4G -XX:+UseConcMarkSweepGC -XX:+CMSClassUnloadingEnabled"
+          ./sbt ++${SCALA_VERSION} fmtCheck fixCheck
     - <<: *clean_cache
     - <<: *save_cache
 
