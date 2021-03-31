@@ -22,6 +22,23 @@ import zio.stream._
 val streamFromIterable: Stream[Nothing, Int] = Stream.fromIterable(0 to 100)
 ```
 
+You might also want to create it from a callback API :
+```scala mdoc:silent
+import zio._
+import zio.stream._
+
+def callbackAPI(callback: String => Unit): Unit = ???
+
+val streamCallbackAPI: ZStream[Any, Throwable, String] =
+    ZStream.fromEffect(
+        Task.effectAsync[String] { cb =>
+            callbackAPI(message => cb(Task.succeed(message)))
+        }
+    ).forever 
+```
+
+
+
 ## Transforming a Stream
 
 ZIO Stream supports many standard transforming functions like `map`, `partition`, `grouped`, `groupByKey`, `groupedWithin`
