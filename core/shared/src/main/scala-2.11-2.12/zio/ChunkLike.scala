@@ -86,25 +86,19 @@ private[zio] trait ChunkLike[+A]
    * specified start, separator, and end strings.
    */
   override final def mkString(start: String, sep: String, end: String): String = {
-    val iterator = arrayIterator
+    val iterator = self.iterator
     val builder  = new scala.collection.mutable.StringBuilder()
     builder.sizeHint(length)
     builder.append(start)
     var started = false
     while (iterator.hasNext) {
-      val array  = iterator.next()
-      val length = array.length
-      var i      = 0
-      while (i < length) {
-        val a = array(i)
+        val a = iterator.next()
         if (started) {
           builder.append(sep)
         } else {
           started = true
         }
         builder.append(a.toString)
-        i += 1
-      }
     }
     builder.append(end)
 
@@ -146,16 +140,12 @@ private[zio] trait ChunkLike[+A]
    * The implementation of `flatMap` for `Chunk`.
    */
   protected final def flatMapChunk[B, That](f: A => GenTraversableOnce[B]): Chunk[B] = {
-    val iterator               = arrayIterator
+    val iterator               = self.iterator
     var chunks: List[Chunk[B]] = Nil
     var total                  = 0
     var B0: ClassTag[B]        = null.asInstanceOf[ClassTag[B]]
     while (iterator.hasNext) {
-      val array  = iterator.next()
-      val length = array.length
-      var i      = 0
-      while (i < length) {
-        val a     = array(i)
+        val a     = iterator.next()
         val bs    = f(a)
         val chunk = ChunkLike.fromGenTraversableOnce(bs)
         if (chunk.length > 0) {
@@ -165,8 +155,6 @@ private[zio] trait ChunkLike[+A]
           chunks ::= chunk
           total += chunk.length
         }
-        i += 1
-      }
     }
     if (B0 == null) Chunk.empty
     else {

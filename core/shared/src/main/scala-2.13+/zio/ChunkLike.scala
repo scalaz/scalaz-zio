@@ -57,26 +57,20 @@ trait ChunkLike[+A]
    * the specified function.
    */
   override final def flatMap[B](f: A => IterableOnce[B]): Chunk[B] = {
-    val iterator               = arrayIterator
+    val iterator               = self.iterator
     var chunks: List[Chunk[B]] = Nil
     var total                  = 0
     var B0: ClassTag[B]        = null.asInstanceOf[ClassTag[B]]
     while (iterator.hasNext) {
-      val array  = iterator.next()
-      val length = array.length
-      var i      = 0
-      while (i < length) {
-        val a     = array(i)
-        val bs    = f(a)
-        val chunk = ChunkLike.from(bs)
-        if (chunk.length > 0) {
-          if (B0 == null) {
-            B0 = Chunk.classTagOf(chunk)
-          }
-          chunks ::= chunk
-          total += chunk.length
+      val a     = iterator.next()
+      val bs    = f(a)
+      val chunk = ChunkLike.from(bs)
+      if (chunk.length > 0) {
+        if (B0 == null) {
+          B0 = Chunk.classTagOf(chunk)
         }
-        i += 1
+        chunks ::= chunk
+        total += chunk.length
       }
     }
     if (B0 == null) Chunk.empty

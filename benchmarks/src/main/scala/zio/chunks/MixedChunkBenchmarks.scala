@@ -8,6 +8,9 @@ import java.util.concurrent.TimeUnit
 @State(Scope.Thread)
 @BenchmarkMode(Array(Mode.AverageTime))
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
+@Measurement(iterations = 5, timeUnit = TimeUnit.SECONDS, time = 3)
+@Warmup(iterations = 5, timeUnit = TimeUnit.SECONDS, time = 3)
+@Fork(1)
 class MixedChunkBenchmarks {
   @Param(Array("1000"))
   var size: Int = _
@@ -45,7 +48,7 @@ class MixedChunkBenchmarks {
   }
 
   @Benchmark
-  def fold(): Int = chunk.fold(0)(_ + _)
+  def fold(): Int = chunk.foldLeft(0)(_ + _)
 
   @Benchmark
   def filterM(): Chunk[Int] =
