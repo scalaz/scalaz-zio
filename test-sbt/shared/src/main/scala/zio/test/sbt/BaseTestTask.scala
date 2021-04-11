@@ -53,7 +53,10 @@ abstract class BaseTestTask(
 
           case _ =>
             run(eventHandler)
-              .provideLayer(testEnvironment.asInstanceOf[ULayer[specInstance.SharedEnvironment]] ++ sbtTestLayer(loggers))
+              .provideLayer(
+                ZLayer.succeed(()).asInstanceOf[ULayer[specInstance.SharedEnvironment]] ++
+                  sbtTestLayer(loggers)
+              )
               .onError(e => UIO(println(e.prettyPrint)))
 
         }
