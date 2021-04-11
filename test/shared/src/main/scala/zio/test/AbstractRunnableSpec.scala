@@ -24,24 +24,25 @@ import zio.{Has, URIO}
 abstract class AbstractRunnableSpec {
 
   type Environment <: Has[_]
+  type SharedEnvironment <: Has[_]
   type Failure
 
-  def aspects: List[TestAspect[Nothing, Environment, Nothing, Any]]
-  def runner: TestRunner[Environment, Failure]
-  def spec: ZSpec[Environment, Failure]
+  def aspects: List[TestAspect[Nothing, Environment with SharedEnvironment, Nothing, Any]]
+  def runner: TestRunner[Environment, SharedEnvironment, Failure]
+  def spec: ZSpec[Environment with SharedEnvironment, Failure]
 
   /**
    * Returns an effect that executes the spec, producing the results of the execution.
    */
-  final def run: URIO[Environment with Annotations with TestLogger with Clock, ExecutedSpec[Failure]] =
+  final def run: URIO[Environment with SharedEnvironment with TestLogger with Clock, ExecutedSpec[Failure]] =
     runSpec(spec)
 
   /**
    * Returns an effect that executes a given spec, producing the results of the execution.
    */
   private[zio] def runSpec(
-    spec: ZSpec[Environment, Failure]
-  ): URIO[Environment with Annotations with TestLogger with Clock, ExecutedSpec[Failure]] =
+    spec: ZSpec[Environment with SharedEnvironment, Failure]
+  ): URIO[SharedEnvironment with TestLogger with Clock, ExecutedSpec[Failure]] =
     runner.run(aspects.foldLeft(spec)(_ @@ _))
 
   /**

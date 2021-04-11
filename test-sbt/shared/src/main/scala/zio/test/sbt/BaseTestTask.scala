@@ -16,7 +16,7 @@ abstract class BaseTestTask(
 ) extends Task {
 
   protected def run(eventHandler: EventHandler): ZIO[
-    specInstance.Environment with Annotations with TestLogger with Clock,
+    specInstance.SharedEnvironment with TestLogger with Clock,
     Throwable,
     Unit
   ] =
@@ -28,11 +28,11 @@ abstract class BaseTestTask(
       _      <- ZIO.foreach(events)(e => ZIO.effect(eventHandler.handle(e)))
     } yield ()
 
-  protected def sbtTestLayer(loggers: Array[Logger]): Layer[Nothing, Annotations with TestLogger with Clock] =
+  protected def sbtTestLayer(loggers: Array[Logger]): Layer[Nothing, TestLogger with Clock] =
     ZLayer.succeed[TestLogger.Service](new TestLogger.Service {
       def logLine(line: String): UIO[Unit] =
         ZIO.effect(loggers.foreach(_.info(colored(line)))).ignore
-    }) ++ Clock.live ++ Annotations.live
+    }) ++ Clock.live
 
   override def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[Task] =
     try {
@@ -43,17 +43,17 @@ abstract class BaseTestTask(
               layerCache
                 .getEnvironment(crs)
                 .flatMap { env0 =>
-                  val env: specInstance.Environment =
-                    env0.asInstanceOf[specInstance.Environment]
+                  val env: specInstance.SharedEnvironment =
+                    env0.asInstanceOf[specInstance.SharedEnvironment]
                   run(eventHandler)
-                    .provideSomeLayer[specInstance.Environment](sbtTestLayer(loggers))
+                    .provideSomeLayer[specInstance.SharedEnvironment](sbtTestLayer(loggers))
                     .provide(env)
                     .onError(e => UIO(println(e.prettyPrint)))
                 }
 
           case _ =>
             run(eventHandler)
-              .provideLayer(testEnvironment.asInstanceOf[ULayer[specInstance.Environment]] ++ sbtTestLayer(loggers))
+              .provideLayer(testEnvironment.asInstanceOf[ULayer[specInstance.SharedEnvironment]] ++ sbtTestLayer(loggers))
               .onError(e => UIO(println(e.prettyPrint)))
 
         }

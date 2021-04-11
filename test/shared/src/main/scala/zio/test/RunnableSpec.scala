@@ -17,18 +17,19 @@
 package zio.test
 
 import zio.clock.Clock
-import zio.{Has, URIO, ULayer}
+import zio.{Has, ULayer, URIO, ZLayer}
 import zio.console.Console
 import zio.test.environment.testEnvironment
 
 /**
  * A `RunnableSpec` has a main function and can be run by the JVM / Scala.js.
  */
-abstract class RunnableSpec[R <: Has[_], E] extends AbstractRunnableSpec {
-  override type Environment = R
+abstract class RunnableSpec[R0 <: Has[_], R1 <: Has[_], E] extends AbstractRunnableSpec {
+  override type Environment = R0
+  override type SharedEnvironment = R1
   override type Failure     = E
 
-  private def run(spec: ZSpec[Environment, Failure]): URIO[R with Annotations with TestLogger with Clock, Int] =
+  private def run(spec: ZSpec[Environment with SharedEnvironment, Failure]): URIO[R1 with TestLogger with Clock, Int] =
     for {
       results <- runSpec(spec)
       hasFailures = results.exists {
@@ -49,12 +50,12 @@ abstract class RunnableSpec[R <: Has[_], E] extends AbstractRunnableSpec {
     val bootstrap =
       (Console.live >>> TestLogger.fromConsole) ++ Clock.live ++ Annotations.live
 
-    val specEnv: ULayer[Environment] = (this match {
-      case crs: CustomRunnableSpec[_] => testEnvironment >+> crs.customLayer
-      case _                          => testEnvironment
-    }).asInstanceOf[ULayer[Environment]]
+    val sharedEnv: ULayer[SharedEnvironment] = (this match {
+      case crs: CustomRunnableSpec[_] => zio.ZEnv.live >>> crs.customLayer
+      case _                          => ZLayer.succeed(())
+    }).asInstanceOf[ULayer[SharedEnvironment]]
 
-    val env = specEnv ++ bootstrap
+    val env = sharedEnv ++ bootstrap
 
     if (TestPlatform.isJVM) {
       val exitCode = runtime.unsafeRun(run(filteredSpec).provideLayer(env))

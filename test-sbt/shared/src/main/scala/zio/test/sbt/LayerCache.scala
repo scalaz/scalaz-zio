@@ -63,7 +63,7 @@ object LayerCache {
 }
 
 case class CustomSpecLayerCache(
-  private val layerCache: LayerCache[TestEnvironment]
+  private val layerCache: LayerCache[ZEnv]
 ) {
   val awaitAvailable: UIO[Unit] = layerCache.awaitAvailable
   val debug: UIO[Unit]          = layerCache.debug
@@ -74,7 +74,7 @@ case class CustomSpecLayerCache(
   ): UIO[Unit] =
     layerCache.cacheLayers(
       customRunnableSpecs.map(spec => spec.customLayer),
-      testEnvironment
+      ZEnv.live
     )
 
   def getEnvironment[R <: Has[_]](
@@ -85,5 +85,5 @@ case class CustomSpecLayerCache(
 
 object CustomSpecLayerCache {
   def make: UIO[CustomSpecLayerCache] =
-    LayerCache.make[TestEnvironment].map(CustomSpecLayerCache.apply)
+    LayerCache.make[ZEnv].map(CustomSpecLayerCache.apply)
 }

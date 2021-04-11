@@ -6,7 +6,7 @@ import zio.test.mock.Expectation._
 import zio.test.mock.internal.InvalidCall._
 import zio.test.mock.internal.MockException._
 import zio.test.mock.module.PureModuleMock
-import zio.{Cause, ZIO}
+import zio.{Cause, Has, ZIO, ZLayer}
 
 import java.util.regex.Pattern
 import scala.{Console => SConsole}
@@ -54,7 +54,7 @@ object ReportingTestUtils {
       _ <- TestTestRunner
              .run(spec)
              .provideLayer(
-               TestLogger.fromConsole ++ testEnvironment
+               TestLogger.fromConsole ++ testEnvironment ++ ZLayer.succeed(():Any)
              )
       output <- TestConsole.output
     } yield output.mkString.withNoLineNumbers
@@ -64,14 +64,14 @@ object ReportingTestUtils {
       results <- TestTestRunner
                    .run(spec)
                    .provideLayer(
-                     TestLogger.fromConsole ++ testEnvironment
+                     TestLogger.fromConsole ++ testEnvironment ++ ZLayer.succeed(():Any)
                    )
       actualSummary = SummaryBuilder.buildSummary(results)
     } yield actualSummary.summary.withNoLineNumbers
 
   private[this] val TestTestRunner =
-    TestRunner[TestEnvironment, String](
-      executor = TestExecutor2.default[TestEnvironment, String],
+    TestRunner[TestEnvironment, Has[Any], String](
+      executor = TestExecutor3.default[TestEnvironment, Has[Any], String](testEnvironment),
       reporter = DefaultTestReporter(TestAnnotationRenderer.default)
     )
 

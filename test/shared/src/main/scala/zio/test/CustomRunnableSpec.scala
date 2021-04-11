@@ -17,24 +17,26 @@
 package zio.test
 
 import zio.clock.Clock
-import zio.{Has, URIO, URLayer}
+import zio.{Has, Tag, URIO, URLayer, ZEnv}
 import zio.duration._
 import zio.test.environment.TestEnvironment
 
-abstract class CustomRunnableSpec[R <: Has[_]](
-  val customLayer: URLayer[TestEnvironment, R]
-) extends RunnableSpec[R with TestEnvironment, Any] {
+abstract class CustomRunnableSpec[R <: Has[_] : Tag](
+//  val customLayer: URLayer[TestEnvironment, R]
+  val customLayer: URLayer[ZEnv, R]
+) extends RunnableSpec[TestEnvironment, R, Any] {
 
   override def aspects: List[TestAspect[Nothing, Environment, Nothing, Any]] =
     List(TestAspect.timeoutWarning(60.seconds))
 
-  override def runner: TestRunner[Environment, Any] = customTestRunner
+  override def runner: TestRunner[Environment, SharedEnvironment, Any] =
+    customTestRunner
 
   /**
    * Returns an effect that executes a given spec, producing the results of the execution.
    */
   private[zio] override def runSpec(
-    spec: ZSpec[Environment, Failure]
-  ): URIO[Environment with Annotations with TestLogger with Clock, ExecutedSpec[Failure]] =
+    spec: ZSpec[Environment with SharedEnvironment, Failure]
+  ): URIO[SharedEnvironment with TestLogger with Clock, ExecutedSpec[Failure]] =
     runner.run(aspects.foldLeft(spec)(_ @@ _) @@ TestAspect.fibers)
 }

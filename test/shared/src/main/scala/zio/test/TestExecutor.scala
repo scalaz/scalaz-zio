@@ -16,7 +16,7 @@
 
 package zio.test
 
-import zio.{ExecutionStrategy, Has, Layer, UIO, ZIO, URIO}
+import zio.{ExecutionStrategy, Has, Layer, Tag, UIO, URIO, ZIO}
 
 /**
  * A `TestExecutor[R, E]` is capable of executing specs that require an
@@ -46,6 +46,40 @@ object TestExecutor {
           }
         )
         .use(_.foldM[Any, Nothing, ExecutedSpec[E]](defExec) {
+          case Spec.SuiteCase(label, specs, _) =>
+            specs.map(specs => ExecutedSpec.suite(label, specs))
+          case Spec.TestCase(label, test, staticAnnotations) =>
+            test.map { case (result, dynamicAnnotations) =>
+              ExecutedSpec.test(label, result, staticAnnotations ++ dynamicAnnotations)
+            }.toManaged_
+        }.useNow)
+    val environment = env
+  }
+}
+
+abstract class TestExecutor3[+R0 <: Has[_], R1 <: Has[_], E] {
+  def run(spec: ZSpec[R0 with R1, E], defExec: ExecutionStrategy): URIO[R1, ExecutedSpec[E]]
+  def environment: Layer[Nothing, R0]
+}
+
+object TestExecutor3 {
+  def default[R0 <: Annotations : Tag, R1 <: Has[_]: Tag, E](
+    env: Layer[Nothing, R0]
+  ): TestExecutor3[R0, R1, E] = new TestExecutor3[R0, R1, E] {
+    def run(spec: ZSpec[R0 with R1, E], defExec: ExecutionStrategy): URIO[R1, ExecutedSpec[E]] =
+      spec.annotated
+        .provideSomeLayer[R1](environment)
+        .foreachExec(defExec)(
+          e =>
+            e.failureOrCause.fold(
+              { case (failure, annotations) => ZIO.succeedNow((Left(failure), annotations)) },
+              cause => ZIO.succeedNow((Left(TestFailure.Runtime(cause)), TestAnnotationMap.empty))
+            ),
+          { case (success, annotations) =>
+            ZIO.succeedNow((Right(success), annotations))
+          }
+        )
+        .use(_.foldM[R1, Nothing, ExecutedSpec[E]](defExec) {
           case Spec.SuiteCase(label, specs, _) =>
             specs.map(specs => ExecutedSpec.suite(label, specs))
           case Spec.TestCase(label, test, staticAnnotations) =>
