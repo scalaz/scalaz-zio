@@ -16,7 +16,7 @@ object ShareLayersAcrossSpecs {
 
   val sharedLayer: ULayer[Has[BoxedInt]] =
     UIO(BoxedInt(counter.getAndIncrement()))
-      .tap(boxedInt => UIO(println(s"created $boxedInt")))
+      // .tap(boxedInt => UIO(println(s"created $boxedInt")))
       .toLayer
 
   val checkCounter =
@@ -25,7 +25,7 @@ object ShareLayersAcrossSpecs {
       assert <- assertM(
                   ZIO.accessM[Has[BoxedInt]](hasBoxedInt =>
                     UIO(hasBoxedInt.get)
-                      .tap(boxedInt => UIO(println(boxedInt)))
+                      // .tap(boxedInt => UIO(println(boxedInt)))
                       .map(_.i)
                   )
                 )(equalTo(c - 1))

@@ -2,7 +2,6 @@ package zio.test.sbt
 
 import sbt.testing.{EventHandler, Logger, Task, TaskDef}
 import zio.clock.Clock
-import zio.test.environment.testEnvironment
 import zio.test._
 import zio._
 
@@ -37,29 +36,13 @@ abstract class BaseTestTask(
   override def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[Task] =
     try {
       Runtime((), specInstance.platform).unsafeRun {
-        specInstance match {
-          case crs: CustomRunnableSpec[_] =>
-            layerCache.awaitAvailable *> layerCache.debug *>
-              layerCache
-                .getEnvironment(crs)
-                .flatMap { env0 =>
-                  val env: specInstance.SharedEnvironment =
-                    env0.asInstanceOf[specInstance.SharedEnvironment]
-                  run(eventHandler)
-                    .provideSomeLayer[specInstance.SharedEnvironment](sbtTestLayer(loggers))
-                    .provide(env)
-                    .onError(e => UIO(println(e.prettyPrint)))
-                }
-
-          case _ =>
+        layerCache.awaitAvailable *> // layerCache.debug *>
+          layerCache.getEnvironment(specInstance.sharedLayer).flatMap { env =>
             run(eventHandler)
-              .provideLayer(
-                ZLayer.succeed(()).asInstanceOf[ULayer[specInstance.SharedEnvironment]] ++
-                  sbtTestLayer(loggers)
-              )
+              .provideSomeLayer[specInstance.SharedEnvironment](sbtTestLayer(loggers))
+              .provide(env)
               .onError(e => UIO(println(e.prettyPrint)))
-
-        }
+          }
       }
       Array()
     } catch {

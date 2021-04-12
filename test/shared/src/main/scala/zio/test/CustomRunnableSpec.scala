@@ -22,8 +22,7 @@ import zio.duration._
 import zio.test.environment.TestEnvironment
 
 abstract class CustomRunnableSpec[R <: Has[_] : Tag](
-//  val customLayer: URLayer[TestEnvironment, R]
-  val customLayer: URLayer[ZEnv, R]
+  override val sharedLayer: URLayer[ZEnv, R]
 ) extends RunnableSpec[TestEnvironment, R, Any] {
 
   override def aspects: List[TestAspect[Nothing, Environment, Nothing, Any]] =

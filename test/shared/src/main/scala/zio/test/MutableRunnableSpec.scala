@@ -20,7 +20,7 @@ import izumi.reflect.Tag
 import zio.clock.Clock
 import zio.duration._
 import zio.test.environment.TestEnvironment
-import zio.{Chunk, Has, URIO, ZIO, ZLayer}
+import zio.{Chunk, Has, URIO, ZIO, ZLayer, URLayer}
 
 import scala.util.control.NoStackTrace
 
@@ -45,6 +45,9 @@ class MutableRunnableSpec[R <: Has[_]: Tag](
   aspect: TestAspect[R with TestEnvironment, R with TestEnvironment, Any, Any] = TestAspect.identity
 ) extends RunnableSpec[TestEnvironment, Has[Any], Any] {
   self =>
+
+    override def sharedLayer: URLayer[Any, Has[Any]] =
+      DefaultRunnableSpec.none
 
   private class InAnotherTestException(`type`: String, label: String)
       extends Exception(s"${`type`} `${label}` is in another test")

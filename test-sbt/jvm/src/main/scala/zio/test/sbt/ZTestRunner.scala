@@ -17,7 +17,7 @@
 package zio.test.sbt
 
 import sbt.testing._
-import zio.test.{AbstractRunnableSpec, CustomRunnableSpec, Summary, TestArgs}
+import zio.test.{AbstractRunnableSpec, Summary, TestArgs}
 import zio.{Runtime, ZIO}
 
 import java.util.concurrent.atomic.AtomicReference
@@ -58,7 +58,7 @@ final class ZTestRunner(val args: Array[String], val remoteArgs: Array[String], 
 
     layerCache = Runtime.default.unsafeRun(CustomSpecLayerCache.make)
 
-    val specs_tasks =
+    val (specs, tasks) =
       defs.map { taskDef =>
         import org.portablescala.reflect._
         val fqn = taskDef.fullyQualifiedName().stripSuffix("$") + "$"
@@ -79,7 +79,7 @@ final class ZTestRunner(val args: Array[String], val remoteArgs: Array[String], 
             layerCache
           )
         )
-      }
+      }.unzip
 
     val entrypointClass = testArgs.testTaskPolicy.getOrElse(classOf[ZTestTaskPolicyDefaultImpl].getName)
     val taskPolicy = getClass.getClassLoader
@@ -87,14 +87,10 @@ final class ZTestRunner(val args: Array[String], val remoteArgs: Array[String], 
       .getConstructor()
       .newInstance()
       .asInstanceOf[ZTestTaskPolicy]
-    val tasks       = specs_tasks.map(_._2)
     val mergedTasks = taskPolicy.merge(tasks)
 
-    val customSpecs =
-      specs_tasks.collect { case (spec: CustomRunnableSpec[_], _) => spec }
-
     Runtime.default.unsafeRun(
-      layerCache.cacheLayers(customSpecs)
+      layerCache.cacheLayers(specs)
     )
 
     mergedTasks

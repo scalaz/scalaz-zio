@@ -19,7 +19,7 @@ package zio.test
 import zio.clock.Clock
 import zio.duration._
 import zio.test.environment.TestEnvironment
-import zio.{Has, URIO, ZIO}
+import zio.{Has, URIO, ZIO, URLayer, ZLayer}
 
 /**
  * A default runnable spec that provides testable versions of all of the
@@ -33,6 +33,9 @@ abstract class DefaultRunnableSpec extends RunnableSpec[TestEnvironment, Has[Any
 
   override def runner: TestRunner[TestEnvironment, Has[Any], Any] =
     defaultTestRunner
+
+  override def sharedLayer: URLayer[Any, Has[Any]] =
+    DefaultRunnableSpec.none
 
   /**
    * Returns an effect that executes a given spec, producing the results of the execution.
@@ -65,4 +68,8 @@ abstract class DefaultRunnableSpec extends RunnableSpec[TestEnvironment, Has[Any
    */
   def testM[R, E](label: String)(assertion: => ZIO[R, E, TestResult])(implicit loc: SourceLocation): ZSpec[R, E] =
     zio.test.testM(label)(assertion)
+}
+
+object DefaultRunnableSpec {
+  val none : URLayer[Any, Has[Any]] = ZLayer.succeed(())
 }

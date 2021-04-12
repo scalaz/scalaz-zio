@@ -17,17 +17,16 @@
 package zio.test
 
 import zio.clock.Clock
-import zio.{Has, ULayer, URIO, ZLayer}
 import zio.console.Console
-import zio.test.environment.testEnvironment
+import zio.{Has, URIO, ZEnv}
 
 /**
  * A `RunnableSpec` has a main function and can be run by the JVM / Scala.js.
  */
 abstract class RunnableSpec[R0 <: Has[_], R1 <: Has[_], E] extends AbstractRunnableSpec {
-  override type Environment = R0
+  override type Environment       = R0
   override type SharedEnvironment = R1
-  override type Failure     = E
+  override type Failure           = E
 
   private def run(spec: ZSpec[Environment with SharedEnvironment, Failure]): URIO[R1 with TestLogger with Clock, Int] =
     for {
@@ -49,13 +48,7 @@ abstract class RunnableSpec[R0 <: Has[_], R1 <: Has[_], E] extends AbstractRunna
     val runtime      = runner.runtime
     val bootstrap =
       (Console.live >>> TestLogger.fromConsole) ++ Clock.live ++ Annotations.live
-
-    val sharedEnv: ULayer[SharedEnvironment] = (this match {
-      case crs: CustomRunnableSpec[_] => zio.ZEnv.live >>> crs.customLayer
-      case _                          => ZLayer.succeed(())
-    }).asInstanceOf[ULayer[SharedEnvironment]]
-
-    val env = sharedEnv ++ bootstrap
+    val env = (ZEnv.live >>> sharedLayer) ++ bootstrap
 
     if (TestPlatform.isJVM) {
       val exitCode = runtime.unsafeRun(run(filteredSpec).provideLayer(env))

@@ -18,7 +18,7 @@ package zio.test
 
 import org.portablescala.reflect.annotation.EnableReflectiveInstantiation
 import zio.clock.Clock
-import zio.{Has, URIO}
+import zio.{Has, URIO, URLayer, ZEnv}
 
 @EnableReflectiveInstantiation
 abstract class AbstractRunnableSpec {
@@ -30,6 +30,7 @@ abstract class AbstractRunnableSpec {
   def aspects: List[TestAspect[Nothing, Environment with SharedEnvironment, Nothing, Any]]
   def runner: TestRunner[Environment, SharedEnvironment, Failure]
   def spec: ZSpec[Environment with SharedEnvironment, Failure]
+  def sharedLayer: URLayer[ZEnv, SharedEnvironment]
 
   /**
    * Returns an effect that executes the spec, producing the results of the execution.

@@ -1,9 +1,8 @@
 package zio.test.sbt
 
-import zio.test.CustomRunnableSpec
 import zio.test.sbt.LayerCache.LayerCacheMap
-import zio.test.environment.{TestEnvironment, testEnvironment}
 import zio._
+import zio.test.AbstractRunnableSpec
 
 case class LayerCache[R](
   private val layerMap: Ref[LayerCacheMap[R]],
@@ -17,6 +16,7 @@ case class LayerCache[R](
   ): UIO[Unit] = {
     val layersToBeCached: Set[URLayer[R, _]] = layers.toSet
     ZIO.foreachPar_(layersToBeCached) { layer =>
+      // UIO(println(s"add to cache: $layer")) *>
       (env >>> layer).build.use { memoizedLayer =>
         for {
           cache <- layerMap.updateAndGet(
@@ -36,6 +36,7 @@ case class LayerCache[R](
   val release: UIO[Unit] = release0.succeed(()).unit
 
   def getLayer[ROut](layer: URLayer[R, ROut]): UIO[ROut] =
+    // UIO(println(s"get from cache: ${layer}")) *>
     layerMap.get.map(_.apply(layer).asInstanceOf[ROut])
 
   def debug =
@@ -69,18 +70,14 @@ case class CustomSpecLayerCache(
   val debug: UIO[Unit]          = layerCache.debug
   val release: UIO[Unit]        = layerCache.release
 
-  def cacheLayers(
-    customRunnableSpecs: Iterable[CustomRunnableSpec[_]]
-  ): UIO[Unit] =
+  def cacheLayers(specs: Iterable[AbstractRunnableSpec]): UIO[Unit] =
     layerCache.cacheLayers(
-      customRunnableSpecs.map(spec => spec.customLayer),
+      specs.map(spec => spec.sharedLayer),
       ZEnv.live
     )
 
-  def getEnvironment[R <: Has[_]](
-    spec: CustomRunnableSpec[R]
-  ): UIO[R] =
-    layerCache.getLayer[R](spec.customLayer)
+  def getEnvironment[R <: Has[_]](layer: URLayer[ZEnv, R]): UIO[R] =
+    layerCache.getLayer[R](layer)
 }
 
 object CustomSpecLayerCache {
