@@ -18,7 +18,9 @@ package zio.test
 
 import org.portablescala.reflect.annotation.EnableReflectiveInstantiation
 import zio.clock.Clock
-import zio.{Has, URIO}
+import zio.duration.Duration
+import zio.test.ExecutedSpec.{SuiteCase, TestCase}
+import zio.{Has, UIO, URIO, ZIO}
 
 @EnableReflectiveInstantiation
 abstract class AbstractRunnableSpec {
@@ -43,6 +45,33 @@ abstract class AbstractRunnableSpec {
     spec: ZSpec[Environment, Failure]
   ): URIO[TestLogger with Clock, ExecutedSpec[Failure]] =
     runner.run(aspects.foldLeft(spec)(_ @@ _))
+
+  object FixSnapshotsReporter extends TestReporter[Failure] {
+
+    override def apply(d: Duration, e: ExecutedSpec[Failure]): URIO[TestLogger, Unit] =
+      e.caseValue match {
+        case SuiteCase(label, specs) =>
+          TestLogger.logLine(label) *> ZIO.foreach_(specs)(apply(d, _))
+        case TestCase(label, Left(TestFailure.Assertion(_)), _) =>
+          TestLogger.logLine(s"$label snapshot updated")
+        case TestCase(label, Left(TestFailure.Runtime(_)), _) =>
+          TestLogger.logLine(s"Test $label failed in runtime, snapshot not updated")
+        case TestCase(label, Right(_), _) =>
+          TestLogger.logLine(s"Test $label passes, snapshot not updated")
+      }
+  }
+
+  /**
+   * Fixes snapshot file or inline snapshot
+   */
+  private[zio] def fixSnapshot(
+    spec: ZSpec[Environment, Failure]
+  ): URIO[TestLogger with Clock, ExecutedSpec[Failure]] = {
+
+    runner
+      .withReporter(FixSnapshotsReporter)
+      .run(aspects.foldLeft(spec)(_ @@ _))
+  }
 
   /**
    * the platform used by the runner
