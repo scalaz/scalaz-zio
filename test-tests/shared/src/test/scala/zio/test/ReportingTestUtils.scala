@@ -71,7 +71,7 @@ object ReportingTestUtils {
 
   private[this] val TestTestRunner =
     TestRunner[TestEnvironment, Has[Any], String](
-      executor = TestExecutor3.default[TestEnvironment, Has[Any], String](testEnvironment),
+      executor = TestExecutor.default[TestEnvironment, Has[Any], String](testEnvironment),
       reporter = DefaultTestReporter(TestAnnotationRenderer.default)
     )
 

@@ -2,6 +2,7 @@ package zio.test
 
 import zio._
 import zio.test.Assertion._
+
 import java.util.concurrent.atomic.AtomicInteger
 import ShareLayersAcrossSpecs._
 
@@ -23,18 +24,14 @@ object ShareLayersAcrossSpecs {
     for {
       c <- UIO(counter.get())
       assert <- assertM(
-                  ZIO.accessM[Has[BoxedInt]](hasBoxedInt =>
-                    UIO(hasBoxedInt.get)
-                      // .tap(boxedInt => UIO(println(boxedInt)))
-                      .map(_.i)
-                  )
+                  ZIO.service[BoxedInt].map(_.i)
                 )(equalTo(c - 1))
     } yield assert
 }
 
 object ShareLayersAcrossSpecsSpec1 extends CustomRunnableSpec(sharedLayer) {
   override def spec =
-    suite("Spec - 1")(
+    suite("Shared layer across specs - 1")(
       testM("The same BoxedInt instance should be shared across all Specs")(
         checkCounter
       )
@@ -43,8 +40,8 @@ object ShareLayersAcrossSpecsSpec1 extends CustomRunnableSpec(sharedLayer) {
 
 object ShareLayersAcrossSpecsSpec2 extends CustomRunnableSpec(sharedLayer) {
   override def spec =
-    suite("Spec - 2")(
-      testM("the same BoxedInt instance should be shared across all Specs")(
+    suite("Shared layer across specs - 2")(
+      testM("The same BoxedInt instance should be shared across all Specs")(
         checkCounter
       )
     )

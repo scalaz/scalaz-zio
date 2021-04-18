@@ -20,7 +20,7 @@ import izumi.reflect.Tag
 import zio.clock.Clock
 import zio.duration._
 import zio.test.environment.TestEnvironment
-import zio.{Chunk, Has, URIO, ZIO, ZLayer, URLayer}
+import zio.{Chunk, Has, URIO, ZIO, ZLayer, ULayer}
 
 import scala.util.control.NoStackTrace
 
@@ -46,7 +46,7 @@ class MutableRunnableSpec[R <: Has[_]: Tag](
 ) extends RunnableSpec[TestEnvironment, Has[Any], Any] {
   self =>
 
-    override def sharedLayer: URLayer[Any, Has[Any]] =
+    override def sharedLayer: ULayer[Has[Any]] =
       DefaultRunnableSpec.none
 
   private class InAnotherTestException(`type`: String, label: String)
@@ -156,7 +156,7 @@ class MutableRunnableSpec[R <: Has[_]: Tag](
   override def aspects: List[TestAspect[Nothing, TestEnvironment, Nothing, Any]] =
     List(TestAspect.timeoutWarning(60.seconds))
 
-  override def runner: TestRunner[TestEnvironment, Has[Any], Any] =
+  override def runner: TestRunner[TestEnvironment, SharedEnvironment, Any] =
     defaultTestRunner
 
   /**
@@ -164,6 +164,6 @@ class MutableRunnableSpec[R <: Has[_]: Tag](
    */
   private[zio] override def runSpec(
     spec: ZSpec[Environment with SharedEnvironment, Failure]
-  ): URIO[Has[Any] with TestLogger with Clock, ExecutedSpec[Failure]] =
+  ): URIO[SharedEnvironment with TestLogger with Clock, ExecutedSpec[Failure]] =
     runner.run(aspects.foldLeft(spec)(_ @@ _) @@ TestAspect.fibers)
 }

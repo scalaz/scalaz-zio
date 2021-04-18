@@ -17,7 +17,6 @@
 package zio.test
 
 import zio.clock.Clock
-import zio.console.Console
 import zio.{Has, URIO, ZEnv}
 
 /**
@@ -46,9 +45,7 @@ abstract class RunnableSpec[R0 <: Has[_], R1 <: Has[_], E] extends AbstractRunna
     val testArgs     = TestArgs.parse(args)
     val filteredSpec = FilteredSpec(spec, testArgs)
     val runtime      = runner.runtime
-    val bootstrap =
-      (Console.live >>> TestLogger.fromConsole) ++ Clock.live ++ Annotations.live
-    val env = (ZEnv.live >>> sharedLayer) ++ bootstrap
+    val env = (ZEnv.live >>> sharedLayer) ++ runner.bootstrap
 
     if (TestPlatform.isJVM) {
       val exitCode = runtime.unsafeRun(run(filteredSpec).provideLayer(env))

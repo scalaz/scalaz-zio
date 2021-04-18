@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 John A. De Goes and the ZIO Contributors
+ * Copyright 2019-2021 John A. De Goes and the ZIO Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ abstract class CustomRunnableSpec[R <: Has[_] : Tag](
     List(TestAspect.timeoutWarning(60.seconds))
 
   override def runner: TestRunner[Environment, SharedEnvironment, Any] =
-    customTestRunner
+    defaultTestRunner
 
   /**
    * Returns an effect that executes a given spec, producing the results of the execution.

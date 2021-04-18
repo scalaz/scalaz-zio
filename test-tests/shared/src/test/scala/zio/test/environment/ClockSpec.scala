@@ -19,22 +19,16 @@ object ClockSpec extends ZIOBaseSpec {
     suite("ClockSpec")(
       testM("sleep does not require passage of clock time") {
         for {
-          ref <- Ref.make(false)
-          _   <- ref.set(true).delay(10.hours).fork
-//          _ <- ZIO.accessM[TestClock] { env =>
-//                 UIO(println(System.identityHashCode(env.get[TestClock.Service]).toHexString))
-//               }
+          ref    <- Ref.make(false)
+          _      <- ref.set(true).delay(10.hours).fork
           _      <- adjust(11.hours)
           result <- ref.get
         } yield assert(result)(isTrue)
       } @@ forked @@ nonFlaky,
       testM("sleep delays effect until time is adjusted") {
         for {
-          ref <- Ref.make(false)
-          _   <- ref.set(true).delay(10.hours).fork
-//          _ <- ZIO.accessM[TestClock] { env =>
-//                 UIO(println(System.identityHashCode(env.get[TestClock.Service]).toHexString))
-//               }
+          ref    <- Ref.make(false)
+          _      <- ref.set(true).delay(10.hours).fork
           _      <- adjust(9.hours)
           result <- ref.get
         } yield assert(result)(isFalse)
