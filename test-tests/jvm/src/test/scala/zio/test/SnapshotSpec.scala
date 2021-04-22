@@ -47,6 +47,7 @@ object SnapshotSpec extends ZIOBaseSpec {
   def snapshotTestM[R, E >: Throwable](label: String)(result: ZIO[R, E, String]): ZSpec[R, E] =
     testM(label)(
       for {
+        actual <- result
         snapFileName <- ZIO.succeed(s"__snapshots__/$label")
         res <- if(getClass.getResource(snapFileName) eq null)
           ZIO.succeed(noSnapFileName(snapFileName))
@@ -55,7 +56,7 @@ object SnapshotSpec extends ZIOBaseSpec {
             Task(scala.io.Source.fromInputStream(getClass.getResourceAsStream(snapFileName))))(
             (s: scala.io.Source) => UIO(s.close()))(
             (s: scala.io.Source) => Task(s.getLines.mkString("\n"))
-          ).flatMap((snapshot: String) => CompileVariants.assertMProxy(result, label)(equalToSnapshot(snapshot)))
+          ).map((snapshot: String) => CompileVariants.assertProxy(actual, "xx", label)(equalToSnapshot(snapshot)))
       } yield res
     ) @@ tag(SNAPSHOT_TEST_FILE)
 
@@ -63,6 +64,7 @@ object SnapshotSpec extends ZIOBaseSpec {
     suite("matchSnapshot suite")(
       snapshotTest("firsta")("hellos"),
       snapshotTestM("second")(Task("HEY")),
+      snapshotTestM("no-snap-file")(Task("HEY")),
       //FIXME fails with
       //[info]   - failure
       //[info]      did not satisfy No snapshot __snapshots__/failure file found()

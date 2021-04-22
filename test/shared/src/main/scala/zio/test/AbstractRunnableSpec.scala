@@ -19,8 +19,11 @@ package zio.test
 import org.portablescala.reflect.annotation.EnableReflectiveInstantiation
 import zio.clock.Clock
 import zio.duration.Duration
+import zio.test.BoolAlgebra.Value
 import zio.test.ExecutedSpec.{SuiteCase, TestCase}
-import zio.{Has, UIO, URIO, ZIO}
+import zio.{Has, Task, UIO, URIO, ZIO}
+
+import java.nio.file.{Files, Path}
 
 @EnableReflectiveInstantiation
 abstract class AbstractRunnableSpec {
@@ -48,12 +51,17 @@ abstract class AbstractRunnableSpec {
 
   object FixSnapshotsReporter extends TestReporter[Failure] {
 
+    def fixFile(label: String, text: String): Task[Unit] =
+      Task(Files.write(Path.of(s"__snapshots__/$label"), text.getBytes))
+
     override def apply(d: Duration, e: ExecutedSpec[Failure]): URIO[TestLogger, Unit] =
       e.caseValue match {
         case SuiteCase(label, specs) =>
           TestLogger.logLine(label) *> ZIO.foreach_(specs)(apply(d, _))
+        case TestCase(label, Left(TestFailure.Assertion(Value(FailureDetails(assertion :: Nil, None)))), _) =>
+          fixFile(label, assertion.value.toString).orDie *> TestLogger.logLine(s"$label snapshot updated")
         case TestCase(label, Left(TestFailure.Assertion(_)), _) =>
-          TestLogger.logLine(s"$label snapshot updated")
+          TestLogger.logLine(s"$label weird state - snapshot not updated")
         case TestCase(label, Left(TestFailure.Runtime(_)), _) =>
           TestLogger.logLine(s"Test $label failed in runtime, snapshot not updated")
         case TestCase(label, Right(_), _) =>
