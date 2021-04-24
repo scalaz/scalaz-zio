@@ -1,5 +1,6 @@
 package zio.test
 
+import _root_.sbt.testing.TaskDef
 import zio.{UIO, URIO}
 
 import scala.annotation.tailrec
@@ -45,5 +46,16 @@ package object sbt {
 
       }
     loop(s, 0, None)
+  }
+
+  def lookupSpec(taskDef: TaskDef, testClassLoader: ClassLoader): AbstractRunnableSpec = {
+    import org.portablescala.reflect._
+    val fqn = taskDef.fullyQualifiedName().stripSuffix("$") + "$"
+    val spec = Reflect
+      .lookupLoadableModuleClass(fqn, testClassLoader)
+      .getOrElse(throw new ClassNotFoundException("failed to load object: " + fqn))
+      .loadModule()
+      .asInstanceOf[AbstractRunnableSpec]
+    spec
   }
 }

@@ -60,24 +60,15 @@ final class ZTestRunner(val args: Array[String], val remoteArgs: Array[String], 
 
     val (specs, tasks) =
       defs.map { taskDef =>
-        import org.portablescala.reflect._
-        val fqn = taskDef.fullyQualifiedName().stripSuffix("$") + "$"
-        val spec = Reflect
-          .lookupLoadableModuleClass(fqn, testClassLoader)
-          .getOrElse(throw new ClassNotFoundException("failed to load object: " + fqn))
-          .loadModule()
-          .asInstanceOf[AbstractRunnableSpec]
+        val spec: AbstractRunnableSpec = lookupSpec(taskDef, testClassLoader)
 
-        (
+        spec -> new ZTestTask(
+          taskDef,
+          testClassLoader,
+          sendSummary,
+          testArgs,
           spec,
-          new ZTestTask(
-            taskDef,
-            testClassLoader,
-            sendSummary,
-            testArgs,
-            spec,
-            layerCache
-          )
+          layerCache
         )
       }.unzip
 

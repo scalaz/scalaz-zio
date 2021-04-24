@@ -69,6 +69,7 @@ object ReportingTestUtils {
       actualSummary = SummaryBuilder.buildSummary(results)
     } yield actualSummary.summary.withNoLineNumbers
 
+  // TODO: review the changes around here
   private[this] val TestTestRunner =
     TestRunner[TestEnvironment, Has[Any], String](
       executor = TestExecutor.default[TestEnvironment, Has[Any], String](testEnvironment),
