@@ -9,12 +9,16 @@ object LayerDefinitionExample extends App {
 
   object Foo {
     val live: URLayer[Console with Has[String] with Has[Int], Has[Foo]] =
-      (FooLive.apply _).toLayer
+      Ref.make(true).toLayer >>> (FooLive.apply _).toLayer[Foo]
 
-    case class FooLive(console: Console.Service, string: String, int: Int) extends Foo {
-      override def bar: UIO[Unit] = console.putStrLn(s"$string and $int")
+    case class FooLive(console: Console.Service, string: String, int: Int, ref: Ref[Boolean]) extends Foo {
+      override def bar: UIO[Unit] =
+        ref.get.flatMap { bool =>
+          console.putStrLn(s"$string and $int and Ref($bool)")
+        }
     }
   }
+
 
   override def run(args: List[String]): URIO[ZEnv, ExitCode] = {
     val liveLayer: ULayer[Has[Foo]] =
@@ -25,4 +29,13 @@ object LayerDefinitionExample extends App {
       .provideLayer(liveLayer)
       .exitCode
   }
+
+
+  // Inferrable remainder examples
+  val layer: URLayer[Has[Int] with Has[String], Has[Boolean]] = ZLayer.succeed(true)
+  val int: ULayer[Has[Int]] = ZLayer.succeed(1)
+  val both: ULayer[Has[Int] with Has[String]] = ZLayer.succeed(1) ++ ZLayer.succeed("hi")
+
+  val c1: ZLayer[Has[String], Nothing, Has[Boolean]] = int >>> layer
+  val c2: ZLayer[Any, Nothing, Has[Boolean]] = both >>> layer
 }

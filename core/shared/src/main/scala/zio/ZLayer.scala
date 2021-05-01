@@ -75,15 +75,8 @@ sealed abstract class ZLayer[-RIn, +E, +ROut] { self =>
   final def >+>[E1 >: E, RIn2 >: ROut, ROut1 >: ROut, ROut2](
     that: ZLayer[RIn2, E1, ROut2]
   )(implicit ev: Has.Union[ROut1, ROut2], tagged: Tag[ROut2]): ZLayer[RIn, E1, ROut1 with ROut2] =
-    ZLayer.ZipWith(self, self >>> that, ev.union)
+    ZLayer.ZipWith(self, self andThen that, ev.union)
 
-  /**
-   * Feeds the output services of this layer into the input of the specified
-   * layer, resulting in a new layer with the inputs of this layer, and the
-   * outputs of the specified layer.
-   */
-  final def >>>[E1 >: E, ROut2](that: ZLayer[ROut, E1, ROut2]): ZLayer[RIn, E1, ROut2] =
-    fold(ZLayer.fromFunctionManyM { case (_, cause) => ZIO.halt(cause) }, that)
 
   /**
    * A named alias for `++`.
@@ -125,7 +118,7 @@ sealed abstract class ZLayer[-RIn, +E, +ROut] { self =>
             c => ZIO.halt(c)
           )
       }
-    fold(failureOrDie >>> handler, ZLayer.identity)
+    fold(failureOrDie andThen handler, ZLayer.identity)
   }
 
   /**
@@ -162,14 +155,14 @@ sealed abstract class ZLayer[-RIn, +E, +ROut] { self =>
    * Returns a new layer whose output is mapped by the specified function.
    */
   final def map[ROut1](f: ROut => ROut1): ZLayer[RIn, E, ROut1] =
-    self >>> ZLayer.fromFunctionMany(f)
+    self andThen ZLayer.fromFunctionMany(f)
 
   /**
    * Returns a layer with its error channel mapped using the specified
    * function.
    */
   final def mapError[E1](f: E => E1)(implicit ev: CanFail[E]): ZLayer[RIn, E1, ROut] =
-    catchAll(ZLayer.second >>> ZLayer.fromFunctionManyM(e => ZIO.fail(f(e))))
+    catchAll(ZLayer.second andThen ZLayer.fromFunctionManyM(e => ZIO.fail(f(e))))
 
   /**
    * Returns a managed effect that, if evaluated, will return the lazily
@@ -183,7 +176,7 @@ sealed abstract class ZLayer[-RIn, +E, +ROut] { self =>
    * unchecked and not a part of the type of the layer.
    */
   final def orDie(implicit ev1: E <:< Throwable, ev2: CanFail[E]): ZLayer[RIn, Nothing, ROut] =
-    catchAll(ZLayer.second >>> ZLayer.fromFunctionManyM(ZIO.die(_)))
+    catchAll(ZLayer.second andThen ZLayer.fromFunctionManyM(ZIO.die(_)))
 
   /**
    * Executes this layer and returns its output, if it succeeds, but otherwise
@@ -192,7 +185,7 @@ sealed abstract class ZLayer[-RIn, +E, +ROut] { self =>
   final def orElse[RIn1 <: RIn, E1, ROut1 >: ROut](
     that: ZLayer[RIn1, E1, ROut1]
   )(implicit ev: CanFail[E]): ZLayer[RIn1, E1, ROut1] =
-    catchAll(ZLayer.first >>> that)
+    catchAll(ZLayer.first andThen that)
 
   /**
    * Retries constructing this layer according to the specified schedule.
@@ -204,7 +197,7 @@ sealed abstract class ZLayer[-RIn, +E, +ROut] { self =>
     type S = StepFunction[RIn1, E, Any]
 
     lazy val loop: ZLayer[(RIn1, S), E, ROut] =
-      (ZLayer.first >>> self).catchAll {
+      (ZLayer.first andThen self).catchAll {
         val update: ZLayer[((RIn1, S), E), E, (RIn1, S)] =
           ZLayer.fromFunctionManyM {
             case ((r, s), e) =>
@@ -213,16 +206,16 @@ sealed abstract class ZLayer[-RIn, +E, +ROut] { self =>
                 case Continue(_, interval, next) => clock.sleep(Duration.fromInterval(now, interval)) as ((r, next))
               }).provide(r)
           }
-        update >>> ZLayer.suspend(loop.fresh)
+        update andThen ZLayer.suspend(loop.fresh)
       }
-    ZLayer.identity <&> ZLayer.fromEffectMany(ZIO.succeed(schedule.step)) >>> loop
+    ZLayer.identity <&> ZLayer.fromEffectMany(ZIO.succeed(schedule.step)) andThen loop
   }
 
   /**
     * Performs the specified effect if this layer succeeds.
     */
   final def tap[RIn1 <: RIn, E1 >: E](f: ROut => ZIO[RIn1, E1, Any]): ZLayer[RIn1, E1, ROut] =
-    ZLayer.identity <&> self >>> ZLayer.fromFunctionManyM { case (in, out) => f(out).provide(in) *> ZIO.succeed(out) }
+    ZLayer.identity <&> self andThen ZLayer.fromFunctionManyM { case (in, out) => f(out).provide(in) *> ZIO.succeed(out) }
 
   /**
    * Performs the specified effect if this layer fails.
@@ -231,10 +224,12 @@ sealed abstract class ZLayer[-RIn, +E, +ROut] { self =>
     catchAll(ZLayer.fromFunctionManyM { case (r, e) => f(e).provide(r) *> ZIO.fail(e) })
 
   /**
-   * A named alias for `>>>`.
+   * Feeds the output services of this layer into the input of the specified
+   * layer, resulting in a new layer with the inputs of this layer, and the
+   * outputs of the specified layer.
    */
-  final def to[E1 >: E, ROut2](that: ZLayer[ROut, E1, ROut2]): ZLayer[RIn, E1, ROut2] =
-    self >>> that
+  final def andThen[E1 >: E, ROut2](that: ZLayer[ROut, E1, ROut2]): ZLayer[RIn, E1, ROut2] =
+      fold(ZLayer.fromFunctionManyM { case (_, cause) => ZIO.halt(cause) }, that)
 
   /**
    * Converts a layer that requires no services into a managed runtime, which
@@ -247,7 +242,7 @@ sealed abstract class ZLayer[-RIn, +E, +ROut] { self =>
    * Updates one of the services output by this layer.
    */
   final def update[A: Tag](f: A => A)(implicit ev1: Has.IsHas[ROut], ev2: ROut <:< Has[A]): ZLayer[RIn, E, ROut] =
-    self >>> ZLayer.fromFunctionMany(ev1.update[ROut, A](_, f))
+    self andThen ZLayer.fromFunctionMany(ev1.update[ROut, A](_, f))
 
   /**
    * Combines this layer with the specified layer, producing a new layer that
@@ -294,7 +289,7 @@ sealed abstract class ZLayer[-RIn, +E, +ROut] { self =>
       case ZLayer.Suspend(self) =>
          ZManaged.succeed(memoMap => memoMap.getOrElseMemoize(self()))
       case ZLayer.ZipWith(self, that, f) =>
-        ZManaged.succeed(memoMap => memoMap.getOrElseMemoize(self).zipWith(memoMap.getOrElseMemoize(that))(f))   
+        ZManaged.succeed(memoMap => memoMap.getOrElseMemoize(self).zipWith(memoMap.getOrElseMemoize(that))(f))
       case ZLayer.ZipWithPar(self, that, f) =>
         ZManaged.succeed(memoMap => memoMap.getOrElseMemoize(self).zipWithPar(memoMap.getOrElseMemoize(that))(f))
     }
@@ -2228,7 +2223,7 @@ object ZLayer {
      * specified function
      */
     final def project[B: Tag](f: A => B)(implicit tag: Tag[A]): ZLayer[R, E, Has[B]] =
-      self >>> ZLayer.fromFunction(r => f(r.get))
+      self andThen ZLayer.fromFunction(r => f(r.get))
   }
 
   /**
@@ -2382,4 +2377,34 @@ object ZLayer {
 
   private def andThen[A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21, B, C](f: (A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21) => B)(g: B => C): (A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21) => C =
     (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21) => g(f(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21))
+
+  implicit final class ZLayerVerticalComposeSyntax[RIn, E, ROut](private val self: ZLayer[RIn, E, ROut]) extends AnyVal {
+    /**
+     * Feeds the output services of this layer into the input of the specified
+     * layer, resulting in a new layer with the inputs of this layer as well as
+     * any leftover inputs, and the outputs of the specified layer.
+     */
+    def >>>[RIn2, E1 >: E, ROut2](that: ZLayer[ROut with RIn2, E1, ROut2])(implicit ev: Has.Union[RIn2, ROut], tag: Tag[ROut]): ZLayer[RIn with RIn2, E1, ROut2] =
+      ZLayer.requires[RIn2] ++ self andThen that
+
+    /**
+     * Feeds the output services of this layer into the input of the specified
+     * layer, resulting in a new layer with the inputs of this layer as well as
+     * any leftover inputs, and the outputs of the specified layer.
+     */
+    def >>>[E1 >: E, ROut2](that: ZLayer[ROut, E1, ROut2]): ZLayer[RIn, E1, ROut2] =
+      self andThen that
+
+    /**
+     * A named alias for `>>>`.
+     */
+    def to[RIn2, E1 >: E, ROut2](that: ZLayer[ROut with RIn2, E1, ROut2])(implicit ev: Has.Union[RIn2, ROut], tag: Tag[ROut]): ZLayer[RIn with RIn2, E1, ROut2] =
+      (ZLayer.requires[RIn2] ++ self) andThen that
+
+    /**
+     * A named alias for `>>>`.
+     */
+     def to[E1 >: E, ROut2](that: ZLayer[ROut, E1, ROut2]): ZLayer[RIn, E1, ROut2] =
+       self >>> that
+  }
 }
