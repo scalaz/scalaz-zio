@@ -36,7 +36,15 @@ final class ZTestRunner(val args: Array[String], val remoteArgs: Array[String], 
   )
 
   override def done(): String = {
-    Runtime.default.unsafeRun(layerCache.release)
+//    println(s"=-=-=-=-> ${System.identityHashCode(this).toHexString}: done()")
+//    (new Exception).printStackTrace()
+
+    // TODO: BZ: This guard is needed because an extra runner gets created (when
+    //  running the JUnit tests: `testOnly *.MavenJunitSpec`) that doesn't run
+    //  any tests.
+    //  Find out why this happens: https://github.com/sbt/sbt/blob/v1.5.0/main/src/main/scala/sbt/Defaults.scala#L1539
+    if (layerCache != null)
+      Runtime.default.unsafeRun(layerCache.release)
 
     val allSummaries = summaries.get
 
@@ -54,6 +62,8 @@ final class ZTestRunner(val args: Array[String], val remoteArgs: Array[String], 
   }
 
   override def tasks(defs: Array[TaskDef]): Array[Task] = {
+//    println(s"=-=-=-=-> ${System.identityHashCode(this).toHexString}: tasks(${defs.mkString(",")})")
+
     val testArgs = TestArgs.parse(args)
 
     layerCache = Runtime.default.unsafeRun(CustomSpecLayerCache.make)

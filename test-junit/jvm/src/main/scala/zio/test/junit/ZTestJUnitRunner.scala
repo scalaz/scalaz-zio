@@ -69,18 +69,26 @@ class ZTestJUnitRunner(klass: Class[_]) extends Runner with Filterable with Boot
           ZManaged.effectTotal(description.addChild(testDescription(label, path)))
       }
 
-    unsafeRun(
+      unsafeRun {
+      val execEnv = spec.runner.executor.environment
       traverse(filteredSpec, description)
-        .provideLayer(spec.runner.executor.environment)
+        .asInstanceOf[ZManaged[spec.Environment, Any, Unit]]
+        .provideLayer(execEnv)
         .useNow
-    )
+    }
     description
   }
 
   override def run(notifier: RunNotifier): Unit =
     zio.Runtime((), spec.runner.platform).unsafeRun {
+      val sharedEnv    = (ZEnv.live >>> spec.sharedLayer)
+      val bootstrapEnv = spec.runner.bootstrap
       val instrumented = instrumentSpec(filteredSpec, new JUnitNotifier(notifier))
-      spec.runner.run(instrumented).unit.provideLayer(spec.runner.bootstrap)
+      spec.runner
+        .run(instrumented)
+        .unit
+        .provideSomeLayer[spec.SharedEnvironment](bootstrapEnv)
+        .provideLayer(sharedEnv)
     }
 
   private def reportRuntimeFailure[E](
@@ -144,7 +152,7 @@ class ZTestJUnitRunner(klass: Class[_]) extends Runner with Filterable with Boot
     Spec(loop(zspec.caseValue))
   }
 
-  private def filteredSpec: ZSpec[spec.Environment, spec.Failure] =
+  private def filteredSpec: ZSpec[spec.Environment with spec.SharedEnvironment, spec.Failure] =
     spec.spec
       .filterLabels(l => filter.shouldRun(testDescription(l, Vector.empty)))
       .getOrElse(spec.spec)

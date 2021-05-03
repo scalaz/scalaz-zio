@@ -46,8 +46,7 @@ addCommandAlias(
 )
 addCommandAlias(
   "testJVM",
-//  ";coreTestsJVM/test;stacktracerJVM/test;streamsTestsJVM/test;testTestsJVM/test;testMagnoliaTestsJVM/test;testRefinedJVM/test;testRunnerJVM/test:run;examplesJVM/test:compile;benchmarks/test:compile;macrosTestsJVM/test;testJunitRunnerTestsJVM/test"
-  ";coreTestsJVM/test;stacktracerJVM/test;streamsTestsJVM/test;testTestsJVM/test;testMagnoliaTestsJVM/test;testRunnerJVM/test:run;examplesJVM/test:compile;macrosJVM/test;testJunitRunnerTestsJVM/test"
+    ";coreTestsJVM/test;stacktracerJVM/test;streamsTestsJVM/test;testTestsJVM/test;testMagnoliaTestsJVM/test;testRefinedJVM/test;testRunnerJVM/test:run;examplesJVM/test:compile;benchmarks/test:compile;macrosTestsJVM/test;testJunitRunnerTestsJVM/test"
 )
 addCommandAlias(
   "testJVMNoBenchmarks",
@@ -112,8 +111,8 @@ lazy val root = project
     testRunnerJS,
     testRunnerJVM,
     testRunnerNative,
-//    testJunitRunnerJVM,
-//    testJunitRunnerTestsJVM,
+    testJunitRunnerJVM,
+    testJunitRunnerTestsJVM,
     testMagnoliaJVM,
     testMagnoliaJS,
     testRefinedJVM,
@@ -377,7 +376,6 @@ lazy val testRunnerNative = testRunner.native
   .settings(nativeSettings)
   .settings(libraryDependencies ++= Seq("org.scala-native" %%% "test-interface" % nativeVersion))
 
-/*
 lazy val testJunitRunner = crossProject(JVMPlatform)
   .in(file("test-junit"))
   .settings(stdSettings("zio-test-junit"))
@@ -431,8 +429,6 @@ lazy val testJunitRunnerTestsJVM = testJunitRunnerTests.jvm
         .dependsOn(stacktracerJVM / publishM2)
         .value
   )
-  .settings(scalaReflectTestSettings)
- */
 
 /**
  * Examples sub-project that is not included in the root project.
