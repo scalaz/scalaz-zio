@@ -24,21 +24,22 @@ import zio.test.{ConsoleUtils, TestAnnotation, TestAnnotationMap, TestAnnotation
 trait ConsoleRenderer extends TestRenderer {
   private val tabSize = 2
 
-  override def render(result: ExecutionResult, testAnnotationRenderer: TestAnnotationRenderer): String = {
-    val message = Message(result.lines).intersperse(Line.fromString("\n"))
+  override def render(results: Seq[ExecutionResult], testAnnotationRenderer: TestAnnotationRenderer): Seq[String] =
+    results.map { result =>
+      val message = Message(result.lines).intersperse(Line.fromString("\n"))
 
-    val output = result.resultType match {
-      case ResultType.Suite =>
-        renderSuite(result.status, result.offset, message)
-      case ResultType.Test =>
-        renderTest(result.status, result.offset, message)
-      case ResultType.Other =>
-        Message(result.lines)
+      val output = result.resultType match {
+        case ResultType.Suite =>
+          renderSuite(result.status, result.offset, message)
+        case ResultType.Test =>
+          renderTest(result.status, result.offset, message)
+        case ResultType.Other =>
+          Message(result.lines)
+      }
+
+      val renderedAnnotations = renderAnnotations(result.annotations, testAnnotationRenderer)
+      renderToStringLines(output ++ renderedAnnotations).mkString
     }
-
-    val renderedAnnotations = renderAnnotations(result.annotations, testAnnotationRenderer)
-    renderToStringLines(output ++ renderedAnnotations).mkString
-  }
 
   private def renderSuite(status: Status, offset: Int, message: Message): Message =
     status match {

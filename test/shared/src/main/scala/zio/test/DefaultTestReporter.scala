@@ -114,9 +114,9 @@ object DefaultTestReporter {
 
   def apply[E](testRenderer: TestRenderer, testAnnotationRenderer: TestAnnotationRenderer): TestReporter[E] = {
     (duration: Duration, executedSpec: ExecutedSpec[E]) =>
-      val rendered = render(executedSpec, true).map(result => testRenderer.render(result, testAnnotationRenderer))
-      val stats    = testRenderer.render(logStats(duration, executedSpec), testAnnotationRenderer)
-      TestLogger.logLine((rendered ++ Seq(stats)).mkString("\n"))
+      val rendered = testRenderer.render(render(executedSpec, true), testAnnotationRenderer)
+      val stats    = testRenderer.render(logStats(duration, executedSpec) :: Nil, testAnnotationRenderer)
+      TestLogger.logLine((rendered ++ stats).mkString("\n"))
   }
 
   private def logStats[E](duration: Duration, executedSpec: ExecutedSpec[E]): ExecutionResult = {
