@@ -22,6 +22,7 @@ import zio.test.render.LogLine.{Fragment, Line, Message}
 import zio.test.{ConsoleUtils, TestAnnotation, TestAnnotationMap, TestAnnotationRenderer}
 
 trait ConsoleRenderer extends TestRenderer {
+  private val tabSize = 2
 
   override def render(result: ExecutionResult, testAnnotationRenderer: TestAnnotationRenderer): String = {
     val message = Message(result.lines).intersperse(Line.fromString("\n"))
@@ -87,6 +88,6 @@ trait ConsoleRenderer extends TestRenderer {
     }
 
   private def renderOffset(n: Int)(s: String) =
-    " " * n + s
+    " " * (n * tabSize) + s
 }
 object ConsoleRenderer extends ConsoleRenderer
