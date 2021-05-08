@@ -17,6 +17,7 @@
 package zio
 
 import zio.duration.Duration
+import zio.internal.Scheduler
 
 import java.time.{Instant, LocalDateTime, OffsetDateTime}
 import java.util.concurrent.TimeUnit
@@ -38,42 +39,48 @@ package object clock {
 
       def nanoTime: UIO[Long]
 
+      def scheduler: UIO[Scheduler]
+
       def sleep(duration: Duration): UIO[Unit]
     }
 
     object Service {
       val live: Service = new Service {
+
+        def currentDateTime: UIO[OffsetDateTime] =
+          ZIO.effectTotal(OffsetDateTime.now())
+
         def currentTime(unit: TimeUnit): UIO[Long] =
-          instant.map { inst =>
+          instant.map { instant =>
             // A nicer solution without loss of precision or range would be
             // unit.toChronoUnit.between(Instant.EPOCH, inst)
             // However, ChronoUnit is not available on all platforms
             unit match {
               case TimeUnit.NANOSECONDS =>
-                inst.getEpochSecond() * 1000000000 + inst.getNano()
+                instant.getEpochSecond() * 1000000000 + instant.getNano()
               case TimeUnit.MICROSECONDS =>
-                inst.getEpochSecond() * 1000000 + inst.getNano() / 1000
-              case _ => unit.convert(inst.toEpochMilli(), TimeUnit.MILLISECONDS)
+                instant.getEpochSecond() * 1000000 + instant.getNano() / 1000
+              case _ => unit.convert(instant.toEpochMilli(), TimeUnit.MILLISECONDS)
             }
           }
 
-        val nanoTime: UIO[Long] = IO.effectTotal(System.nanoTime)
+        def instant: UIO[Instant] =
+          ZIO.effectTotal(Instant.now())
+
+        def localDateTime: UIO[LocalDateTime] =
+          ZIO.effectTotal(LocalDateTime.now())
+
+        def nanoTime: UIO[Long] =
+          ZIO.effectTotal(System.nanoTime)
+
+        def scheduler: UIO[Scheduler] =
+          ZIO.effectTotal(globalScheduler)
 
         def sleep(duration: Duration): UIO[Unit] =
-          UIO.effectAsyncInterrupt { cb =>
+          ZIO.effectAsyncInterrupt { cb =>
             val canceler = globalScheduler.schedule(() => cb(UIO.unit), duration)
             Left(UIO.effectTotal(canceler()))
           }
-
-        def currentDateTime: UIO[OffsetDateTime] =
-          ZIO.effectTotal(OffsetDateTime.now())
-
-        override def instant: UIO[Instant] =
-          ZIO.effectTotal(Instant.now())
-
-        override def localDateTime: UIO[LocalDateTime] =
-          ZIO.effectTotal(LocalDateTime.now())
-
       }
     }
 
@@ -85,19 +92,28 @@ package object clock {
   }
 
   /**
+   * Get the current time, represented in the current timezone.
+   */
+  val currentDateTime: URIO[Clock, OffsetDateTime] =
+    ZIO.accessM(_.get.currentDateTime)
+
+  /**
    * Returns the current time, relative to the Unix epoch.
    */
   def currentTime(unit: => TimeUnit): URIO[Clock, Long] =
     ZIO.accessM(_.get.currentTime(unit))
 
   /**
-   * Get the current time, represented in the current timezone.
+   * Returns the current instant.
    */
-  val currentDateTime: URIO[Clock, OffsetDateTime] =
-    ZIO.accessM(_.get.currentDateTime)
-
-  val instant: ZIO[Clock, Nothing, java.time.Instant] =
+  val instant: URIO[Clock, Instant] =
     ZIO.accessM(_.get.instant)
+
+  /**
+   * Returns the current date time.
+   */
+  val localDateTime: URIO[Clock, LocalDateTime] =
+    ZIO.accessM(_.get.localDateTime)
 
   /**
    * Returns the system nano time, which is not relative to any date.
@@ -106,9 +122,14 @@ package object clock {
     ZIO.accessM(_.get.nanoTime)
 
   /**
+   * Returns the scheduler used for scheduling effects.
+   */
+  val scheduler: URIO[Clock, Scheduler] =
+    ZIO.accessM(_.get.scheduler)
+
+  /**
    * Sleeps for the specified duration. This is always asynchronous.
    */
   def sleep(duration: => Duration): URIO[Clock, Unit] =
     ZIO.accessM(_.get.sleep(duration))
-
 }

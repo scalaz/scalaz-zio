@@ -27,10 +27,11 @@ object MockClock extends Mock[Clock] {
 
   object CurrentTime     extends Effect[TimeUnit, Nothing, Long]
   object CurrentDateTime extends Effect[Unit, Nothing, OffsetDateTime]
-  object NanoTime        extends Effect[Unit, Nothing, Long]
-  object Sleep           extends Effect[Duration, Nothing, Unit]
   object Instant         extends Effect[Unit, Nothing, java.time.Instant]
   object LocalDateTime   extends Effect[Unit, Nothing, java.time.LocalDateTime]
+  object NanoTime        extends Effect[Unit, Nothing, Long]
+  object Scheduler       extends Effect[Unit, Nothing, zio.internal.Scheduler]
+  object Sleep           extends Effect[Duration, Nothing, Unit]
 
   val compose: URLayer[Has[Proxy], Clock] =
     ZLayer.fromService(proxy =>
@@ -38,6 +39,7 @@ object MockClock extends Mock[Clock] {
         def currentTime(unit: TimeUnit): UIO[Long]          = proxy(CurrentTime, unit)
         def currentDateTime: UIO[OffsetDateTime]            = proxy(CurrentDateTime)
         val nanoTime: UIO[Long]                             = proxy(NanoTime)
+        def scheduler: UIO[zio.internal.Scheduler]          = proxy(Scheduler)
         def sleep(duration: Duration): UIO[Unit]            = proxy(Sleep, duration)
         def instant: zio.UIO[java.time.Instant]             = proxy(Instant)
         def localDateTime: zio.UIO[java.time.LocalDateTime] = proxy(LocalDateTime)

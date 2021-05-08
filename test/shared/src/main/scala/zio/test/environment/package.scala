@@ -246,12 +246,13 @@ package object environment extends PlatformSpecific {
     }
 
     final case class Test(
-      clockState: Ref[TestClock.Data],
+      clockState: Ref.Atomic[TestClock.Data],
       live: Live.Service,
       annotations: Annotations.Service,
       warningState: RefM[TestClock.WarningData]
     ) extends Clock.Service
-        with TestClock.Service {
+        with TestClock.Service
+        with TestClockPlatformSpecific {
 
       /**
        * Increments the current clock time by the specified duration. Any
@@ -491,8 +492,8 @@ package object environment extends PlatformSpecific {
       ZLayer.fromServicesManyManaged[Live.Service, Annotations.Service, Any, Nothing, Clock with TestClock] {
         (live: Live.Service, annotations: Annotations.Service) =>
           for {
-            ref  <- Ref.make(data).toManaged_
-            refM <- RefM.make(WarningData.start).toManaged_
+            ref  <- ZManaged.effectTotal(Ref.unsafeMake(data))
+            refM <- RefM.makeManaged(WarningData.start)
             test <- Managed.make(UIO(Test(ref, live, annotations, refM)))(_.warningDone)
           } yield Has.allOf[Clock.Service, TestClock.Service](test, test)
       }
@@ -567,13 +568,6 @@ package object environment extends PlatformSpecific {
       sleeps: List[(Duration, Promise[Nothing, Unit])],
       timeZone: ZoneId
     )
-
-    /**
-     * `Sleep` represents the state of a scheduled effect, including the time
-     * the effect is scheduled to run, a promise that can be completed to
-     * resume execution of the effect, and the fiber executing the effect.
-     */
-    final case class Sleep(duration: Duration, promise: Promise[Nothing, Unit], fiberId: Fiber.Id)
 
     /**
      * `WarningData` describes the state of the warning message that is
