@@ -17,10 +17,11 @@
 package zio.test.sbt
 
 import sbt.testing._
-import zio.test.{AbstractRunnableSpec, CustomRunnableSpec, Summary, TestArgs}
-import zio.{Exit, Runtime}
+import zio.test._
+import zio.{Exit, Has, Runtime, UIO}
 
 import scala.collection.mutable
+import scala.io.AnsiColor
 
 sealed abstract class ZTestRunner(
   val args: Array[String],
@@ -30,12 +31,16 @@ sealed abstract class ZTestRunner(
 ) extends Runner {
 
   var layerCache: CustomSpecLayerCache = _
+  val runtime                          = Fun.withFunExecutor(Runtime.default)
 
   def sendSummary: SendSummary
 
   val summaries: mutable.Buffer[Summary] = mutable.Buffer.empty
 
   def done(): String = {
+    if (layerCache != null)
+      Runtime.default.unsafeRun(layerCache.release)
+
     val total  = summaries.map(_.total).sum
     val ignore = summaries.map(_.ignore).sum
 
@@ -46,7 +51,7 @@ sealed abstract class ZTestRunner(
   }
 
   def tasks(defs: Array[TaskDef]): Array[Task] = {
-    layerCache = Runtime.default.unsafeRun(CustomSpecLayerCache.make)
+    layerCache = runtime.unsafeRun(CustomSpecLayerCache.make)
 
     val (specs, tasks) =
       defs.map { taskDef =>
@@ -62,7 +67,7 @@ sealed abstract class ZTestRunner(
         )
       }.unzip
 
-    Runtime.default.unsafeRun(
+    runtime.unsafeRun(
       layerCache.cacheLayers(specs)
     )
 
@@ -127,19 +132,34 @@ final class ZTestTask(
     ) {
   self =>
 
-  override def execute(eventHandler: EventHandler, loggers: Array[Logger], continuation: Array[Task] => Unit): Unit = {
-    if (specInstance.isInstanceOf[CustomRunnableSpec[_]] && runnerType == "slave")
-      loggers.foreach(_.warn("Cannot share test environment across Spacs, when ScalaJS tests are run in parallel."))
-
+  override def execute(eventHandler: EventHandler, loggers: Array[Logger], continuation: Array[Task] => Unit): Unit =
     Runtime((), specInstance.platform).unsafeRunAsync {
-
-      layerCache.awaitAvailable *> // layerCache.debug *>
-        layerCache.getEnvironment(specInstance.sharedLayer).flatMap { sharedEnv =>
-          sbtTestLayer(loggers).build.use { sbtTestLayer =>
-            val env = sharedEnv ++ sbtTestLayer
-            run(eventHandler).provide(env)
+      if (runnerType == "master")
+        layerCache.awaitAvailable *> // layerCache.debug *>
+          layerCache.getEnvironment(specInstance.sharedLayer).flatMap { sharedEnv =>
+            sbtTestLayer(loggers).build.use { sbtTestLayer =>
+              val env = sharedEnv ++ sbtTestLayer
+              run(eventHandler).provide(env)
+            }
           }
+      else if (specInstance.sharedLayer == DefaultRunnableSpec.none)
+        sbtTestLayer(loggers).build.use { sbtTestLayer =>
+          val env = Has(()).asInstanceOf[specInstance.SharedEnvironment] ++ sbtTestLayer
+          run(eventHandler).provide(env)
         }
+      else
+        UIO(
+          loggers.foreach(
+            _.error(
+              AnsiColor.RED +
+                s"Cannot execute ${taskDef.fullyQualifiedName()}.${AnsiColor.RESET}\n" +
+                "ScalaJS tests are run in several different VM instances, when " +
+                "executed in parallel, therefore it's not possible to provide them " +
+                "the same shared layer. Make sure to run ScalaJS tests that require " +
+                "a shared test environment sequentially."
+            )
+          )
+        )
     } { exit =>
       exit match {
         case Exit.Failure(cause) => Console.err.println(s"$runnerType failed: " + cause.prettyPrint)
@@ -147,5 +167,4 @@ final class ZTestTask(
       }
       continuation(Array())
     }
-  }
 }

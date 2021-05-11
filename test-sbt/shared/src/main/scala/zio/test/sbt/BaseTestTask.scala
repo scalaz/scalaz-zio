@@ -33,11 +33,7 @@ abstract class BaseTestTask(
         ZIO.effect(loggers.foreach(_.info(colored(line)))).ignore
     }) ++ Clock.live
 
-  override def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[Task] = {
-//    println(
-//      s"=-=-=-=-> ${System.identityHashCode(this).toHexString}: execute(${specInstance.getClass.getCanonicalName})"
-//    )
-
+  override def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[Task] =
     try {
       Runtime((), specInstance.platform).unsafeRun {
         layerCache.awaitAvailable *> // layerCache.debug *>
@@ -54,7 +50,6 @@ abstract class BaseTestTask(
         t.printStackTrace()
         throw t
     }
-  }
 
   override def tags(): Array[String] = Array.empty
 }

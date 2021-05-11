@@ -70,7 +70,7 @@ private[test] object Fun {
   /**
    * Constructs a new runtime that synchronously executes effects.
    */
-  private def withFunExecutor[R](runtime: Runtime[R]): Runtime[R] =
+  private[test] def withFunExecutor[R](runtime: Runtime[R]): Runtime[R] =
     runtime.withExecutor {
       Executor.fromExecutionContext(Int.MaxValue) {
         new ExecutionContext {
