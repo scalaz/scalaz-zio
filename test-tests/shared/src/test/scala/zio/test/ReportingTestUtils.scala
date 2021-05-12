@@ -54,7 +54,7 @@ object ReportingTestUtils {
       _ <- TestTestRunner
              .run(spec)
              .provideLayer(
-               TestLogger.fromConsole ++ testEnvironment ++ ZLayer.succeed(():Any)
+               TestLogger.fromConsole ++ testEnvironment ++ ZLayer.succeed((): Any)
              )
       output <- TestConsole.output
     } yield output.mkString.withNoLineNumbers
@@ -64,12 +64,11 @@ object ReportingTestUtils {
       results <- TestTestRunner
                    .run(spec)
                    .provideLayer(
-                     TestLogger.fromConsole ++ testEnvironment ++ ZLayer.succeed(():Any)
+                     TestLogger.fromConsole ++ testEnvironment ++ ZLayer.succeed((): Any)
                    )
       actualSummary = SummaryBuilder.buildSummary(results)
     } yield actualSummary.summary.withNoLineNumbers
 
-  // TODO: review the changes around here
   private[this] val TestTestRunner =
     TestRunner[TestEnvironment, Has[Any], String](
       executor = TestExecutor.default[TestEnvironment, Has[Any], String](testEnvironment),

@@ -45,7 +45,7 @@ abstract class RunnableSpec[R0 <: Has[_], R1 <: Has[_], E] extends AbstractRunna
     val testArgs     = TestArgs.parse(args)
     val filteredSpec = FilteredSpec(spec, testArgs)
     val runtime      = runner.runtime
-    val env = (ZEnv.live >>> sharedLayer) ++ runner.bootstrap
+    val env          = (ZEnv.live >>> sharedLayer) ++ runner.bootstrap
 
     if (TestPlatform.isJVM) {
       val exitCode = runtime.unsafeRun(run(filteredSpec).provideLayer(env))

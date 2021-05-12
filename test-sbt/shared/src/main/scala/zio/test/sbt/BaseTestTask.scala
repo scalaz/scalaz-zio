@@ -10,7 +10,7 @@ abstract class BaseTestTask(
   val testClassLoader: ClassLoader,
   val sendSummary: SendSummary,
   val args: TestArgs,
-  private[sbt] val specInstance: AbstractRunnableSpec,
+  val specInstance: AbstractRunnableSpec,
   layerCache: CustomSpecLayerCache
 ) extends Task {
 

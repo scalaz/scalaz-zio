@@ -46,8 +46,8 @@ class MutableRunnableSpec[R <: Has[_]: Tag](
 ) extends RunnableSpec[TestEnvironment, Has[Any], Any] {
   self =>
 
-    override def sharedLayer: ULayer[Has[Any]] =
-      DefaultRunnableSpec.none
+  override def sharedLayer: ULayer[Has[Any]] =
+    DefaultRunnableSpec.none
 
   private class InAnotherTestException(`type`: String, label: String)
       extends Exception(s"${`type`} `${label}` is in another test")

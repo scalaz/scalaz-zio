@@ -46,7 +46,7 @@ addCommandAlias(
 )
 addCommandAlias(
   "testJVM",
-    ";coreTestsJVM/test;stacktracerJVM/test;streamsTestsJVM/test;testTestsJVM/test;testMagnoliaTestsJVM/test;testRefinedJVM/test;testRunnerJVM/test:run;examplesJVM/test:compile;benchmarks/test:compile;macrosTestsJVM/test;testJunitRunnerTestsJVM/test"
+  ";coreTestsJVM/test;stacktracerJVM/test;streamsTestsJVM/test;testTestsJVM/test;testMagnoliaTestsJVM/test;testRefinedJVM/test;testRunnerJVM/test:run;examplesJVM/test:compile;benchmarks/test:compile;macrosTestsJVM/test;testJunitRunnerTestsJVM/test"
 )
 addCommandAlias(
   "testJVMNoBenchmarks",
@@ -99,7 +99,7 @@ lazy val root = project
     streamsNative,
     streamsTestsJVM,
     streamsTestsJS,
-    // benchmarks,
+    benchmarks,
     testJVM,
     testJS,
     testNative,
@@ -359,7 +359,6 @@ lazy val stacktracerNative = stacktracer.native
   .settings(scalacOptions -= "-Xfatal-warnings") // Issue 3112
 
 lazy val testRunner = crossProject(JSPlatform, JVMPlatform, NativePlatform)
-// lazy val testRunner = crossProject(JVMPlatform)
   .in(file("test-sbt"))
   .settings(stdSettings("zio-test-sbt"))
   .settings(crossProjectSettings)
@@ -445,14 +444,11 @@ lazy val examples = crossProject(JVMPlatform, JSPlatform)
   .dependsOn(macros, testRunner)
 
 lazy val examplesJS = examples.js
-/*
 lazy val examplesJVM = examples.jvm
   .settings(dottySettings)
   .dependsOn(testJunitRunnerJVM)
- */
 
-/*
- lazy val benchmarks = project.module
+lazy val benchmarks = project.module
   .dependsOn(coreJVM, streamsJVM, testJVM)
   .enablePlugins(JmhPlugin)
   .settings(replSettings)
@@ -500,7 +496,6 @@ lazy val examplesJVM = examples.jvm
       url("https://dl.bintray.com/hedgehogqa/scala-hedgehog")
     )(Resolver.ivyStylePatterns)
   )
- */
 
 lazy val jsdocs = project
   .settings(libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "1.0.0")

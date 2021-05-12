@@ -119,15 +119,14 @@ final class ZTestTask(
   runnerType: String,
   sendSummary: SendSummary,
   testArgs: TestArgs,
-  // TODO: BZ: understand why execute() doesn't compile unless this is overridden
-  override val specInstance: AbstractRunnableSpec,
+  specInstance0: AbstractRunnableSpec,
   layerCache: CustomSpecLayerCache
 ) extends BaseTestTask(
       taskDef,
       testClassLoader,
       sendSummary,
       testArgs,
-      specInstance,
+      specInstance0,
       layerCache
     ) {
   self =>

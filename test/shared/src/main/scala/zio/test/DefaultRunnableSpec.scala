@@ -71,5 +71,5 @@ abstract class DefaultRunnableSpec extends RunnableSpec[TestEnvironment, Has[Any
 }
 
 object DefaultRunnableSpec {
-  val none : ULayer[Has[Any]] = ZLayer.succeed(())
+  val none: ULayer[Has[Any]] = ZLayer.succeed(())
 }

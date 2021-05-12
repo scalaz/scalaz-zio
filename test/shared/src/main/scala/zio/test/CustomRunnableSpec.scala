@@ -21,7 +21,7 @@ import zio.{Has, Tag, URIO, URLayer, ZEnv}
 import zio.duration._
 import zio.test.environment.TestEnvironment
 
-abstract class CustomRunnableSpec[R <: Has[_] : Tag](
+abstract class CustomRunnableSpec[R <: Has[_]: Tag](
   override val sharedLayer: URLayer[ZEnv, R]
 ) extends RunnableSpec[TestEnvironment, R, Any] {
 

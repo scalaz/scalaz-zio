@@ -69,7 +69,7 @@ class ZTestJUnitRunner(klass: Class[_]) extends Runner with Filterable with Boot
           ZManaged.effectTotal(description.addChild(testDescription(label, path)))
       }
 
-      unsafeRun {
+    unsafeRun {
       val execEnv = spec.runner.executor.environment
       traverse(filteredSpec, description)
         .asInstanceOf[ZManaged[spec.Environment, Any, Unit]]
