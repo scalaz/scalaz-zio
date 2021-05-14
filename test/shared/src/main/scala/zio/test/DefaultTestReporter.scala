@@ -204,7 +204,7 @@ object DefaultTestReporter {
 
         errorMessageLines ++ Chunk(Line.fromString(codeString, offset)) ++ (nested
           .flatMap(renderFailureCase(_, offset, true))
-          .map(_.withOffset(offset + tabSize)) ++
+          .map(_.withOffset(offset + 1)) ++
           Chunk.fromIterable(path.map { case (label, value) => dim(s"$label = ") + primary(value.toString) }) ++
           Chunk(detail(s"☛ $location").toLine))
     }
@@ -241,7 +241,7 @@ object DefaultTestReporter {
       Message(message)
     }
     val mockExceptions = defects.collect { case exception: MockException =>
-        renderMockException(exception).map(withOffset(offset + 1))
+      renderMockException(exception).map(withOffset(offset + 1))
     }
     val remaining =
       cause.stripSomeDefects {

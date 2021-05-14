@@ -1,12 +1,11 @@
 package zio.test
 
-import zio.clock.Clock
-import zio.test.Assertion._
+import zio.test.Assertion.equalTo
 import zio.test.ReportingTestUtils._
 import zio.test.TestAspect.silent
 import zio.test.environment.{TestClock, TestConsole, TestEnvironment, testEnvironment}
 import zio.test.render.IntelliJRenderer
-import zio.{Layer, ZIO}
+import zio.{Clock, Has, Layer, ZIO}
 
 object IntellijRendererSpec extends ZIOBaseSpec {
   import IntelliJRenderUtils._
@@ -263,7 +262,7 @@ object IntelliJRenderUtils {
     for {
       _ <- IntelliJTestRunner(testEnvironment)
              .run(spec)
-             .provideLayer[Nothing, TestEnvironment, TestLogger with Clock](
+             .provideLayer[Nothing, TestEnvironment, Has[TestLogger] with Has[Clock]](
                TestLogger.fromConsole ++ TestClock.default
              )
       output <- TestConsole.output
