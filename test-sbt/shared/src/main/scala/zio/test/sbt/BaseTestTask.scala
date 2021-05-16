@@ -11,7 +11,7 @@ abstract class BaseTestTask(
   val sendSummary: SendSummary,
   val args: TestArgs,
   val specInstance: AbstractRunnableSpec,
-  layerCache: CustomSpecLayerCache
+  private[sbt] val layerCache: CustomSpecLayerCache
 ) extends Task {
 
   protected def run(eventHandler: EventHandler): ZIO[

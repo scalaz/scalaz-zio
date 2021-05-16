@@ -1,11 +1,12 @@
 package zio.test.sbt
 
 import sbt.testing._
-import zio.{Runtime, UIO}
+import zio.{Ref, UIO, ZIO}
 import zio.test.sbt.TestingSupport._
 import zio.test.{
   Annotations,
   Assertion,
+  CustomRunnableSpec,
   DefaultRunnableSpec,
   Spec,
   Summary,
@@ -13,7 +14,10 @@ import zio.test.{
   TestAspect,
   TestFailure,
   TestSuccess,
-  ZSpec
+  ZSpec,
+  assertM,
+  suite,
+  testM
 }
 
 import java.util.regex.Pattern
@@ -32,7 +36,8 @@ object ZTestFrameworkSpec {
     test("should correctly display colorized output for multi-line strings")(testColored()),
     test("should test only selected test")(testTestSelection()),
     test("should return summary when done")(testSummary()),
-    test("should warn when no tests are executed")(testNoTestsExecutedWarning())
+    test("should warn when no tests are executed")(testNoTestsExecutedWarning()),
+    test("should share environment between tests")(testCustomRunnableSpec())
   )
 
   def testFingerprints(): Unit = {
@@ -128,7 +133,7 @@ object ZTestFrameworkSpec {
           UIO.succeed(Summary(1, 0, 0, "foo")) >>> zTestTask.sendSummary,
           TestArgs.empty,
           SimpleFailingSpec,
-          Runtime.default.unsafeRun(CustomSpecLayerCache.make)
+          zTestTask.layerCache
         )
       }
       .head
@@ -151,7 +156,7 @@ object ZTestFrameworkSpec {
           UIO.succeed(Summary(0, 0, 0, "foo")) >>> zTestTask.sendSummary,
           TestArgs.empty,
           SimpleFailingSpec,
-          Runtime.default.unsafeRun(CustomSpecLayerCache.make)
+          zTestTask.layerCache
         )
       }
       .head
@@ -159,6 +164,20 @@ object ZTestFrameworkSpec {
     task.execute(_ => (), Array.empty)
 
     assertEquals("warning is displayed", runner.done(), s"${Console.YELLOW}No tests were executed${Console.RESET}")
+  }
+
+  def testCustomRunnableSpec(): Unit = {
+    val taskDefs = Array(
+      new TaskDef(specUsingShareLayer1FQN, RunnableSpecFingerprint, false, Array()),
+      new TaskDef(specUsingShareLayer2FQN, RunnableSpecFingerprint, false, Array())
+    )
+    val runner = new ZTestFramework().runner(Array(), Array(), getClass.getClassLoader)
+    runner
+      .tasks(taskDefs)
+      .map(task => task.asInstanceOf[ZTestTask])
+      .foreach(_.execute(_ => (), Array.empty))
+
+    assertEquals("done contains summary", runner.done(), "Done")
   }
 
   private def loadAndExecute(
@@ -185,7 +204,7 @@ object ZTestFrameworkSpec {
 
   lazy val failingSpecFQN = SimpleFailingSpec.getClass.getName
   object SimpleFailingSpec extends DefaultRunnableSpec {
-    def spec: Spec[Annotations, TestFailure[Any], TestSuccess] = zio.test.suite("some suite")(
+    def spec: Spec[Annotations, TestFailure[Any], TestSuccess] = suite("some suite")(
       test("failing test") {
         zio.test.assert(1)(Assertion.equalTo(2))
       },
@@ -203,6 +222,32 @@ object ZTestFrameworkSpec {
     def spec: ZSpec[Environment, Failure] = test("multi-line test") {
       zio.test.assert("Hello,\nWorld!")(Assertion.equalTo("Hello, World!"))
     }
+  }
+
+  lazy val sharedLayer = Ref.make[Int](10).toLayer
+
+  lazy val specUsingShareLayer1FQN = SpecUsingShareLayer1.getClass.getName
+  object SpecUsingShareLayer1 extends CustomRunnableSpec(sharedLayer) {
+    override def spec =
+      suite("foo suite")(
+        testM("foo test")(
+          assertM(
+            ZIO.service[Ref[Int]].flatMap(_.updateAndGet(_ + 1))
+          )(Assertion.equalTo(11))
+        )
+      )
+  }
+
+  lazy val specUsingShareLayer2FQN = SpecUsingShareLayer2.getClass.getName
+  object SpecUsingShareLayer2 extends CustomRunnableSpec(sharedLayer) {
+    override def spec =
+      suite("bar suite")(
+        testM("bar test")(
+          assertM(
+            ZIO.service[Ref[Int]].flatMap(_.updateAndGet(_ + 1))
+          )(Assertion.equalTo(12))
+        )
+      )
   }
 
   lazy val sourceFilePath: String = zio.test.sourcePath
