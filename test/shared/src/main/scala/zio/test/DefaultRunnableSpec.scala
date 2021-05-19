@@ -19,26 +19,30 @@ package zio.test
 import zio.clock.Clock
 import zio.duration._
 import zio.test.environment.TestEnvironment
-import zio.{URIO, ZIO}
+import zio.{Has, ULayer, URIO, ZIO, ZLayer}
 
 /**
  * A default runnable spec that provides testable versions of all of the
  * modules in ZIO (Clock, Random, etc).
  */
-abstract class DefaultRunnableSpec extends RunnableSpec[TestEnvironment, Any] {
+// TODO: could be implemented in terms of CustomRunnableSpec[Has[Any]]
+abstract class DefaultRunnableSpec extends RunnableSpec[TestEnvironment, Has[Any], Any] {
 
   override def aspects: List[TestAspect[Nothing, TestEnvironment, Nothing, Any]] =
     List(TestAspect.timeoutWarning(60.seconds))
 
-  override def runner: TestRunner[TestEnvironment, Any] =
+  override def runner: TestRunner[TestEnvironment, SharedEnvironment, Any] =
     defaultTestRunner
+
+  override def sharedLayer: ULayer[Has[Any]] =
+    DefaultRunnableSpec.none
 
   /**
    * Returns an effect that executes a given spec, producing the results of the execution.
    */
   private[zio] override def runSpec(
-    spec: ZSpec[Environment, Failure]
-  ): URIO[TestLogger with Clock, ExecutedSpec[Failure]] =
+    spec: ZSpec[Environment with SharedEnvironment, Failure]
+  ): URIO[SharedEnvironment with TestLogger with Clock, ExecutedSpec[Failure]] =
     runner.run(aspects.foldLeft(spec)(_ @@ _) @@ TestAspect.fibers)
 
   /**
@@ -64,4 +68,8 @@ abstract class DefaultRunnableSpec extends RunnableSpec[TestEnvironment, Any] {
    */
   def testM[R, E](label: String)(assertion: => ZIO[R, E, TestResult])(implicit loc: SourceLocation): ZSpec[R, E] =
     zio.test.testM(label)(assertion)
+}
+
+object DefaultRunnableSpec {
+  val none: ULayer[Has[Any]] = ZLayer.succeed(())
 }

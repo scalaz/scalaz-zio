@@ -17,14 +17,16 @@
 package zio.test.sbt
 
 import sbt.testing._
-import zio.ZIO
-import zio.test.{Summary, TestArgs}
+import zio.test.{AbstractRunnableSpec, Summary, TestArgs}
+import zio.{Runtime, ZIO}
 
 import java.util.concurrent.atomic.AtomicReference
 
 final class ZTestRunner(val args: Array[String], val remoteArgs: Array[String], testClassLoader: ClassLoader)
     extends Runner {
   val summaries: AtomicReference[Vector[Summary]] = new AtomicReference(Vector.empty)
+
+  var layerCache: CustomSpecLayerCache = _
 
   val sendSummary: SendSummary = SendSummary.fromSendM(summary =>
     ZIO.effectTotal {
@@ -33,7 +35,10 @@ final class ZTestRunner(val args: Array[String], val remoteArgs: Array[String], 
     }
   )
 
-  def done(): String = {
+  override def done(): String = {
+    if (layerCache != null)
+      Runtime.default.unsafeRun(layerCache.release)
+
     val allSummaries = summaries.get
 
     val total  = allSummaries.map(_.total).sum
@@ -49,21 +54,56 @@ final class ZTestRunner(val args: Array[String], val remoteArgs: Array[String], 
         .mkString("", "", "Done")
   }
 
-  def tasks(defs: Array[TaskDef]): Array[Task] = {
-    val testArgs        = TestArgs.parse(args)
-    val tasks           = defs.map(new ZTestTask(_, testClassLoader, sendSummary, testArgs))
+  override def tasks(defs: Array[TaskDef]): Array[Task] = {
+    val testArgs = TestArgs.parse(args)
+
+    layerCache = Runtime.default.unsafeRun(CustomSpecLayerCache.make)
+
+    val (specs, tasks) =
+      defs.map { taskDef =>
+        val spec: AbstractRunnableSpec = lookupSpec(taskDef, testClassLoader)
+
+        spec -> new ZTestTask(
+          taskDef,
+          testClassLoader,
+          sendSummary,
+          testArgs,
+          spec,
+          layerCache
+        )
+      }.unzip
+
     val entrypointClass = testArgs.testTaskPolicy.getOrElse(classOf[ZTestTaskPolicyDefaultImpl].getName)
     val taskPolicy = getClass.getClassLoader
       .loadClass(entrypointClass)
       .getConstructor()
       .newInstance()
       .asInstanceOf[ZTestTaskPolicy]
-    taskPolicy.merge(tasks)
+    val mergedTasks = taskPolicy.merge(tasks)
+
+    Runtime.default.unsafeRun(
+      layerCache.cacheLayers(specs)
+    )
+
+    mergedTasks
   }
 }
 
-final class ZTestTask(taskDef: TaskDef, testClassLoader: ClassLoader, sendSummary: SendSummary, testArgs: TestArgs)
-    extends BaseTestTask(taskDef, testClassLoader, sendSummary, testArgs)
+final class ZTestTask(
+  taskDef: TaskDef,
+  testClassLoader: ClassLoader,
+  sendSummary: SendSummary,
+  testArgs: TestArgs,
+  specInstance: AbstractRunnableSpec,
+  layerCache: CustomSpecLayerCache
+) extends BaseTestTask(
+      taskDef,
+      testClassLoader,
+      sendSummary,
+      testArgs,
+      specInstance,
+      layerCache
+    )
 
 abstract class ZTestTaskPolicy {
   def merge(zioTasks: Array[ZTestTask]): Array[Task]

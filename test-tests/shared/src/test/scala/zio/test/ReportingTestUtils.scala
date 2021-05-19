@@ -1,13 +1,12 @@
 package zio.test
 
-import zio.clock.Clock
 import zio.test.Assertion.{equalTo, isGreaterThan, isLessThan, isRight, isSome, not}
-import zio.test.environment.{TestClock, TestConsole, TestEnvironment, testEnvironment}
+import zio.test.environment.{TestConsole, TestEnvironment, testEnvironment}
 import zio.test.mock.Expectation._
 import zio.test.mock.internal.InvalidCall._
 import zio.test.mock.internal.MockException._
 import zio.test.mock.module.PureModuleMock
-import zio.{Cause, Layer, ZIO}
+import zio.{Cause, Has, ZIO, ZLayer}
 
 import java.util.regex.Pattern
 import scala.{Console => SConsole}
@@ -52,25 +51,27 @@ object ReportingTestUtils {
 
   def runLog(spec: ZSpec[TestEnvironment, String]): ZIO[TestEnvironment, Nothing, String] =
     for {
-      _ <- TestTestRunner(testEnvironment)
+      _ <- TestTestRunner
              .run(spec)
-             .provideLayer[Nothing, TestEnvironment, TestLogger with Clock](TestLogger.fromConsole ++ TestClock.default)
+             .provideLayer(
+               TestLogger.fromConsole ++ testEnvironment ++ ZLayer.succeed((): Any)
+             )
       output <- TestConsole.output
     } yield output.mkString.withNoLineNumbers
 
   def runSummary(spec: ZSpec[TestEnvironment, String]): ZIO[TestEnvironment, Nothing, String] =
     for {
-      results <- TestTestRunner(testEnvironment)
+      results <- TestTestRunner
                    .run(spec)
-                   .provideLayer[Nothing, TestEnvironment, TestLogger with Clock](
-                     TestLogger.fromConsole ++ TestClock.default
+                   .provideLayer(
+                     TestLogger.fromConsole ++ testEnvironment ++ ZLayer.succeed((): Any)
                    )
       actualSummary = SummaryBuilder.buildSummary(results)
     } yield actualSummary.summary.withNoLineNumbers
 
-  private[this] def TestTestRunner(testEnvironment: Layer[Nothing, TestEnvironment]) =
-    TestRunner[TestEnvironment, String](
-      executor = TestExecutor.default[TestEnvironment, String](testEnvironment),
+  private[this] val TestTestRunner =
+    TestRunner[TestEnvironment, Has[Any], String](
+      executor = TestExecutor.default[TestEnvironment, Has[Any], String](testEnvironment),
       reporter = DefaultTestReporter(TestAnnotationRenderer.default)
     )
 

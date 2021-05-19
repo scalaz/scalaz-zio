@@ -39,6 +39,7 @@ object SpecSpec extends ZIOBaseSpec {
           _ <- execute(spec)
         } yield assertCompletes
       },
+      // TODO: BZ: add same test for CustomRunnableSpec
       testM("does not acquire the environment if the suite is ignored") {
         val spec = suite("suite")(
           testM("test1") {

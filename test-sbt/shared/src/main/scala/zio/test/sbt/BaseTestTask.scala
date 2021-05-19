@@ -2,27 +2,23 @@ package zio.test.sbt
 
 import sbt.testing.{EventHandler, Logger, Task, TaskDef}
 import zio.clock.Clock
-import zio.test.{AbstractRunnableSpec, FilteredSpec, SummaryBuilder, TestArgs, TestLogger}
-import zio.{Layer, Runtime, UIO, ZIO, ZLayer}
+import zio.test._
+import zio._
 
 abstract class BaseTestTask(
   val taskDef: TaskDef,
   val testClassLoader: ClassLoader,
   val sendSummary: SendSummary,
-  val args: TestArgs
+  val args: TestArgs,
+  val specInstance: AbstractRunnableSpec,
+  private[sbt] val layerCache: CustomSpecLayerCache
 ) extends Task {
 
-  protected lazy val specInstance: AbstractRunnableSpec = {
-    import org.portablescala.reflect._
-    val fqn = taskDef.fullyQualifiedName().stripSuffix("$") + "$"
-    Reflect
-      .lookupLoadableModuleClass(fqn, testClassLoader)
-      .getOrElse(throw new ClassNotFoundException("failed to load object: " + fqn))
-      .loadModule()
-      .asInstanceOf[AbstractRunnableSpec]
-  }
-
-  protected def run(eventHandler: EventHandler): ZIO[TestLogger with Clock, Throwable, Unit] =
+  protected def run(eventHandler: EventHandler): ZIO[
+    specInstance.SharedEnvironment with TestLogger with Clock,
+    Throwable,
+    Unit
+  ] =
     for {
       spec   <- specInstance.runSpec(FilteredSpec(specInstance.spec, args))
       summary = SummaryBuilder.buildSummary(spec)
@@ -40,9 +36,13 @@ abstract class BaseTestTask(
   override def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[Task] =
     try {
       Runtime((), specInstance.platform).unsafeRun {
-        run(eventHandler)
-          .provideLayer(sbtTestLayer(loggers))
-          .onError(e => UIO(println(e.prettyPrint)))
+        layerCache.awaitAvailable *> // layerCache.debug *>
+          layerCache.getEnvironment(specInstance.sharedLayer).flatMap { env =>
+            run(eventHandler)
+              .provideSomeLayer[specInstance.SharedEnvironment](sbtTestLayer(loggers))
+              .provide(env)
+              .onError(e => UIO(println(e.prettyPrint)))
+          }
       }
       Array()
     } catch {
@@ -52,5 +52,4 @@ abstract class BaseTestTask(
     }
 
   override def tags(): Array[String] = Array.empty
-
 }

@@ -526,8 +526,8 @@ package object test extends CompileVariants {
   /**
    * A `Runner` that provides a default testable environment.
    */
-  val defaultTestRunner: TestRunner[TestEnvironment, Any] =
-    TestRunner(TestExecutor.default(testEnvironment))
+  def defaultTestRunner[R <: Has[_]: Tag]: TestRunner[TestEnvironment, R, Any] =
+    TestRunner(TestExecutor.default[TestEnvironment, R, Any](testEnvironment))
 
   /**
    * Creates a failed test result with the specified runtime cause.
