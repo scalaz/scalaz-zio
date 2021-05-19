@@ -40,7 +40,7 @@ case class LayerCache[R](
     layerMap.get.map(_.apply(layer).asInstanceOf[ROut])
 
   def debug =
-    layerMap.get.flatMap { cache =>
+    layerMap.get.flatMap { (cache: Map[URLayer[R, Any], Any]) =>
       UIO(
         println(
           "cache:\n" + cache.map { case (k, v) =>

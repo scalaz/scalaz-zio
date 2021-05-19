@@ -17,8 +17,7 @@
 package zio.test.sbt
 
 import sbt.testing._
-import zio.test.{Summary, TestArgs}
-import zio.{Exit, Runtime, ZIO}
+import zio.test.Summary
 
 import scala.collection.mutable
 
