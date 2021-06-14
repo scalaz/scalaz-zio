@@ -630,6 +630,32 @@ object ZTransducer extends ZTransducerPlatformSpecificConstructors {
     ZTransducer(Managed.succeed(push))
 
   /**
+   * Creates a transducer that groups on adjacent keys, calculated by function f.<br>
+   * With this transducer we can mimic fs2 groupAdjacentBy.<br>
+   * This can be used like e.g. zstream.aggregate(groupAdjacentBy(_._1))
+   */
+  def groupAdjacentBy[I, K](f: I => K): ZTransducer[Any, Nothing, I, (K, Chunk[I])] =
+    ZTransducer {
+      def go(in: Chunk[I], state: Option[(K, Chunk[I])]): (Chunk[(K, Chunk[I])], Option[(K, Chunk[I])]) =
+        in.foldLeft[(Chunk[(K, Chunk[I])], Option[(K, Chunk[I])])]((Chunk.empty, state)) { case ((os0, state), i) =>
+          state match {
+            case None => (os0, Some((f(i), Chunk(i))))
+            case Some((key, aggregated)) =>
+              val newKey = f(i)
+              if (key == newKey) (os0, Some((key, aggregated :+ i)))
+              else (os0.appended((key, aggregated)), Some((newKey, Chunk(i))))
+          }
+        }
+
+      ZRef.makeManaged[Option[(K, Chunk[I])]](None).map { state =>
+        {
+          case Some(in) => state.modify(go(in, _))
+          case None     => state.getAndSet(None).map(_.fold[Chunk[(K, Chunk[I])]](Chunk.empty)(Chunk.single(_)))
+        }
+      }
+    }
+
+  /**
    * Creates a transducer that returns the first element of the stream, if it exists.
    */
   def head[O]: ZTransducer[Any, Nothing, O, Option[O]] =
