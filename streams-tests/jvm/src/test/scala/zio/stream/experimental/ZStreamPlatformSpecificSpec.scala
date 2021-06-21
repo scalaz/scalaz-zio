@@ -162,6 +162,11 @@ object ZStreamPlatformSpecificSpec extends ZIOBaseSpec {
             assert(exit.untraced)(failsCause(containsCause(Cause.interrupt(selfId))))
         }
       )
-    )
+    ),
+    testM("fromBlockingIterator") {
+      checkM(Gen.small(Gen.chunkOfN(_)(Gen.anyInt)), Gen.small(Gen.const(_), 1)) { (chunk, maxChunkSize) =>
+        assertM(ZStream.fromBlockingIterator(chunk.iterator, maxChunkSize).runCollect)(equalTo(chunk))
+      }
+    }
   )
 }

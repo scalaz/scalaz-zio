@@ -1,6 +1,6 @@
 package zio.stream.experimental
 
-import zio.{Canceler, Chunk, FiberFailure, Queue, UIO, ZIO, ZManaged, stream}
+import zio.{Canceler, Chunk, ChunkBuilder, FiberFailure, Queue, UIO, ZIO, ZManaged, stream}
 
 trait ZStreamPlatformSpecificConstructors {
   self: ZStream.type =>
@@ -119,4 +119,60 @@ trait ZStreamPlatformSpecificConstructors {
   ): ZStream[R, E, A] =
     effectAsyncInterrupt(k => register(k).toRight(UIO.unit), outputBuffer)
 
+  /**
+   * Creates a stream from an blocking iterator that may throw exceptions.
+   */
+  def fromBlockingIterator[A](iterator: => Iterator[A], maxChunkSize: Int = 1): ZStream[Any, Throwable, A] =
+    new ZStream(
+      ZChannel.fromEffect(ZIO.effect(iterator)).flatMap { iterator =>
+        if (maxChunkSize <= 1) {
+          def loop: ZChannel[Any, Any, Any, Any, Throwable, Chunk[A], Unit] =
+            if (iterator.hasNext)
+              ZChannel.fromEffect(ZIO.effectBlocking(Chunk.single(iterator.next()))).flatMap(ZChannel.write) *> loop
+            else
+              ZChannel.unit
+
+          loop
+        } else {
+          val builder  = ChunkBuilder.make[A](maxChunkSize)
+          val blocking = ZChannel.fromEffect(ZIO.effectBlocking(builder += iterator.next()))
+
+          def loop(i: Int): ZChannel[Any, Any, Any, Any, Throwable, Chunk[A], Unit] = {
+            val hasNext = iterator.hasNext
+
+            if (i < maxChunkSize && hasNext) {
+              blocking *> loop(i + 1)
+            } else {
+              val chunk = builder.result()
+
+              if (chunk.isEmpty) {
+                ZChannel.unit
+              } else if (hasNext) {
+                builder.clear()
+                ZChannel.write(chunk) *> loop(0)
+              } else {
+                ZChannel.write(chunk) *> ZChannel.unit
+              }
+            }
+          }
+
+          loop(0)
+        }
+      }
+    )
+
+  /**
+   * Creates a stream from an blocking Java iterator that may throw exceptions.
+   */
+  def fromBlockingJavaIterator[A](
+    iter: => java.util.Iterator[A],
+    maxChunkSize: Int = 1
+  ): ZStream[Any, Throwable, A] =
+    fromBlockingIterator(
+      new Iterator[A] {
+        def next(): A        = iter.next
+        def hasNext: Boolean = iter.hasNext
+      },
+      maxChunkSize
+    )
 }
