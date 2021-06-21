@@ -576,11 +576,13 @@ sealed trait ZChannel[-Env, -InErr, -InElem, -InDone, +OutErr, +OutElem, +OutDon
   }
 
   def mergeMap[Env1 <: Env, InErr1 <: InErr, InElem1 <: InElem, InDone1 <: InDone, OutErr1 >: OutErr, OutElem2](
-    n: Long
+    n: Int,
+    bufferSize: Int = 16,
+    mergeStrategy: ZChannel.MergeStrategy = ZChannel.MergeStrategy.BackPressure
   )(
     f: OutElem => ZChannel[Env1, InErr1, InElem1, InDone1, OutErr1, OutElem2, Any]
   ): ZChannel[Env1, InErr1, InElem1, InDone1, OutErr1, OutElem2, Any] =
-    ZChannel.mergeAll(self.mapOut(f), n)
+    ZChannel.mergeAll(self.mapOut(f), n, bufferSize, mergeStrategy)
 
   def mergeMapWith[
     Env1 <: Env,
@@ -673,7 +675,7 @@ sealed trait ZChannel[-Env, -InErr, -InElem, -InDone, +OutErr, +OutElem, +OutDon
     }
 
   def mergeOut[Env1 <: Env, InErr1 <: InErr, InElem1 <: InElem, InDone1 <: InDone, OutErr1 >: OutErr, OutElem2](
-    n: Long
+    n: Int
   )(implicit
     ev: OutElem <:< ZChannel[Env1, InErr1, InElem1, InDone1, OutErr1, OutElem2, Any]
   ): ZChannel[Env1, InErr1, InElem1, InDone1, OutErr1, OutElem2, Any] =
@@ -687,7 +689,7 @@ sealed trait ZChannel[-Env, -InErr, -InElem, -InDone, +OutErr, +OutElem, +OutDon
     OutErr1 >: OutErr,
     OutElem2,
     OutDone1 >: OutDone
-  ](n: Long)(f: (OutDone1, OutDone1) => OutDone1)(implicit
+  ](n: Int)(f: (OutDone1, OutDone1) => OutDone1)(implicit
     ev: OutElem <:< ZChannel[Env1, InErr1, InElem1, InDone1, OutErr1, OutElem2, OutDone1]
   ): ZChannel[Env1, InErr1, InElem1, InDone1, OutErr1, OutElem2, OutDone1] =
     ZChannel.mergeAllWith(self.mapOut(ev), n)(f)
@@ -1177,9 +1179,11 @@ object ZChannel {
       ZChannel[Env, InErr, InElem, InDone, OutErr, OutElem, Any],
       Any
     ],
-    n: Long
+    n: Int,
+    bufferSize: Int = 16,
+    mergeStrategy: MergeStrategy = MergeStrategy.BackPressure
   ): ZChannel[Env, InErr, InElem, InDone, OutErr, OutElem, Any] =
-    mergeAllWith(channels, n)((_, _) => ())
+    mergeAllWith(channels, n, bufferSize, mergeStrategy)((_, _) => ())
 
   def mergeAllUnbounded[Env, InErr, InElem, InDone, OutErr, OutElem](
     channels: ZChannel[
@@ -1192,7 +1196,7 @@ object ZChannel {
       Any
     ]
   ): ZChannel[Env, InErr, InElem, InDone, OutErr, OutElem, Any] =
-    mergeAll(channels, Long.MaxValue)
+    mergeAll(channels, Int.MaxValue)
 
   def mergeAllUnboundedWith[Env, InErr, InElem, InDone, OutErr, OutElem, OutDone](
     channels: ZChannel[
@@ -1205,7 +1209,7 @@ object ZChannel {
       OutDone
     ]
   )(f: (OutDone, OutDone) => OutDone): ZChannel[Env, InErr, InElem, InDone, OutErr, OutElem, OutDone] =
-    mergeAllWith(channels, Long.MaxValue)(f)
+    mergeAllWith(channels, Int.MaxValue)(f)
 
   def mergeAllWith[Env, InErr, InElem, InDone, OutErr, OutElem, OutDone](
     channels: ZChannel[
@@ -1217,9 +1221,95 @@ object ZChannel {
       ZChannel[Env, InErr, InElem, InDone, OutErr, OutElem, OutDone],
       OutDone
     ],
-    n: Long
+    n: Int,
+    bufferSize: Int = 16,
+    mergeStrategy: MergeStrategy = MergeStrategy.BackPressure
   )(f: (OutDone, OutDone) => OutDone): ZChannel[Env, InErr, InElem, InDone, OutErr, OutElem, OutDone] =
-    ???
+    managed {
+      ZManaged.withChildren { getChildren =>
+        for {
+          _           <- ZManaged.finalizer(getChildren.flatMap(Fiber.interruptAll(_)))
+          queue       <- Queue.bounded[ZIO[Env, Either[OutErr, OutDone], OutElem]](bufferSize).toManaged(_.shutdown)
+          cancelers   <- Queue.bounded[Promise[Nothing, Unit]](n).toManaged(_.shutdown)
+          lastDone    <- Ref.makeManaged[Option[OutDone]](None)
+          errorSignal <- Promise.makeManaged[Nothing, Unit]
+          permits     <- Semaphore.make(n.toLong).toManaged_
+          pull        <- channels.toPull
+          evaluatePull = (pull: ZIO[Env, Either[OutErr, OutDone], OutElem]) =>
+                           pull
+                             .flatMap(outElem => queue.offer(ZIO.succeedNow(outElem)))
+                             .forever
+                             .catchAllCause(
+                               Cause.flipCauseEither[OutErr, OutDone](_) match {
+                                 case Left(cause) =>
+                                   queue.offer(ZIO.halt(cause.map(Left(_)))) *> errorSignal.succeed(()).unit
+                                 case Right(outDone) =>
+                                   lastDone.update {
+                                     case Some(lastDone) => Some(f(lastDone, outDone))
+                                     case None           => Some(outDone)
+                                   }
+                               }
+                             )
+          _ <- pull
+                 .foldCauseM(
+                   Cause.flipCauseEither[OutErr, OutDone](_) match {
+                     case Left(cause) =>
+                       getChildren.flatMap(Fiber.interruptAll(_)) *> queue.offer(ZIO.halt(cause.map(Left(_)))).as(false)
+                     case Right(outDone) =>
+                       errorSignal.await.raceWith(permits.withPermits(n.toLong)(ZIO.unit))(
+                         leftDone = (_, permitAcquisition) =>
+                           getChildren.flatMap(Fiber.interruptAll(_)) *> permitAcquisition.interrupt.as(false),
+                         rightDone = (_, failureAwait) =>
+                           failureAwait.interrupt *>
+                             lastDone.get.flatMap {
+                               case Some(lastDone) => queue.offer(ZIO.fail(Right(f(lastDone, outDone))))
+                               case None           => queue.offer(ZIO.fail(Right(outDone)))
+                             }.as(false)
+                       )
+                   },
+                   mergeStrategy match {
+                     case MergeStrategy.BackPressure =>
+                       channel =>
+                         for {
+                           latch   <- Promise.make[Nothing, Unit]
+                           raceIOs  = channel.toPull.use(evaluatePull(_).race(errorSignal.await))
+                           _       <- permits.withPermit(latch.succeed(()) *> raceIOs).fork
+                           _       <- latch.await
+                           errored <- errorSignal.isDone
+                         } yield !errored
+                     case MergeStrategy.BufferSliding =>
+                       channel =>
+                         for {
+                           canceler <- Promise.make[Nothing, Unit]
+                           latch    <- Promise.make[Nothing, Unit]
+                           size     <- cancelers.size
+                           _        <- ZIO.when(size >= n)(cancelers.take.flatMap(_.succeed(())))
+                           _        <- cancelers.offer(canceler)
+                           raceIOs   = channel.toPull.use(evaluatePull(_).race(errorSignal.await).race(canceler.await))
+                           _        <- permits.withPermit(latch.succeed(()) *> raceIOs).fork
+                           _        <- latch.await
+                           errored  <- errorSignal.isDone
+                         } yield !errored
+                   }
+                 )
+                 .repeatWhileEquals(true)
+                 .forkManaged
+        } yield queue
+      }
+    } { queue =>
+      lazy val consumer: ZChannel[Env, Any, Any, Any, OutErr, OutElem, OutDone] =
+        unwrap[Env, Any, Any, Any, OutErr, OutElem, OutDone] {
+          queue.take.flatten.foldCause(
+            Cause.flipCauseEither[OutErr, OutDone](_) match {
+              case Right(outDone) => end(outDone)
+              case Left(cause)    => halt(cause)
+            },
+            outElem => write(outElem) *> consumer
+          )
+        }
+
+      consumer
+    }
 
   def readWithCause[Env, InErr, InElem, InDone, OutErr, OutElem, OutDone](
     in: InElem => ZChannel[Env, InErr, InElem, InDone, OutErr, OutElem, OutDone],
@@ -1316,4 +1406,9 @@ object ZChannel {
     ) extends MergeState[Env, Err, Err1, Err2, Elem, Done, Done1, Done2]
   }
 
+  sealed trait MergeStrategy
+  object MergeStrategy {
+    case object BackPressure  extends MergeStrategy
+    case object BufferSliding extends MergeStrategy
+  }
 }

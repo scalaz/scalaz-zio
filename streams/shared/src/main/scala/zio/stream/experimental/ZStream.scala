@@ -1289,13 +1289,13 @@ class ZStream[-R, +E, +A](val channel: ZChannel[R, Any, Any, Any, E, Chunk[A], A
   /**
    * Maps each element of this stream to another stream and returns the
    * non-deterministic merge of those streams, executing up to `n` inner streams
-   * concurrently. Up to `outputBuffer` elements of the produced streams may be
+   * concurrently. Up to `bufferSize` elements of the produced streams may be
    * buffered in memory by this operator.
    */
-  def flatMapPar[R1 <: R, E1 >: E, B](n: Long)(f: A => ZStream[R1, E1, B]): ZStream[R1, E1, B] =
+  def flatMapPar[R1 <: R, E1 >: E, B](n: Int, bufferSize: Int = 16)(f: A => ZStream[R1, E1, B]): ZStream[R1, E1, B] =
     new ZStream[R1, E1, B](
-      channel.mergeMap[R1, Any, Any, Any, E1, Chunk[B]](n) { as =>
-        as.map(f).map(_.channel).fold(ZChannel.unit)(_ *> _)
+      channel.concatMap(ZChannel.writeChunk(_)).mergeMap[R1, Any, Any, Any, E1, Chunk[B]](n, bufferSize) {
+        f(_).channel
       }
     )
 
@@ -1305,10 +1305,16 @@ class ZStream[-R, +E, +A](val channel: ZChannel[R, Any, Any, Any, E, Chunk[A], A
    * from an element of the source stream, the oldest executing stream is cancelled. Up to `bufferSize`
    * elements of the produced streams may be buffered in memory by this operator.
    */
-  final def flatMapParSwitch[R1 <: R, E1 >: E, A2](n: Int, bufferSize: Int = 16)(
-    f: A => ZStream[R1, E1, A2]
-  ): ZStream[R1, E1, A2] =
-    ???
+  final def flatMapParSwitch[R1 <: R, E1 >: E, B](n: Int, bufferSize: Int = 16)(
+    f: A => ZStream[R1, E1, B]
+  ): ZStream[R1, E1, B] =
+    new ZStream[R1, E1, B](
+      channel
+        .concatMap(ZChannel.writeChunk(_))
+        .mergeMap[R1, Any, Any, Any, E1, Chunk[B]](n, bufferSize, ZChannel.MergeStrategy.BufferSliding) {
+          f(_).channel
+        }
+    )
 
   /**
    * Flattens this stream-of-streams into a stream made of the concatenation in
@@ -1380,10 +1386,8 @@ class ZStream[-R, +E, +A](val channel: ZChannel[R, Any, Any, Any, E, Chunk[A], A
    */
   def flattenPar[R1 <: R, E1 >: E, A1](n: Int, outputBuffer: Int = 16)(implicit
     ev: A <:< ZStream[R1, E1, A1]
-  ): ZStream[R1, E1, A1] = {
-    val _ = outputBuffer
-    flatMapPar[R1, E1, A1](n.toLong)(ev(_))
-  }
+  ): ZStream[R1, E1, A1] =
+    flatMapPar[R1, E1, A1](n, outputBuffer)(ev(_))
 
   /**
    * Like [[flattenPar]], but executes all streams concurrently.
@@ -1889,7 +1893,7 @@ class ZStream[-R, +E, +A](val channel: ZChannel[R, Any, Any, Any, E, Chunk[A], A
    * is not enforced by this combinator, and elements may be reordered.
    */
   final def mapMParUnordered[R1 <: R, E1 >: E, A2](n: Int)(f: A => ZIO[R1, E1, A2]): ZStream[R1, E1, A2] =
-    flatMapPar[R1, E1, A2](n.toLong)(a => ZStream.fromEffect(f(a)))
+    flatMapPar[R1, E1, A2](n)(a => ZStream.fromEffect(f(a)))
 
   /**
    * Maps over elements of the stream with the specified effectful function,
