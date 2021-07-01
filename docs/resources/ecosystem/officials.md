@@ -38,3 +38,67 @@ Each project in the ZIO organization namespace has a _Stage Badge_ which indicat
 - [ZIO SQS](https://github.com/zio/zio-sqs) — A ZIO-powered client for AWS SQS
 - [ZIO Telemetry](https://github.com/zio/zio-telemetry) — A ZIO-powered OpenTelemetry library 
 - [ZIO ZMX](https://github.com/zio/zio-zmx) - Monitoring, metrics and diagnostics for ZIO
+
+## ZIO Actors
+
+[ZIO Actors](https://github.com/zio/zio-actors) is a high-performance, purely functional library for building, composing, and supervising typed actors based on ZIO.
+
+To use this library, we need to add the following line to our library dependencies in `build.sbt` file:
+
+```scala
+val zioActorsVersion =  "0.0.9" // Check the repo for the latest version
+libraryDependencies += "dev.zio" %% "zio-actors" % zioActorsVersion
+```
+
+Let's try to implement a simple Counter Actor which receives two `Increase` and `Get` commands:
+
+```scala mdoc:silent:nest
+import zio.actors.Actor.Stateful
+import zio.actors._
+import zio.clock.Clock
+import zio.console.putStrLn
+import zio.{ExitCode, UIO, URIO, ZIO}
+
+sealed trait Message[+_]
+case object Increase extends Message[Unit]
+case object Get      extends Message[Int]
+
+object CounterActorExample extends zio.App {
+
+  // Definition of stateful actor
+  val counterActor: Stateful[Any, Int, Message] =
+    new Stateful[Any, Int, Message] {
+      override def receive[A](
+          state: Int,
+          msg: Message[A],
+          context: Context
+      ): UIO[(Int, A)] =
+        msg match {
+          case Increase => UIO((state + 1, ()))
+          case Get      => UIO((state, state))
+        }
+    }
+
+  val myApp: ZIO[Clock, Throwable, Int] =
+    for {
+      system <- ActorSystem("MyActorSystem")
+      actor  <- system.make("counter", Supervisor.none, 0, counterActor)
+      _      <- actor ! Increase
+      _      <- actor ! Increase
+      s      <- actor ? Get
+    } yield s
+
+  override def run(args: List[String]): URIO[zio.ZEnv, ExitCode] =
+    myApp
+      .flatMap(state => putStrLn(s"The final state of counter: $state"))
+      .exitCode
+}
+```
+
+Akka actors also has some other optional modules for persistence (which is useful for event sourcing) and integration with Akka toolkit:
+
+```scala
+libraryDependencies += "dev.zio" %% "zio-actors-persistence" % zioActorsVersion
+libraryDependencies += "dev.zio" %% "zio-actors-persistence-jdbc" % zioActorVersion
+libraryDependencies += "dev.zio" %% "zio-actors-akka-interop" % zioActorVersion
+```
