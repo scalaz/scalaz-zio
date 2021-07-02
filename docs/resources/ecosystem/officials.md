@@ -43,10 +43,31 @@ Each project in the ZIO organization namespace has a _Stage Badge_ which indicat
 
 [ZIO Actors](https://github.com/zio/zio-actors) is a high-performance, purely functional library for building, composing, and supervising typed actors based on ZIO.
 
+ZIO Actors is based on the _Actor Model_ which is a conceptual model of concurrent computation. In the actor model, the _actor_ is the fundamental unit of computation, unlike the ZIO concurrency model, which is the fiber.
+
+Each actor has a mailbox that stores and processes the incoming messages in FIFO order. An actor allowed to:
+- create another actor.
+- send a message to itself or other actors.
+- handle the incoming message, and:
+    - decide **what to do** based on the current state and the received message.
+    - decide **what is the next state** based on the current state and the received message.
+
+Some characteristics of an _Actor Model_:
+
+- **Isolated State** — Each actor holds its private state. They only have access to their internal state. They are isolated from each other, and they do not share the memory. The only way to change the state of an actor is to send a message to that actor.
+
+- **Process of One Message at a Time** — Each actor handles and processes one message at a time. They read messages from their inboxes and process them sequentially.
+
+- **Actor Persistence** — A persistent actor records its state as events. The actor can recover its state from persisted events after a crash or restart.
+
+- **Remote Messaging** — Actors can communicate with each other only through messages. They can run locally or remotely on another machine. Remote actors can communicate with each other transparently as if there are located locally.
+
+- **Actor Supervision** — Parent actors can supervise their child actors. For example, if a child actor fails, the supervisor actor can restart that actor.
+
 To use this library, we need to add the following line to our library dependencies in `build.sbt` file:
 
 ```scala
-val zioActorsVersion =  "0.0.9" // Check the repo for the latest version
+val zioActorsVersion =  "0.0.9" // Check the original repo for the latest version
 libraryDependencies += "dev.zio" %% "zio-actors" % zioActorsVersion
 ```
 
