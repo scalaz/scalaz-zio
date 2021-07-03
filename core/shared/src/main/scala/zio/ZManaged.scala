@@ -2187,6 +2187,13 @@ object ZManaged extends ZManagedPlatformSpecific {
     }
 
   /**
+   * Constructs a  `ZManaged` value of the appropriate type for the specified
+   * input.
+   */
+  def from[Input](input: => Input)(implicit constructor: ZManagedConstructor[Input]): constructor.Out =
+    constructor.make(input)
+
+  /**
    * Creates a [[ZManaged]] from an `AutoCloseable` resource. The resource's `close`
    * method will be used as the release action.
    */
@@ -2999,6 +3006,191 @@ object ZManaged extends ZManagedPlatformSpecific {
           .supervised(supervisor)
       )
     })
+
+  /**
+   * A `ZManagedConstructor[Input]` knows how to construct a `ZManaged` value from an
+   * input of type `Input`. This allows the type of the `ZManaged` value constructed
+   * to depend on `Input`.
+   */
+  sealed trait ZManagedConstructor[Input] {
+
+    /**
+     * The type of the `ZManaged` value.
+     */
+    type Out
+
+    /**
+     * Constructs a `ZManaged` value from the specified input.
+     */
+    def make(input: => Input): Out
+  }
+
+  object ZManagedConstructor extends ZManagedConstructorLowPriority1 {
+
+    /**
+     * Constructs a `ZManaged[Any, E, A]` from an `Either[E, A]`.
+     */
+    implicit def EitherConstructor[E, A]: WithOut[Either[E, A], ZManaged[Any, E, A]] =
+      new ZManagedConstructor[Either[E, A]] {
+        type Out = ZManaged[Any, E, A]
+        def make(input: => Either[E, A]): ZManaged[Any, E, A] =
+          ZManaged.fromEither(input)
+      }
+
+    /**
+     * Constructs a `ZManaged[Any, E, A]]` from an `Either[E, A]`.
+     */
+    implicit def EitherLeftConstructor[E, A]: WithOut[Left[E, A], ZManaged[Any, E, A]] =
+      new ZManagedConstructor[Left[E, A]] {
+        type Out = ZManaged[Any, E, A]
+        def make(input: => Left[E, A]): ZManaged[Any, E, A] =
+          ZManaged.fromEither(input)
+      }
+
+    /**
+     * Constructs a `ZManaged[Any, E, A]` from an `Either[E, A]`.
+     */
+    implicit def EitherRightConstructor[E, A]: WithOut[Right[E, A], ZManaged[Any, E, A]] =
+      new ZManagedConstructor[Right[E, A]] {
+        type Out = ZManaged[Any, E, A]
+        def make(input: => Right[E, A]): ZManaged[Any, E, A] =
+          ZManaged.fromEither(input)
+      }
+
+    /**
+     * Constructs a `ZManaged[R, E, A]` from a function `R => IO[E, A]`.
+     */
+    implicit def FunctionManagedConstructor[R, E, A, FunctionLike[In, Out] <: In => Out]
+      : WithOut[FunctionLike[R, ZManaged[Any, E, A]], ZManaged[R, E, A]] =
+      new ZManagedConstructor[FunctionLike[R, ZManaged[Any, E, A]]] {
+        type Out = ZManaged[R, E, A]
+        def make(input: => FunctionLike[R, Managed[E, A]]): ZManaged[R, E, A] =
+          ZManaged.fromFunctionManaged(input)
+      }
+
+    /**
+     * Constructs a `ZManaged[Any, Option[Nothing], A]` from an `Option[A]`.
+     */
+    implicit def OptionConstructor[A]: WithOut[Option[A], ZManaged[Any, Option[Nothing], A]] =
+      new ZManagedConstructor[Option[A]] {
+        type Out = ZManaged[Any, Option[Nothing], A]
+        def make(input: => Option[A]): ZManaged[Any, Option[Nothing], A] =
+          ZManaged.fromOption(input)
+      }
+
+    /**
+     * Constructs a `ZManaged[Any, Option[Nothing], A]` from a `None`.
+     */
+    implicit val OptionNoneConstructor: WithOut[None.type, ZManaged[Any, Option[Nothing], Nothing]] =
+      new ZManagedConstructor[None.type] {
+        type Out = ZManaged[Any, Option[Nothing], Nothing]
+        def make(input: => None.type): ZManaged[Any, Option[Nothing], Nothing] =
+          ZManaged.fromOption(input)
+      }
+
+    /**
+     * Constructs a `ZManaged[Any, Option[Nothing], A]` from a `Some[A]`.
+     */
+    implicit def OptionSomeConstructor[A]: WithOut[Some[A], ZManaged[Any, Option[Nothing], A]] =
+      new ZManagedConstructor[Some[A]] {
+        type Out = ZManaged[Any, Option[Nothing], A]
+        def make(input: => Some[A]): ZManaged[Any, Option[Nothing], A] =
+          ZManaged.fromOption(input)
+      }
+
+    /**
+     * Constructs a `ZManaged[R, E, A]` from a `Reservation[R, E, A]`.
+     */
+    implicit def ReservationConstructor[R, E, A]: WithOut[Reservation[R, E, A], ZManaged[R, E, A]] =
+      new ZManagedConstructor[Reservation[R, E, A]] {
+        type Out = ZManaged[R, E, A]
+        def make(input: => Reservation[R, E, A]): ZManaged[R, E, A] =
+          ZManaged.fromReservation(input)
+      }
+
+    /**
+     * Constructs a `ZManaged[R, E, A]` from a `Reservation[R, E, A]`.
+     */
+    implicit def ReservationZIOConstructor[R1, R2, E1 <: E3, E2 <: E3, E3, A]
+      : WithOut[ZIO[R1, E1, Reservation[R2, E2, A]], ZManaged[R1 with R2, E3, A]] =
+      new ZManagedConstructor[ZIO[R1, E1, Reservation[R2, E2, A]]] {
+        type Out = ZManaged[R1 with R2, E3, A]
+        def make(input: => ZIO[R1, E1, Reservation[R2, E2, A]]): ZManaged[R1 with R2, E3, A] =
+          ZManaged.fromReservationZIO(input)
+      }
+
+    /**
+     * Constructs a `ZManaged[Any, Throwable, A]` from a `Try[A]`.
+     */
+    implicit def TryConstructor[A]: WithOut[scala.util.Try[A], ZManaged[Any, Throwable, A]] =
+      new ZManagedConstructor[scala.util.Try[A]] {
+        type Out = ZManaged[Any, Throwable, A]
+        def make(input: => scala.util.Try[A]): ZManaged[Any, Throwable, A] =
+          ZManaged.fromTry(input)
+      }
+
+    /**
+     * Constructs a `ZManaged[Any, Throwable, A]` from a `Failure[A]`.
+     */
+    implicit def TryFailureConstructor[A]: WithOut[scala.util.Failure[A], ZManaged[Any, Throwable, A]] =
+      new ZManagedConstructor[scala.util.Failure[A]] {
+        type Out = ZManaged[Any, Throwable, A]
+        def make(input: => scala.util.Failure[A]): ZManaged[Any, Throwable, A] =
+          ZManaged.fromTry(input)
+      }
+
+    /**
+     * Constructs a `ZManaged[Any, Throwable, A]` from a `Success[A]`.
+     */
+    implicit def TrySuccessConstructor[A]: WithOut[scala.util.Success[A], ZManaged[Any, Throwable, A]] =
+      new ZManagedConstructor[scala.util.Success[A]] {
+        type Out = ZManaged[Any, Throwable, A]
+        def make(input: => scala.util.Success[A]): ZManaged[Any, Throwable, A] =
+          ZManaged.fromTry(input)
+      }
+  }
+
+  trait ZManagedConstructorLowPriority1 extends ZManagedConstructorLowPriority2 {
+
+    /**
+     * Constructs a `ZManaged[R, Nothing, A]` from a function `R => A`.
+     */
+    implicit def FunctionConstructor[R, A, FunctionLike[In, Out] <: In => Out]
+      : WithOut[FunctionLike[R, A], ZManaged[R, Nothing, A]] =
+      new ZManagedConstructor[FunctionLike[R, A]] {
+        type Out = ZManaged[R, Nothing, A]
+        def make(input: => FunctionLike[R, A]): ZManaged[R, Nothing, A] =
+          ZManaged.fromFunction(input)
+      }
+
+    /**
+     * Constructs a `ZManaged[R, E, A]` from a `ZIO[R, E, A]`.
+     */
+    implicit def ZIOConstructor[R, E, A]: WithOut[ZIO[R, E, A], ZManaged[R, E, A]] =
+      new ZManagedConstructor[ZIO[R, E, A]] {
+        type Out = ZManaged[R, E, A]
+        def make(input: => ZIO[R, E, A]): ZManaged[R, E, A] =
+          ZManaged.fromZIO(input)
+      }
+  }
+
+  trait ZManagedConstructorLowPriority2 {
+
+    /**
+     * The type of the `ZManagedConstructor` with the type of the `ZManaged` value.
+     */
+    type WithOut[In, Out0] = ZManagedConstructor[In] { type Out = Out0 }
+
+    /**
+     * Constructs a `ZManaged[Any, Throwable, A]` from an `A`.
+     */
+    implicit def AttemptConstructor[A]: WithOut[A, ZManaged[Any, Throwable, A]] =
+      new ZManagedConstructor[A] {
+        type Out = ZManaged[Any, Throwable, A]
+        def make(input: => A): ZManaged[Any, Throwable, A] =
+          ZManaged.attempt(input)
+      }
+  }
 
   private[zio] def succeedNow[A](r: A): ZManaged[Any, Nothing, A] =
     ZManaged(IO.succeedNow((Finalizer.noop, r)))

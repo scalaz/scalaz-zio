@@ -207,7 +207,7 @@ The error type of the `register` function is optional, so by setting the error t
 
 Iterators are data structures that allow us to iterate over a sequence of elements. Similarly, we can think of ZIO Streams as effectual Iterators; every `ZStream` represents a collection of one or more, but effectful values. 
 
-**ZStream.fromIteratorTotal** — We can convert an iterator that does not throw exception to `ZStream` by using `ZStream.fromIteratorTotal`:
+**ZStream.fromIteratorSucceed** — We can convert an iterator that does not throw exception to `ZStream` by using `ZStream.fromIteratorSucceed`:
 
 ```scala mdoc:silent:nest
 val s1: ZStream[Any, Throwable, Int] = ZStream.fromIterator(Iterator(1, 2, 3))
@@ -217,12 +217,12 @@ val s3: ZStream[Any, Throwable, Int] = ZStream.fromIterator(Iterator.continually
 
 Also, there is another constructor called **`ZStream.fromIterator`** that creates a stream from an iterator which may throw an exception.
 
-**ZStream.fromIteratorEffect** — If we have an effectful Iterator that may throw Exception, we can use `fromIteratorEffect` to convert that to the ZIO Stream:
+**ZStream.fromIteratorZIO** — If we have an effectful Iterator that may throw Exception, we can use `fromIteratorZIO` to convert that to the ZIO Stream:
 
 ```scala mdoc:silent:nest
 import scala.io.Source
 val lines: ZStream[Any, Throwable, String] = 
-  ZStream.fromIteratorEffect(Task(Source.fromFile("file.txt").getLines()))
+  ZStream.fromIteratorZIO(Task(Source.fromFile("file.txt").getLines()))
 ```
 
 Using this method is not good for resourceful effects like above, so it's better to rewrite that using `ZStream.fromIteratorManaged` function.
@@ -247,7 +247,7 @@ def fromJavaStream[R, A](stream: => java.util.stream.Stream[A]): ZStream[R, Thro
   ZStream.fromJavaIterator(stream.iterator())
 ```
 
-Similarly, `ZStream` has `ZStream.fromJavaIteratorTotal`, `ZStream.fromJavaIteratorEffect` and `ZStream.fromJavaIteratorManaged` constructors.
+Similarly, `ZStream` has `ZStream.fromJavaIteratorSucceed`, `ZStream.fromJavaIteratorZIO` and `ZStream.fromJavaIteratorManaged` constructors.
 
 ### From Iterables
 
@@ -257,7 +257,7 @@ Similarly, `ZStream` has `ZStream.fromJavaIteratorTotal`, `ZStream.fromJavaItera
 val list = ZStream.fromIterable(List(1, 2, 3))
 ```
 
-**ZStream.fromIterableM** — If we have an effect producing a value of type `Iterable` we can use `fromIterableM` constructor to create a stream of that effect.
+**ZStream.fromIterableZIO** — If we have an effect producing a value of type `Iterable` we can use `fromIterableZIO` constructor to create a stream of that effect.
 
 Assume we have a database that returns a list of users using `Task`:
 
@@ -277,11 +277,11 @@ object Database {
 }
 ```
 
-As this operation is effectful, we can use `ZStream.fromIterableM` to convert the result to the `ZStream`:
+As this operation is effectful, we can use `ZStream.fromIterableZIO` to convert the result to the `ZStream`:
 
 ```scala mdoc:silent:nest
 val users: ZStream[Has[Database], Throwable, User] = 
-  ZStream.fromIterableM(Database.getUsers)
+  ZStream.fromIterableZIO(Database.getUsers)
 ```
 
 ### From Repetition
@@ -742,7 +742,7 @@ Let's write a simple page downloader, which download URLs concurrently:
 def fetchUrl(url: URL): Task[String] = Task.succeed(???)
 def getUrls: Task[List[URL]] = Task.succeed(???)
 
-val pages = ZStream.fromIterableM(getUrls).mapZIOPar(8)(fetchUrl)  
+val pages = ZStream.fromIterableZIO(getUrls).mapZIOPar(8)(fetchUrl)  
 ```
     
 **mapChunk** — Each stream is backed by some `Chunk`s. By using `mapChunk` we can batch the underlying stream and map every `Chunk` at once:

@@ -183,6 +183,95 @@ object ZStreamPlatformSpecificSpec extends ZIOBaseSpec {
             assert(exit.untraced)(failsCause(containsCause(Cause.interrupt(selfId))))
         }
       ),
+      suite("from")(
+        test("InputStream") {
+          trait InputStreamLike extends InputStream
+          lazy val inputStream: InputStreamLike              = ???
+          lazy val actual                                    = ZStream.from(inputStream)
+          lazy val expected: ZStream[Any, IOException, Byte] = actual
+          lazy val _                                         = expected
+          assertCompletes
+        },
+        test("InputStreamManaged") {
+          trait R
+          trait E               extends IOException
+          trait InputStreamLike extends InputStream
+          lazy val inputStreamManaged: ZManaged[R, E, InputStreamLike] = ???
+          lazy val actual                                              = ZStream.from(inputStreamManaged)
+          lazy val expected: ZStream[R, IOException, Byte]             = actual
+          lazy val _                                                   = expected
+          assertCompletes
+        },
+        test("InputStreamZIO") {
+          trait R
+          trait E               extends IOException
+          trait InputStreamLike extends InputStream
+          lazy val inputStreamZIO: ZIO[R, E, InputStreamLike] = ???
+          lazy val actual                                     = ZStream.from(inputStreamZIO)
+          lazy val expected: ZStream[R, IOException, Byte]    = actual
+          lazy val _                                          = expected
+          assertCompletes
+        },
+        test("JavaStream") {
+          trait A
+          trait JavaStreamLike[A] extends java.util.stream.Stream[A]
+          lazy val javaStream: JavaStreamLike[A]        = ???
+          lazy val actual                               = ZStream.from(javaStream)
+          lazy val expected: ZStream[Any, Throwable, A] = actual
+          lazy val _                                    = expected
+          assertCompletes
+        },
+        test("JavaStreamManaged") {
+          trait R
+          trait E extends Throwable
+          trait A
+          trait JavaStreamLike[A] extends java.util.stream.Stream[A]
+          lazy val javaStreamManaged: ZManaged[R, E, JavaStreamLike[A]] = ???
+          lazy val actual                                               = ZStream.from(javaStreamManaged)
+          lazy val expected: ZStream[R, Throwable, A]                   = actual
+          lazy val _                                                    = expected
+          assertCompletes
+        },
+        test("JavaStreamZIO") {
+          trait R
+          trait E extends Throwable
+          trait A
+          trait JavaStreamLike[A] extends java.util.stream.Stream[A]
+          lazy val javaStreamZIO: ZIO[R, E, JavaStreamLike[A]] = ???
+          lazy val actual                                      = ZStream.from(javaStreamZIO)
+          lazy val expected: ZStream[R, Throwable, A]          = actual
+          lazy val _                                           = expected
+          assertCompletes
+        },
+        test("Reader") {
+          trait ReaderLike extends Reader
+          lazy val reader: ReaderLike                        = ???
+          lazy val actual                                    = ZStream.from(reader)
+          lazy val expected: ZStream[Any, IOException, Char] = actual
+          lazy val _                                         = expected
+          assertCompletes
+        },
+        test("ReaderManaged") {
+          trait R
+          trait E          extends IOException
+          trait ReaderLike extends Reader
+          lazy val readerManaged: ZManaged[R, E, ReaderLike] = ???
+          lazy val actual                                    = ZStream.from(readerManaged)
+          lazy val expected: ZStream[R, IOException, Char]   = actual
+          lazy val _                                         = expected
+          assertCompletes
+        },
+        test("ReaderZIO") {
+          trait R
+          trait E          extends IOException
+          trait ReaderLike extends Reader
+          lazy val readerZIO: ZIO[R, E, ReaderLike]        = ???
+          lazy val actual                                  = ZStream.from(readerZIO)
+          lazy val expected: ZStream[R, IOException, Char] = actual
+          lazy val _                                       = expected
+          assertCompletes
+        }
+      ),
       testM("fromBlockingIterator") {
         checkM(Gen.small(Gen.chunkOfN(_)(Gen.anyInt)), Gen.small(Gen.const(_), 1)) { (chunk, maxChunkSize) =>
           assertM(ZStream.fromBlockingIterator(chunk.iterator, maxChunkSize).runCollect)(equalTo(chunk))

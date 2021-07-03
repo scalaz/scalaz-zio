@@ -3658,6 +3658,9 @@ object ZStream extends ZStreamPlatformSpecificConstructors {
   def finalizer[R](finalizer: URIO[R, Any]): ZStream[R, Nothing, Any] =
     acquireReleaseWith[R, Nothing, Unit](UIO.unit)(_ => finalizer)
 
+  def from[Input](input: => Input)(implicit constructor: ZStreamConstructor[Input]): constructor.Out =
+    constructor.make(input)
+
   /**
    * Creates a stream from a [[zio.Chunk]] of values
    *
@@ -4422,6 +4425,271 @@ object ZStream extends ZStreamPlatformSpecificConstructors {
   final class UpdateService[-R, +E, +A, M](private val self: ZStream[R, E, A]) extends AnyVal {
     def apply[R1 <: R with Has[M]](f: M => M)(implicit ev: Has.IsHas[R1], tag: Tag[M]): ZStream[R1, E, A] =
       self.provideSome(ev.update(_, f))
+  }
+
+  /**
+   * A `ZStreamConstructor[Input]` knows how to construct a `ZStream` value
+   * from an input of type `Input`. This allows the type of the `ZStream`
+   * value constructed to depend on `Input`.
+   */
+  trait ZStreamConstructor[Input] {
+
+    /**
+     * The type of the `ZStream` value.
+     */
+    type Out
+
+    /**
+     * Constructs a `ZStream` value from the specified input.
+     */
+    def make(input: => Input): Out
+  }
+
+  object ZStreamConstructor extends ZStreamConstructorPlatformSpecific {
+
+    /**
+     * Constructs a `ZStream[RB, EB, B]` from a
+     * `ZHub[RA, RB, EA, EB, A, Chunk[B]]`.
+     */
+    implicit def ChunkHubConstructor[RA, RB, EA, EB, A, B]
+      : WithOut[ZHub[RA, RB, EA, EB, A, Chunk[B]], ZStream[RB, EB, B]] =
+      new ZStreamConstructor[ZHub[RA, RB, EA, EB, A, Chunk[B]]] {
+        type Out = ZStream[RB, EB, B]
+        def make(input: => ZHub[RA, RB, EA, EB, A, Chunk[B]]): ZStream[RB, EB, B] =
+          ZStream.fromChunkHub(input)
+      }
+
+    /**
+     * Constructs a `ZStream[RB, EB, B]` from a
+     * `ZQueue[RA, RB, EA, EB, A, Chunk[B]]`.
+     */
+    implicit def ChunkQueueConstructor[RA, RB, EA, EB, A, B]
+      : WithOut[ZQueue[RA, RB, EA, EB, A, Chunk[B]], ZStream[RB, EB, B]] =
+      new ZStreamConstructor[ZQueue[RA, RB, EA, EB, A, Chunk[B]]] {
+        type Out = ZStream[RB, EB, B]
+        def make(input: => ZQueue[RA, RB, EA, EB, A, Chunk[B]]): ZStream[RB, EB, B] =
+          ZStream.fromChunkQueue(input)
+      }
+
+    /**
+     * Constructs a `ZStream[Any, Nothing, A]` from an `Iterable[Chunk[A]]`.
+     */
+    implicit def ChunksConstructor[A, Collection[Element] <: Iterable[Element]]
+      : WithOut[Collection[Chunk[A]], ZStream[Any, Nothing, A]] =
+      new ZStreamConstructor[Collection[Chunk[A]]] {
+        type Out = ZStream[Any, Nothing, A]
+        def make(input: => Collection[Chunk[A]]): ZStream[Any, Nothing, A] =
+          ZStream.fromIterable(input).flatMap(ZStream.fromChunk(_))
+      }
+
+    /**
+     * Constructs a `ZStream[R, E, A]` from a `ZIO[R, E, Iterable[A]]`.
+     */
+    implicit def IterableZIOConstructor[R, E, A, Collection[Element] <: Iterable[Element]]
+      : WithOut[ZIO[R, E, Collection[A]], ZStream[R, E, A]] =
+      new ZStreamConstructor[ZIO[R, E, Collection[A]]] {
+        type Out = ZStream[R, E, A]
+        def make(input: => ZIO[R, E, Collection[A]]): ZStream[R, E, A] =
+          ZStream.fromIterableZIO(input)
+      }
+
+    /**
+     * Constructs a `ZStream[Any, Throwable, A]` from an `Iterator[A]`.
+     */
+    implicit def IteratorConstructor[A, IteratorLike[Element] <: Iterator[Element]]
+      : WithOut[IteratorLike[A], ZStream[Any, Throwable, A]] =
+      new ZStreamConstructor[IteratorLike[A]] {
+        type Out = ZStream[Any, Throwable, A]
+        def make(input: => IteratorLike[A]): ZStream[Any, Throwable, A] =
+          ZStream.fromIterator(input)
+      }
+
+    /**
+     * Constructs a `ZStream[R, Throwable, A]` from a
+     * `ZManaged[R, Throwable, Iterator[A]]`.
+     */
+    implicit def IteratorManagedConstructor[R, E <: Throwable, A, IteratorLike[Element] <: Iterator[Element]]
+      : WithOut[ZManaged[R, E, IteratorLike[A]], ZStream[R, Throwable, A]] =
+      new ZStreamConstructor[ZManaged[R, E, IteratorLike[A]]] {
+        type Out = ZStream[R, Throwable, A]
+        def make(input: => ZManaged[R, E, IteratorLike[A]]): ZStream[R, Throwable, A] =
+          ZStream.fromIteratorManaged(input)
+      }
+
+    /**
+     * Constructs a `ZStream[R, Throwable, A]` from a
+     * `ZIO[R, Throwable, Iterator[A]]`.
+     */
+    implicit def IteratorZIOConstructor[R, E <: Throwable, A, IteratorLike[Element] <: Iterator[Element]]
+      : WithOut[ZIO[R, E, IteratorLike[A]], ZStream[R, Throwable, A]] =
+      new ZStreamConstructor[ZIO[R, E, IteratorLike[A]]] {
+        type Out = ZStream[R, Throwable, A]
+        def make(input: => ZIO[R, E, IteratorLike[A]]): ZStream[R, Throwable, A] =
+          ZStream.fromIteratorZIO(input)
+      }
+
+    /**
+     * Constructs a `ZStream[Any, Throwable, A]` from a
+     * `java.util.Iterator[A]`.
+     */
+    implicit def JavaIteratorConstructor[A, JaveIteratorLike[Element] <: java.util.Iterator[Element]]
+      : WithOut[JaveIteratorLike[A], ZStream[Any, Throwable, A]] =
+      new ZStreamConstructor[JaveIteratorLike[A]] {
+        type Out = ZStream[Any, Throwable, A]
+        def make(input: => JaveIteratorLike[A]): ZStream[Any, Throwable, A] =
+          ZStream.fromJavaIterator(input)
+      }
+
+    /**
+     * Constructs a `ZStream[R, Throwable, A]` from a
+     * `ZManaged[R, Throwable, java.util.Iterator[A]]`.
+     */
+    implicit def JavaIteratorManagedConstructor[R, E <: Throwable, A, JaveIteratorLike[Element] <: java.util.Iterator[
+      Element
+    ]]: WithOut[ZManaged[R, E, JaveIteratorLike[A]], ZStream[R, Throwable, A]] =
+      new ZStreamConstructor[ZManaged[R, E, JaveIteratorLike[A]]] {
+        type Out = ZStream[R, Throwable, A]
+        def make(input: => ZManaged[R, E, JaveIteratorLike[A]]): ZStream[R, Throwable, A] =
+          ZStream.fromJavaIteratorManaged(input)
+      }
+
+    /**
+     * Constructs a `ZStream[R, Throwable, A]` from a
+     * `ZIO[R, Throwable, java.util.Iterator[A]]`.
+     */
+    implicit def JavaIteratorZIOConstructor[R, E <: Throwable, A, JaveIteratorLike[Element] <: java.util.Iterator[
+      Element
+    ]]: WithOut[ZIO[R, E, JaveIteratorLike[A]], ZStream[R, Throwable, A]] =
+      new ZStreamConstructor[ZIO[R, E, JaveIteratorLike[A]]] {
+        type Out = ZStream[R, Throwable, A]
+        def make(input: => ZIO[R, E, JaveIteratorLike[A]]): ZStream[R, Throwable, A] =
+          ZStream.fromJavaIteratorZIO(input)
+      }
+
+    /**
+     * Constructs a `ZStream[R, Nothing, A]` from a `Schedule[R, Any, A]`.
+     */
+    implicit def ScheduleConstructor[R, A]: WithOut[Schedule[R, Any, A], ZStream[R with Has[Clock], Nothing, A]] =
+      new ZStreamConstructor[Schedule[R, Any, A]] {
+        type Out = ZStream[R with Has[Clock], Nothing, A]
+        def make(input: => Schedule[R, Any, A]): ZStream[R with Has[Clock], Nothing, A] =
+          ZStream.fromSchedule(input)
+      }
+
+    /**
+     * Constructs a `ZStream[Any, Nothing, A]` from a `TQueue[A]`.
+     */
+    implicit def TQueueConstructor[A]: WithOut[TQueue[A], ZStream[Any, Nothing, A]] =
+      new ZStreamConstructor[TQueue[A]] {
+        type Out = ZStream[Any, Nothing, A]
+        def make(input: => TQueue[A]): ZStream[Any, Nothing, A] =
+          ZStream.fromTQueue(input)
+      }
+  }
+
+  trait ZStreamConstructorLowPriority1 extends ZStreamConstructorLowPriority2 {
+
+    /**
+     * Constructs a `ZStream[Any, Nothing, A]` from a `Chunk[A]`.
+     */
+    implicit def ChunkConstructor[A]: WithOut[Chunk[A], ZStream[Any, Nothing, A]] =
+      new ZStreamConstructor[Chunk[A]] {
+        type Out = ZStream[Any, Nothing, A]
+        def make(input: => Chunk[A]): ZStream[Any, Nothing, A] =
+          ZStream.fromChunk(input)
+      }
+
+    /**
+     * Constructs a `ZStream[RB, EB, B]` from a `ZHub[RA, RB, EA, EB, A, B]`.
+     */
+    implicit def HubConstructor[RA, RB, EA, EB, A, B]: WithOut[ZHub[RA, RB, EA, EB, A, B], ZStream[RB, EB, B]] =
+      new ZStreamConstructor[ZHub[RA, RB, EA, EB, A, B]] {
+        type Out = ZStream[RB, EB, B]
+        def make(input: => ZHub[RA, RB, EA, EB, A, B]): ZStream[RB, EB, B] =
+          ZStream.fromHub(input)
+      }
+
+    /**
+     * Constructs a `ZStream[Any, Nothing, A]` from a `Iterable[A]`.
+     */
+    implicit def IterableConstructor[A, Collection[Element] <: Iterable[Element]]
+      : WithOut[Collection[A], ZStream[Any, Nothing, A]] =
+      new ZStreamConstructor[Collection[A]] {
+        type Out = ZStream[Any, Nothing, A]
+        def make(input: => Collection[A]): ZStream[Any, Nothing, A] =
+          ZStream.fromIterable(input)
+      }
+
+    /**
+     * Constructs a `ZStream[RB, EB, B]` from a `ZQueue[RA, RB, EA, EB, A, B]`.
+     */
+    implicit def QueueConstructor[RA, RB, EA, EB, A, B]: WithOut[ZQueue[RA, RB, EA, EB, A, B], ZStream[RB, EB, B]] =
+      new ZStreamConstructor[ZQueue[RA, RB, EA, EB, A, B]] {
+        type Out = ZStream[RB, EB, B]
+        def make(input: => ZQueue[RA, RB, EA, EB, A, B]): ZStream[RB, EB, B] =
+          ZStream.fromQueue(input)
+      }
+
+    /**
+     * Construct a `ZStream[R, E, A]` from a `ZIO[R, Option[E], A]`.
+     */
+    implicit def ZIOOptionConstructor[R, E, A]: WithOut[ZIO[R, Option[E], A], ZStream[R, E, A]] =
+      new ZStreamConstructor[ZIO[R, Option[E], A]] {
+        type Out = ZStream[R, E, A]
+        def make(input: => ZIO[R, Option[E], A]): ZStream[R, E, A] =
+          ZStream.fromZIOOption(input)
+      }
+
+    /**
+     * Construct a `ZStream[R, E, A]` from a `ZIO[R, Option[E], A]`.
+     */
+    implicit def ZIOOptionNoneConstructor[R, A]: WithOut[ZIO[R, None.type, A], ZStream[R, Nothing, A]] =
+      new ZStreamConstructor[ZIO[R, None.type, A]] {
+        type Out = ZStream[R, Nothing, A]
+        def make(input: => ZIO[R, None.type, A]): ZStream[R, Nothing, A] =
+          ZStream.fromZIOOption(input)
+      }
+
+    /**
+     * Construct a `ZStream[R, E, A]` from a `ZIO[R, Option[E], A]`.
+     */
+    implicit def ZIOOptionSomeConstructor[R, E, A]: WithOut[ZIO[R, Some[E], A], ZStream[R, E, A]] =
+      new ZStreamConstructor[ZIO[R, Some[E], A]] {
+        type Out = ZStream[R, E, A]
+        def make(input: => ZIO[R, Some[E], A]): ZStream[R, E, A] =
+          ZStream.fromZIOOption(input)
+      }
+  }
+
+  trait ZStreamConstructorLowPriority2 extends ZStreamConstructorLowPriority3 {
+
+    /**
+     * Construct a `ZStream[R, E, A]` from a `ZIO[R, E, A]`.
+     */
+    implicit def ZIOConstructor[R, E, A]: WithOut[ZIO[R, E, A], ZStream[R, E, A]] =
+      new ZStreamConstructor[ZIO[R, E, A]] {
+        type Out = ZStream[R, E, A]
+        def make(input: => ZIO[R, E, A]): ZStream[R, E, A] =
+          ZStream.fromZIO(input)
+      }
+  }
+
+  trait ZStreamConstructorLowPriority3 {
+
+    /**
+     * The type of the `ZStreamConstructor` with the type of the `ZStream` value.
+     */
+    type WithOut[In, Out0] = ZStreamConstructor[In] { type Out = Out0 }
+
+    /**
+     * Construct a `ZStream[R, E, A]` from a `ZIO[R, E, A]`.
+     */
+    implicit def SucceedConstructor[A]: WithOut[A, ZStream[Any, Nothing, A]] =
+      new ZStreamConstructor[A] {
+        type Out = ZStream[Any, Nothing, A]
+        def make(input: => A): ZStream[Any, Nothing, A] =
+          ZStream.succeed(input)
+      }
   }
 
   type Pull[-R, +E, +A] = ZIO[R, Option[E], Chunk[A]]

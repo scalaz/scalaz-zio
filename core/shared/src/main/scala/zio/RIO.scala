@@ -800,6 +800,14 @@ object RIO {
     ZIO.forkAllDiscard(as)
 
   /**
+   * Constructs a `RIO` value of the appropriate type for the specified input.
+   */
+  def from[Input](input: => Input)(implicit
+    constructor: ZIO.ZIOConstructor[Nothing, Throwable, Input]
+  ): ZIO[constructor.OutEnvironment, constructor.OutError, constructor.OutSuccess] =
+    constructor.make(input)
+
+  /**
    * @see See [[zio.ZIO.fromEither]]
    */
   def fromEither[A](v: => Either[Throwable, A]): Task[A] =
@@ -829,6 +837,12 @@ object RIO {
    */
   def fromFunction[R, A](f: R => A): URIO[R, A] =
     ZIO.fromFunction(f)
+
+  /**
+   * @see See [[zio.ZIO.fromFunctionEither]]
+   */
+  def fromFunctionEither[R, A](f: R => Either[Throwable, A]): RIO[R, A] =
+    ZIO.fromFunctionEither(f)
 
   /**
    * @see See [[zio.ZIO.fromFunctionFuture]]

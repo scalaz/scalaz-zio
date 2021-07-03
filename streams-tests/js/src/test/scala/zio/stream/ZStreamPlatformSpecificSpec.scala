@@ -4,6 +4,7 @@ import zio._
 import zio.test.Assertion._
 import zio.test._
 
+import java.io._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -164,6 +165,31 @@ object ZStreamPlatformSpecificSpec extends ZIOBaseSpec {
           exit   <- run.interrupt
         } yield assert(isDone)(isFalse) &&
           assert(exit.untraced)(failsCause(containsCause(Cause.interrupt(selfId))))
+      }
+    ),
+    suite("from")(
+      test("InputStream") {
+        lazy val inputStream: InputStream                  = ???
+        lazy val actual                                    = ZStream.from(inputStream)
+        lazy val expected: ZStream[Any, IOException, Byte] = actual
+        lazy val _                                         = expected
+        assertCompletes
+      },
+      test("InputStreamManaged") {
+        trait R
+        lazy val inputStreamManaged: ZManaged[R, IOException, InputStream] = ???
+        lazy val actual                                                    = ZStream.from(inputStreamManaged)
+        lazy val expected: ZStream[R, IOException, Byte]                   = actual
+        lazy val _                                                         = expected
+        assertCompletes
+      },
+      test("InputStreamZIO") {
+        trait R
+        lazy val inputStreamZIO: ZIO[R, IOException, InputStream] = ???
+        lazy val actual                                           = ZStream.from(inputStreamZIO)
+        lazy val expected: ZStream[R, IOException, Byte]          = actual
+        lazy val _                                                = expected
+        assertCompletes
       }
     )
   )

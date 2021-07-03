@@ -1643,6 +1643,145 @@ object ZManagedSpec extends ZIOBaseSpec {
               .exit
         } yield assert(exit)(succeeds(equalTo(5)))
       }
+    ),
+    suite("from")(
+      test("Attempt") {
+        trait A
+        lazy val a: A                                  = ???
+        lazy val actual                                = ZManaged.from(a)
+        lazy val expected: ZManaged[Any, Throwable, A] = actual
+        lazy val _                                     = expected
+        assertCompletes
+      },
+      test("Either") {
+        trait E
+        trait A
+        lazy val either: Either[E, A]          = ???
+        lazy val actual                        = ZManaged.from(either)
+        lazy val expected: ZManaged[Any, E, A] = actual
+        lazy val _                             = expected
+        assertCompletes
+      },
+      test("EitherLeft") {
+        trait E
+        trait A
+        lazy val eitherLeft: Left[E, A]        = ???
+        lazy val actual                        = ZManaged.from(eitherLeft)
+        lazy val expected: ZManaged[Any, E, A] = actual
+        lazy val _                             = expected
+        assertCompletes
+      },
+      test("EitherRight") {
+        trait E
+        trait A
+        lazy val eitherRight: Right[E, A]      = ???
+        lazy val actual                        = ZManaged.from(eitherRight)
+        lazy val expected: ZManaged[Any, E, A] = actual
+        lazy val _                             = expected
+        assertCompletes
+      },
+      test("Function") {
+        trait R
+        trait A
+        trait FunctionLike[In, Out] extends Function[In, Out]
+        lazy val function: FunctionLike[R, A]      = ???
+        lazy val actual                            = ZManaged.from(function)
+        lazy val expected: ZManaged[R, Nothing, A] = actual
+        lazy val _                                 = expected
+        assertCompletes
+      },
+      test("FunctionManaged") {
+        trait R
+        trait E
+        trait A
+        trait FunctionLike[In, Out] extends Function[In, Out]
+        lazy val functionManaged: FunctionLike[R, Managed[E, A]] = ???
+        lazy val actual                                          = ZManaged.from(functionManaged)
+        lazy val expected: ZManaged[R, E, A]                     = actual
+        lazy val _                                               = expected
+        assertCompletes
+      },
+      test("Option") {
+        trait A
+        lazy val option: Option[A]                           = ???
+        lazy val actual                                      = ZManaged.from(option)
+        lazy val expected: ZManaged[Any, Option[Nothing], A] = actual
+        lazy val _                                           = expected
+        assertCompletes
+      },
+      test("OptionNone") {
+        lazy val optionNone: None.type                             = ???
+        lazy val actual                                            = ZManaged.from(optionNone)
+        lazy val expected: ZManaged[Any, Option[Nothing], Nothing] = actual
+        lazy val _                                                 = expected
+        assertCompletes
+      },
+      test("OptionSome") {
+        trait A
+        lazy val optionSome: Some[A]                         = ???
+        lazy val actual                                      = ZManaged.from(optionSome)
+        lazy val expected: ZManaged[Any, Option[Nothing], A] = actual
+        lazy val _                                           = expected
+        assertCompletes
+      },
+      test("Reservation") {
+        trait R
+        trait E
+        trait A
+        lazy val reservation: Reservation[R, E, A] = ???
+        lazy val actual                            = ZManaged.from(reservation)
+        lazy val expected: ZManaged[R, E, A]       = actual
+        lazy val _                                 = expected
+        assertCompletes
+      },
+      test("ReservationZIO") {
+        trait R1
+        trait R2
+        trait R extends R1 with R2
+        trait E
+        trait E1 extends E
+        trait E2 extends E
+        trait A
+        lazy val reservationZIO: ZIO[R1, E1, Reservation[R2, E2, A]] = ???
+        lazy val actual                                              = ZManaged.from(reservationZIO)
+        lazy val expected: ZManaged[R, E, A]                         = actual
+        lazy val _                                                   = expected
+        assertCompletes
+      },
+      test("Try") {
+        trait A
+        lazy val tryScala: scala.util.Try[A]           = ???
+        lazy val actual                                = ZManaged.from(tryScala)
+        lazy val expected: ZManaged[Any, Throwable, A] = actual
+        lazy val _                                     = expected
+        assertCompletes
+      },
+      test("TryFailure") {
+        trait A
+        lazy val tryFailure: scala.util.Failure[A]     = ???
+        lazy val actual                                = ZManaged.from(tryFailure)
+        lazy val expected: ZManaged[Any, Throwable, A] = actual
+        lazy val _                                     = expected
+        assertCompletes
+      },
+      test("TrySuccess") {
+        trait A
+        lazy val trySuccess: scala.util.Success[A]     = ???
+        lazy val actual                                = ZManaged.from(trySuccess)
+        lazy val expected: ZManaged[Any, Throwable, A] = actual
+        lazy val _                                     = expected
+        assertCompletes
+      },
+      test("ZIO") {
+        trait R
+        trait E
+        trait A
+        lazy val zio: ZIO[R, E, A]           = ???
+        lazy val actual                      = ZManaged.from(zio)
+        lazy val expected: ZManaged[R, E, A] = actual
+        lazy val _                           = expected
+        assertCompletes
+      }
     )
   )
 

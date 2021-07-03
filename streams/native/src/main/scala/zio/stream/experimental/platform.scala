@@ -164,4 +164,6 @@ trait ZStreamPlatformSpecificConstructors {
     outputBuffer: Int = 16
   ): ZStream[R, E, A] =
     asyncMaybe(register, outputBuffer)
+
+  trait ZStreamConstructorPlatformSpecific extends ZStreamConstructorLowPriority1
 }
