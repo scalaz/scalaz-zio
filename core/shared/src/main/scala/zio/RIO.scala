@@ -389,7 +389,7 @@ object RIO {
   /**
    * @see See [[zio.ZIO.debug]]
    */
-  def debug(value: Any): UIO[Unit] =
+  def debug(value: => Any): UIO[Unit] =
     ZIO.debug(value)
 
   /**
@@ -1052,13 +1052,13 @@ object RIO {
   /**
    * @see See [[zio.ZIO.noneOrFail]]
    */
-  def noneOrFail(o: Option[Throwable]): RIO[Nothing, Unit] =
+  def noneOrFail(o: => Option[Throwable]): RIO[Nothing, Unit] =
     ZIO.noneOrFail(o)
 
   /**
    * @see See [[zio.ZIO.noneOrFailWith]]
    */
-  def noneOrFailWith[O](o: Option[O])(f: O => Throwable): RIO[Nothing, Unit] =
+  def noneOrFailWith[O](o: => Option[O])(f: O => Throwable): RIO[Nothing, Unit] =
     ZIO.noneOrFailWith(o)(f)
 
   /**

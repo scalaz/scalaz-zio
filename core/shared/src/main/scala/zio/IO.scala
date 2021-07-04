@@ -371,7 +371,7 @@ object IO {
   /**
    * @see See [[zio.ZIO.debug]]
    */
-  def debug(value: Any): UIO[Unit] =
+  def debug(value: => Any): UIO[Unit] =
     ZIO.debug(value)
 
   /**
@@ -1014,13 +1014,13 @@ object IO {
   /**
    * @see See [[zio.ZIO.noneOrFail]]
    */
-  def noneOrFail[E](o: Option[E]): IO[E, Unit] =
+  def noneOrFail[E](o: => Option[E]): IO[E, Unit] =
     ZIO.noneOrFail(o)
 
   /**
    * @see See [[zio.ZIO.noneOrFailWith]]
    */
-  def noneOrFailWith[E, O](o: Option[O])(f: O => E): IO[E, Unit] =
+  def noneOrFailWith[E, O](o: => Option[O])(f: O => E): IO[E, Unit] =
     ZIO.noneOrFailWith(o)(f)
 
   /**

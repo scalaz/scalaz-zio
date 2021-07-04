@@ -370,7 +370,7 @@ object Task extends TaskPlatformSpecific {
   /**
    * @see See [[zio.ZIO.debug]]
    */
-  def debug(value: Any): UIO[Unit] =
+  def debug(value: => Any): UIO[Unit] =
     ZIO.debug(value)
 
   /**
@@ -1002,13 +1002,13 @@ object Task extends TaskPlatformSpecific {
   /**
    * @see See [[zio.ZIO.noneOrFail]]
    */
-  def noneOrFail(o: Option[Throwable]): Task[Unit] =
+  def noneOrFail(o: => Option[Throwable]): Task[Unit] =
     ZIO.noneOrFail(o)
 
   /**
    * @see See [[zio.ZIO.noneOrFailWith]]
    */
-  def noneOrFailWith[O](o: Option[O])(f: O => Throwable): Task[Unit] =
+  def noneOrFailWith[O](o: => Option[O])(f: O => Throwable): Task[Unit] =
     ZIO.noneOrFailWith(o)(f)
 
   /**
