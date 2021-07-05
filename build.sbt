@@ -562,6 +562,7 @@ lazy val docs = project.module
       "org.scala-js"  %% "scalajs-linker"              % scalaJSVersion,
       "org.typelevel" %% "cats-effect"                 % catsEffectV,
       "dev.zio"       %% "zio-actors"                  % zioActorsV,
+      "dev.zio"       %% "zio-akka-cluster"            % "0.2.0",
       "dev.zio"       %% "zio-interop-cats"            % "3.1.1.0",
       "dev.zio"       %% "zio-interop-scalaz7x"        % "7.3.3.0",
       "dev.zio"       %% "zio-interop-reactivestreams" % "1.3.5",
