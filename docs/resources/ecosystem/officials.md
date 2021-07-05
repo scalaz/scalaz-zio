@@ -142,7 +142,7 @@ In order to use this library, we need to add the following line in our `build.sb
 libraryDependencies += "dev.zio" %% "zio-akka-cluster" % "0.2.0" // Check the repo for the latest version
 ```
 
-In the following example, we are using all these three features. We have a distributed counter application that lives in the Akka Cluster. The location of `LiveUsers` and `TotalRequests` entities in the cluster are transparent for us. We send the result of each counter to the distributed PubSub, so every node in the cluster can subscribe and listen to those results:
+In the following example, we are using all these three features. We have a distributed counter application that lives in the Akka Cluster using _Akka Cluster Sharding_ feature. So the location of `LiveUsers` and `TotalRequests` entities in the cluster is transparent for us. We send the result of each entity to the _Distributed PubSub_. So every node in the cluster can subscribe and listen to those results. Also, we have created a fiber that is subscribed to the cluster events. All the new events will be logged to the console:
 
 ```scala mdoc:silent:nest
 import akka.actor.ActorSystem
