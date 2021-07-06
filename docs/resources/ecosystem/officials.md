@@ -362,7 +362,7 @@ The ZIO Config has a lot of features, and it is more than just a config parsing 
 In order to use this library, we need to add the following line in our `build.sbt` file:
 
 ```scala
-libraryDependencies += "dev.zio" %% "zio-config" % "1.0.6"
+libraryDependencies += "dev.zio" %% "zio-config" % <version>
 ```
 
 There are also some optional dependencies:
@@ -371,3 +371,74 @@ There are also some optional dependencies:
 - **zio-config-typesafe** — HOCON/Json Support
 - **zio-config-yaml** — Yaml Support
 - **zio-config-gen** — Random Config Generation
+
+### Example
+
+Let's add these four lines to our `build.sbt` file as we are using these modules in our example:
+
+```scala
+libraryDependencies += "dev.zio" %% "zio-config"          % "1.0.6"
+libraryDependencies += "dev.zio" %% "zio-config-magnolia" % "1.0.6"
+libraryDependencies += "dev.zio" %% "zio-config-typesafe" % "1.0.6"
+libraryDependencies += "dev.zio" %% "zio-config-refined"  % "1.0.6"
+```
+
+In this example we are reading from HOCON config format using type derivation:
+
+```scala mdoc:silent:nest
+import eu.timepit.refined.W
+import eu.timepit.refined.api.Refined
+import eu.timepit.refined.collection.NonEmpty
+import eu.timepit.refined.numeric.GreaterEqual
+import zio.config.magnolia.{describe, descriptor}
+import zio.config.typesafe.TypesafeConfigSource
+import zio.console.putStrLn
+import zio.{ExitCode, URIO, ZIO}
+
+sealed trait DataSource
+
+final case class Database(
+    @describe("Database Host Name")
+    host: Refined[String, NonEmpty],
+    @describe("Database Port")
+    port: Refined[Int, GreaterEqual[W.`1024`.T]]
+) extends DataSource
+
+final case class Kafka(
+    @describe("Kafka Topics")
+    topicName: String,
+    @describe("Kafka Brokers")
+    brokers: List[String]
+) extends DataSource
+
+object ZIOConfigExample extends zio.App {
+  import zio.config._
+  import zio.config.refined._
+
+  val json =
+    s"""
+       |"Database" : {
+       |  "port" : "1024",
+       |  "host" : "localhost"
+       |}
+       |""".stripMargin
+
+  val myApp =
+    for {
+      source <- ZIO.fromEither(TypesafeConfigSource.fromHoconString(json))
+      desc = descriptor[DataSource] from source
+      dataSource <- ZIO.fromEither(read(desc))
+      // Printing Auto Generated Documentation of Application Config
+      _ <- putStrLn(generateDocs(desc).toTable.toGithubFlavouredMarkdown)
+      _ <- dataSource match {
+        case Database(host, port) =>
+          putStrLn(s"Start connecting to the database: $host:$port")
+        case Kafka(_, brokers) =>
+          putStrLn(s"Start connecting to the kafka brokers: $brokers")
+      }
+    } yield ()
+
+  override def run(args: List[String]): URIO[zio.ZEnv, ExitCode] =
+    myApp.exitCode
+}
+```
