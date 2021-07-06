@@ -356,3 +356,18 @@ The ZIO Config has a lot of features, and it is more than just a config parsing 
 - **Type-level Constraints and Automatic Validation** — because it supports _Refined_ types, we can write type-level predicates which constrain the set of values described for data types.
 
 - **Descriptive Errors** — It accumulates all errors and reports all of them to the user rather than failing fast.
+
+### Installation
+
+In order to use this library, we need to add the following line in our `build.sbt` file:
+
+```scala
+libraryDependencies += "dev.zio" %% "zio-config" % "1.0.6"
+```
+
+There are also some optional dependencies:
+- **zio-config-mangolia** — Auto Derivation 
+- **zio-config-refined** — Integration with Refined Library
+- **zio-config-typesafe** — HOCON/Json Support
+- **zio-config-yaml** — Yaml Support
+- **zio-config-gen** — Random Config Generation
