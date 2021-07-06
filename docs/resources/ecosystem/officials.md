@@ -332,3 +332,27 @@ Result of parallel execution three effects with the same key: ((3288498,3288498)
 Number of cache hits: 2
 Number of cache misses: 1
 ```
+
+
+## ZIO Config
+
+[ZIO Config](https://zio.github.io/zio-config/) is a ZIO-based library for loading and parsing configuration sources.
+
+### Introduction
+In the real world, config retrieval is the first to develop applications. We mostly have some application config that should be loaded and parsed through our application. Doing such things manually is always boring and error-prone and also has lots of boilerplates.
+
+The ZIO Config has a lot of features, and it is more than just a config parsing library. Let's enumerate some key features of this library:
+
+- **Support for Various Sources** — It can read/write flat or nested configurations from/to various formats and sources.
+
+- **Composable sources** — ZIO Config can compose sources of configuration, so we can have, e.g. environmental or command-line overrides.
+
+- **Automatic Document Generation** — It can auto-generate documentation of configurations. So developers or DevOps engineers know how to configure the application.
+
+- **Report generation** — It has a report generation that shows where each piece of configuration data came from.
+
+- **Automatic Derivation** — It has built-in support for automatic derivation of readers and writers for case classes and sealed traits.
+
+- **Type-level Constraints and Automatic Validation** — because it supports _Refined_ types, we can write type-level predicates which constrain the set of values described for data types.
+
+- **Descriptive Errors** — It accumulates all errors and reports all of them to the user rather than failing fast.
