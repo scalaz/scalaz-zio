@@ -634,23 +634,27 @@ object ZTransducer extends ZTransducerPlatformSpecificConstructors {
    * With this transducer we can mimic fs2 groupAdjacentBy.<br>
    * This can be used like e.g. zstream.aggregate(groupAdjacentBy(_._1))
    */
-  def groupAdjacentBy[I, K](f: I => K): ZTransducer[Any, Nothing, I, (K, Chunk[I])] =
+  def groupAdjacentBy[I, K](f: I => K): ZTransducer[Any, Nothing, I, (K, NonEmptyChunk[I])] =
     ZTransducer {
-      def go(in: Chunk[I], state: Option[(K, Chunk[I])]): (Chunk[(K, Chunk[I])], Option[(K, Chunk[I])]) =
-        in.foldLeft[(Chunk[(K, Chunk[I])], Option[(K, Chunk[I])])]((Chunk.empty, state)) { case ((os0, state), i) =>
-          state match {
-            case None => (os0, Some((f(i), Chunk(i))))
-            case Some((key, aggregated)) =>
-              val newKey = f(i)
-              if (key == newKey) (os0, Some((key, aggregated :+ i)))
-              else (os0.appended((key, aggregated)), Some((newKey, Chunk(i))))
-          }
+      def go(
+        in: Chunk[I],
+        state: Option[(K, NonEmptyChunk[I])]
+      ): (Chunk[(K, NonEmptyChunk[I])], Option[(K, NonEmptyChunk[I])]) =
+        in.foldLeft[(Chunk[(K, NonEmptyChunk[I])], Option[(K, NonEmptyChunk[I])])]((Chunk.empty, state)) {
+          case ((os0, state), i) =>
+            state match {
+              case None => (os0, Some((f(i), NonEmptyChunk(i))))
+              case Some((key, aggregated)) =>
+                val newKey = f(i)
+                if (key == newKey) (os0, Some((key, aggregated :+ i)))
+                else (os0.appended((key, aggregated)), Some((newKey, NonEmptyChunk(i))))
+            }
         }
 
-      ZRef.makeManaged[Option[(K, Chunk[I])]](None).map { state =>
+      ZRef.makeManaged[Option[(K, NonEmptyChunk[I])]](None).map { state =>
         {
           case Some(in) => state.modify(go(in, _))
-          case None     => state.getAndSet(None).map(_.fold[Chunk[(K, Chunk[I])]](Chunk.empty)(Chunk.single(_)))
+          case None     => state.getAndSet(None).map(_.fold[Chunk[(K, NonEmptyChunk[I])]](Chunk.empty)(Chunk.single))
         }
       }
     }

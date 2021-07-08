@@ -349,9 +349,9 @@ object ZTransducerSpec extends ZIOBaseSpec {
         )(
           equalTo(
             Chunk(
-              (1, Chunk((1, 1), (1, 2), (1, 3))),
-              (2, Chunk((2, 1), (2, 2))),
-              (1, Chunk((1, 4)))
+              (1, NonEmptyChunk((1, 1), (1, 2), (1, 3))),
+              (2, NonEmptyChunk((2, 1), (2, 2))),
+              (1, NonEmptyChunk((1, 4)))
             )
           )
         )
