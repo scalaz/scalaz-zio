@@ -59,6 +59,6 @@ object DefaultTestReporterSpec extends ZIOBaseSpec {
             a && exists(matchesRegex(expectedLine.stripLineEnd))
           }
         )
-      }
+      } @@ TestAspect.nonFlaky
     ) @@ silent
 }

@@ -1,6 +1,6 @@
 package zio
 
-import zio.Cause.{Both, Then}
+import zio.Cause.{Both, Then, empty}
 import zio.random.Random
 import zio.test.Assertion._
 import zio.test._
@@ -43,6 +43,16 @@ object CauseSpec extends ZIOBaseSpec {
           assert(Then(a, Both(b, c)))(equalTo(Both(Then(a, b), Then(a, c)))) &&
           assert(Then(Both(a, b), c))(equalTo(Both(Then(a, c), Then(b, c))))
         }
+      },
+      testM("`Then.equals` distributes `Then` over `Both` even in the presence of `Empty`") {
+        check(causes, causes) { (a, b) =>
+          assert(Then(a, Both(empty, b)))(equalTo(Both(a, Then(a, b)))) &&
+          assert(Then(a, Both(b, empty)))(equalTo(Both(Then(a, b), a))) &&
+          assert(Then(a, Both(empty, empty)))(equalTo(Both(a, a))) &&
+          assert(Then(Both(empty, b), a))(equalTo(Both(a, Then(b, a)))) &&
+          assert(Then(Both(b, empty), a))(equalTo(Both(Then(b, a), a))) &&
+          assert(Then(Both(empty, empty), a))(equalTo(Both(a, a)))
+        }
       }
     ),
     suite("Both")(
@@ -60,6 +70,16 @@ object CauseSpec extends ZIOBaseSpec {
       },
       testM("`Both.equals` satisfies commutativity") {
         check(causes, causes)((a, b) => assert(Both(a, b))(equalTo(Both(b, a))))
+      },
+      testM("`Both.equals` distributes `Then` over `Both` even in the presence of `Empty`") {
+        check(causes, causes) { (a, b) =>
+          assert(Both(a, Then(a, b)))(equalTo(Then(a, Both(empty, b)))) &&
+          assert(Both(Then(a, b), a))(equalTo(Then(a, Both(b, empty)))) &&
+          assert(Both(a, a))(equalTo(Then(a, Both(empty, empty)))) &&
+          assert(Both(a, Then(b, a)))(equalTo(Then(Both(empty, b), a))) &&
+          assert(Both(Then(b, a), a))(equalTo(Then(Both(b, empty), a))) &&
+          assert(Both(a, a))(equalTo(Then(Both(empty, empty), a)))
+        }
       }
     ),
     suite("Meta")(

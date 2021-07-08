@@ -28,15 +28,6 @@ object ZSTMSpec extends ZIOBaseSpec {
         val tx    = (add >>> print).provide(1)
         assertM(tx.commit)(equalTo("2 is the sum"))
       },
-      suite("bimap when")(
-        testM("having a success value") {
-          implicit val canFail = CanFail
-          assertM(STM.succeed(1).bimap(_ => -1, s => s"$s as string").commit)(equalTo("1 as string"))
-        },
-        testM("having a fail value") {
-          assertM(STM.fail(-1).bimap(s => s"$s as string", _ => 0).commit.run)(fails(equalTo("-1 as string")))
-        }
-      ),
       testM("catchAll errors") {
         val tx =
           for {
@@ -331,6 +322,15 @@ object ZSTMSpec extends ZIOBaseSpec {
         },
         testM("on Right value") {
           assertM(ZSTM.succeed(Right(2)).leftOrFailException.commit.run)(fails(Assertion.anything))
+        }
+      ),
+      suite("mapBoth when")(
+        testM("having a success value") {
+          implicit val canFail = CanFail
+          assertM(STM.succeed(1).mapBoth(_ => -1, s => s"$s as string").commit)(equalTo("1 as string"))
+        },
+        testM("having a fail value") {
+          assertM(STM.fail(-1).mapBoth(s => s"$s as string", _ => 0).commit.run)(fails(equalTo("-1 as string")))
         }
       ),
       testM("mapError to map from one error to another") {

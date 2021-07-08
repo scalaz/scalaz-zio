@@ -266,6 +266,12 @@ object RIO {
     ZIO.cond(predicate, result, error)
 
   /**
+   * @see See [[zio.ZIO.debug]]
+   */
+  def debug(value: Any): UIO[Unit] =
+    ZIO.debug(value)
+
+  /**
    * @see See [[zio.ZIO.descriptor]]
    */
   def descriptor: UIO[Fiber.Descriptor] = ZIO.descriptor

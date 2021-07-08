@@ -33,67 +33,6 @@ val analyzed =
   } yield analyzed
 ```
 
-A Fiber can be thought of as a virtual thread. A Fiber is the analog of a Java thread (java.lang.thread), but it performs much better. Fibers, on the other hand, are implemented in such a fashion, that a single JVM thread will end up executing many fibers. We can think of fibers as unbounded JVM threads.
-
-> _**Warning**, if you are not an advanced programmer:_
->
->You should avoid fibers. If you can avoid fibers, then do it. ZIO gives you many concurrent primitives like `raceWith`, `zipPar`, `foreachPar`, and so forth, which allows you to avoid using fibers directly.
->
-> Fibers just like threads are low-level constructs. It's not generally recommended for an average programmer to manually use fibers. It is very easy to make lots of mistakes or to introduce performance problems by manually using them.
-
-## Why Fibers?
-There are some limitations with JVM threads. 
-- **They are Scarce** Threads on the JVM map to the operating system level threads which imposes an upper bound on the number of threads that we can have inside our application.
-- **Expensive on Creation** Their creation is expensive in terms of time and memory complexity.
-- **Much Overhead on Context Switching** Switching between the execution of one thread to another thread is not cheap, and it takes a lot of time.
-- **Lack of Composability** Threads are not typed. They don't have a meaningful return type, due to this limitation, we cannot compose threads. Also, it has no type parameters for error and it is assumed if that thread started it might throw some exception of throwable type. In Java when we create a thread, we should provide a `run` function that returns void. It's a void returning method. So threads cannot finish with any specific value.
-- **Synchronous**
-
-In the following sections, we are going to discuss the main features of fibers, and how fiber overcame Java thread drawbacks.
-
-### Unbounded Size
-So whereas the mapping from JVM threads to operating system threads is one-to-one, the mapping of fiber to a thread is many-to-one. That is to say, any JVM thread will end up executing anywhere from hundreds to thousands even tens of thousands of threads concurrently, by hopping back and forth between them as necessary. They give us virtual threads in which it has the benefits of threads but the scalability way beyond threads. In other words, fibers provide us massive concurrently with lightweight green threading on the JVM.
-
-As a rough rule of thumb, we can have an application with a thousand real threads. No problem, modern servers can support applications with a thousand threads. However, we cannot have an application with a hundred thousand threads, that application will die. That just won't make any progress. The JVM nor our operating system can physically support a hundred thousand threads. However, it is no problem to have a Scala application with a hundred thousand fibers that application can perform in a very high-performance fashion, and the miracle that enables that to happen is fiber.
-
-### Lightweight
-JVM threads are expensive to create in order of time and memory complexity, also it takes a lot of time to switch between one thread of execution to another. Fibers are virtual and, and as they use green threading, they are considered to be lightweight cooperative threads, this means that fibers always yield their executions to each other without the overhead of preemptive scheduling.
-
-### Asynchronous
-Fiber is asynchronous and, a thread is always synchronous. That is why fibers have higher scalability because they are asynchronous. Threads are not, that is why they don't scale as well.
-
-### Typed and Composable
-Fibers have typed error and success values. So actually fiber has two type parameters `E` and `A`:
-- The `E` corresponds to the error channel. It indicates the error type with which the fiber can fail. 
-- The `A` corresponds to the success value of the computation. That is the type with which the fiber can succeed. Whereas fibers can finish with the value of type `A`.
-
-The fact, that fibers are typed allows us to write more type-safe programs. Also, it increases the compositional properties of our programs. Because we can say, we are going to wait on that fiber to finish and when it's done, we are going to get its value of type `A`.
-
-### Interrupt Safe
-With threads in Java, it is not a safe operation to terminate them, by using the stop method. The stop operation has been [deprecated](https://docs.oracle.com/javase/1.5.0/docs/guide/misc/threadPrimitiveDeprecation.html). So this is not a safe operation to force kill a thread. Instead, we should try to request an interruption to the thread, but in this case, the thread may not respond to our request, and it may just go forever.
-
-Fiber has a safe version of this functionality that works very well. Just like we can interrupt a thread, we can interrupt a fiber too, but interruption of fibers is much more reliable. It will always work, and it probably works very fast. We don't need to wait around, we can just try to interrupt them, and they will be gone very soon.
-
-### Structured Concurrency
-Until now, we find that ZIO Fiber solves a lot of drawbacks of using Java threads. With fibers, we can have hundreds of thousands and even thousands of thousands of fibers are started and working together. We reached a very massive concurrently with fibers. Now how can we manage them? Some of them are top-level fibers and some others are forked and become children of their parents. How can we manage their scopes, how to keep track of all fibers, and prevent them to leak? What happens during the execution of a child fiber, the parent execution interrupted? The child fibers should be scoped to their parent fibers. We need a way to manage these scopes automatically. This is where structured concurrency shines.
-
-> _**Important**:_
->
-> It's worth mentioning that in the ZIO model, all codes run on the fiber. There is no such thing as code that is executing outside of the fiber. When we create a main function in ZIO that returns an effect, even if we don't explicitly fork a fiber when we execute that effect, that effect will execute on what is called the main fiber. It's a top-level fiber.
->
->It's just like if we have a main function in Java then that main function will execute on the main thread. There is no code in Java that does not execute on a thread. All code executes on a thread even if you didn't create a thread. 
-
-ZIO has support for structured concurrency. The way ZIO structured concurrency works is that the child fibers are scoped to their parent fibers which means when the parent effect is done running then its child's effects will be automatically interrupted. So when we fork, and we get back a fiber, the fiber's lifetime is bound to the parent fiber, that forked it. It is very difficult to leak fibers because child fibers are guaranteed to complete before their parents.
-
-The structure concurrency gives us a way to reason about fiber lifespans. We can statically reason about the lifetimes of children fibers just by looking at our code. We don't need to insert complicated logic to keep track of all the child fibers and manually shut them down.
-
-
-#### Global Lifetime
-Sometimes we want a child fiber to outlive the scope of the parent. what do you do in that case? well, we have another operator called `forkDaemon`. The `forkDaemon` forks the fiber as a daemon fiber. Daemon fibers can outlive their parents. They can live forever. They run in the background doing their work until they end with failure or success. This gives us a way to spawn background jobs that should just keep on going regardless of what happens to the parent.
-
-#### Fine-grained Scope
-If we need a very flexible fine-grained control over the lifetime of a fiber there is another operator called `forkin`. We can fork a fiber inside a specific scope, when that scope is closed then the fiber will be terminated. 
-
 ## Operations
 
 ### fork and join
@@ -118,6 +57,33 @@ for {
 
 ### fork0
 A more powerful variant of `fork`, called `fork0`, allows specification of supervisor that will be passed any non-recoverable errors from the forked fiber, including all such errors that occur in finalizers. If this supervisor is not specified, then the supervisor of the parent fiber will be used, recursively, up to the root handler, which can be specified in `Runtime` (the default supervisor merely prints the stack trace).
+
+### forkDaemon
+
+The `ZIO#forkDaemon` forks the effect into a new fiber **attached to the global scope**. Because the new fiber is attached to the global scope, when the fiber executing the returned effect terminates, the forked fiber will continue running.
+
+In the following example, we have three effects: `inner`, `outer`, and `mainApp`. The outer effect is forking the `inner` effect using `ZIO#forkDaemon`. The `mainApp` effect is forking the `inner` fiber using `ZIO#fork` method and interrupt it after 3 seconds. Since the `inner` effect is forked in global scope, it will not be interrupted and continue its job:
+
+```scala mdoc:silent:nest
+val inner = putStrLn("Inner job is running.")
+  .delay(1.seconds)
+  .forever
+  .onInterrupt(putStrLn("Inner job interrupted.").orDie)
+
+val outer = (
+  for {
+    f <- inner.forkDaemon
+    _ <- putStrLn("Outer job is running.").delay(1.seconds).forever
+    _ <- f.join
+  } yield ()
+).onInterrupt(putStrLn("Outer job interrupted.").orDie)
+
+val myApp = for {
+  fiber <- outer.fork
+  _     <- fiber.interrupt.delay(3.seconds)
+  _     <- ZIO.never
+} yield ()
+```
 
 ### interrupt
 Whenever we want to get rid of our fiber, we can simply call interrupt on that. The interrupt operation does not resume until the fiber has completed or has been interrupted and all its finalizers have been run. These precise semantics allow construction of programs that do not leak resources.
@@ -165,7 +131,7 @@ The `zipPar` combinator has resource-safe semantics. If one computation fails, t
 
 Two `IO` actions can be *raced*, which means they will be executed in parallel, and the value of the first action that completes successfully will be returned.
 
-```scala mdoc:silent
+```scala
 fib(100) race fib(200)
 ```
 
@@ -201,10 +167,14 @@ val errorEither: ZIO[Any, Nothing, Either[Throwable, String]] = error.either
 
 Separately from errors of type `E`, a fiber may be terminated for the following reasons:
 
- * The fiber self-terminated or was interrupted by another fiber. The "main" fiber cannot be interrupted because it was not forked from any other fiber.
- * The fiber failed to handle some error of type `E`. This can happen only when an `IO.fail` is not handled. For values of type `UIO[A]`, this type of failure is impossible.
- * The fiber has a defect that leads to a non-recoverable error. There are only two ways this can happen:
+* **The fiber self-terminated or was interrupted by another fiber**. The "main" fiber cannot be interrupted because it was not forked from any other fiber.
+
+* **The fiber failed to handle some error of type `E`**. This can happen only when an `IO.fail` is not handled. For values of type `UIO[A]`, this type of failure is impossible.
+
+* **The fiber has a defect that leads to a non-recoverable error**. There are only two ways this can happen:
+
      1. A partial function is passed to a higher-order function such as `map` or `flatMap`. For example, `io.map(_ => throw e)`, or `io.flatMap(a => throw e)`. The solution to this problem is to not to pass impure functions to purely functional libraries like ZIO, because doing so leads to violations of laws and destruction of equational reasoning.
+     
      2. Error-throwing code was embedded into some value via `IO.effectTotal`, etc. For importing partial effects into `IO`, the proper solution is to use a method such as `IO.effect`, which safely translates exceptions into values.
 
 When a fiber is terminated, the reason for the termination, expressed as a `Throwable`, is passed to the fiber's supervisor, which may choose to log, print the stack trace, restart the fiber, or perform some other action appropriate to the context.
@@ -212,6 +182,112 @@ When a fiber is terminated, the reason for the termination, expressed as a `Thro
 A fiber cannot stop its own interruption. However, all finalizers will be run during termination, even when some finalizers throw non-recoverable errors. Errors thrown by finalizers are passed to the fiber's supervisor.
 
 There are no circumstances in which any errors will be "lost", which makes the `IO` error model more diagnostic-friendly than the `try`/`catch`/`finally` construct that is baked into both Scala and Java, which can easily lose errors.
+
+## Fiber Interruption
+
+In Java, a thread can be interrupted via `Thread#interrupt` via another thread, but it may don't respect the interruption request. Unlike Java, in ZIO when a fiber interrupts another fiber, we know that the interruption occurs, and it always works.
+
+When working with ZIO fibers, we should consider these notes about fiber interruptions:
+
+### Interruptible/Uninterruptible Regions
+
+All fibers are interruptible by default. To make an effect uninterruptible we can use `Fiber#uninterruptible`, `ZIO#uninterruptible` or `ZIO.uninterruptible`. We have also interruptible versions of these methods to make an uninterruptible effect, interruptible.
+
+```scala mdoc:silent:nest
+for {
+  fiber <- clock.currentDateTime
+    .flatMap(time => putStrLn(time.toString))
+    .schedule(Schedule.fixed(1.seconds))
+    .uninterruptible
+    .fork
+  _     <- fiber.interrupt // Runtime stuck here and does not go further
+} yield ()
+```
+
+Note that there is no way to stop interruption. We can only delay it, by making an effect uninterruptible.
+
+### Fiber Finalization on Interruption
+
+When a fiber done its work or even interrupted, the finalizer of that fiber is guaranteed to be executed:
+
+```scala mdoc:silent:nest
+for {
+  fiber <- putStrLn("Working on the first job")
+    .schedule(Schedule.fixed(1.seconds))
+    .ensuring {
+      (putStrLn(
+        "Finalizing or releasing a resource that is time-consuming"
+      ) *> ZIO.sleep(7.seconds)).orDie
+    }
+    .fork
+  _     <- fiber.interrupt.delay(4.seconds)
+  _     <- putStrLn(
+          "Starting another task when the interruption of the previous task finished"
+        )
+} yield ()
+```
+
+The `release` action may take some time freeing up resources. So it may slow down the fiber's interruption.
+
+### Fast Interruption
+
+As we saw in the previous section, the ZIO runtime gets stuck on interruption task until the fiber's finalizer finishes its job. We can prevent this behavior by using `ZIO#disconnect` or `Fiber#interruptFork` which perform fiber's interruption in the background or in separate daemon fiber:
+
+Let's try the `Fiber#interruptFork`:
+
+```scala mdoc:silent:nest
+for {
+  fiber <- putStrLn("Working on the first job")
+    .schedule(Schedule.fixed(1.seconds))
+    .ensuring {
+      (putStrLn(
+        "Finalizing or releasing a resource that is time-consuming"
+      ) *> ZIO.sleep(7.seconds)).orDie
+    }
+    .fork
+  _ <- fiber.interruptFork.delay(4.seconds) // fast interruption
+  _ <- putStrLn(
+    "Starting another task while interruption of the previous fiber happening in the background"
+  )
+} yield ()
+```
+
+### Interrupting Blocking Operations
+
+The `zio.blocking.effectBlocking` is interruptible by default, but its interruption will not translate to the JVM thread interruption. Instead, we can use `zio.blocking.effectBlockingInterruptible` method. By using `effectBlockingInterruptible` method if that effect is interrupted, it will translate the ZIO interruption to the JVM thread interruption. ZIO has a comprehensive guide about blocking operation at [blocking service](../../services/blocking.md) page.
+
+### Automatic Interruption
+
+If we never _cancel_ a running effect explicitly, ZIO performs **automatic interruption** for several reasons:
+
+1. **Structured Concurrency** — If a parent fiber terminates, then by default, all child fibers are interrupted, and they cannot outlive their parent. We can prevent this behavior by using `ZIO#forkDaemon` or `ZIO#forkIn` instead of `ZIO#fork`.
+
+2. **Parallelism** — If one effect fails during the execution of many effects in parallel, the others will be canceled. Examples include `foreachPar`, `zipPar`, and all other parallel operators.
+
+3. **Timeouts** — If a running effect being timed out has not been completed in the specified amount of time, then the execution is canceled.
+
+4. **Racing** — The loser of a race, if still running, is canceled.
+
+### Joining an Interrupted Fiber
+
+We can join an interrupted fiber, which will cause our fiber to become interrupted. And this process does not inhibit finalization. So, **ZIO's concurrency model respect brackets even we are going to _join_ an interrupted fiber**:
+
+```scala mdoc:silent:nest
+val myApp =
+  (
+    for {
+      fiber <- putStrLn("Running a job").delay(1.seconds).forever.fork
+      _     <- fiber.interrupt.delay(3.seconds)
+      _     <- fiber.join // Joining an interrupted fiber
+    } yield ()
+  ).ensuring(
+    putStrLn(
+      "This finalizer will be executed without occurring any deadlock"
+    ).orDie
+  )
+```
+
+A fiber that is interrupted because of joining another interrupted fiber will properly finalize; this is a distinction between ZIO and the other effect systems, which _deadlock_ the joining fiber.
 
 ## Thread Shifting - JVM
 By default, fibers make no guarantees as to which thread they execute on. They may shift between threads, especially as they execute for long periods of time.
@@ -306,3 +382,4 @@ With ZIO, we do not have to think about a callback nonetheless sometimes when we
 Every time we do one of ZIO blocking operations it doesn't actually block the underlying thread, but also it is a semantic blocking managed by ZIO. For example, every time we see something like `ZIO.sleep` or when we take something from a queue (`queue.take`) or offer something to a queue (`queue.offer`) or if we acquire a permit from a semaphore (`semaphore.withPermit`) or if we acquire a lock (`ZIO.lock`) and so forth, we are blocking semantically. If we use the same stuff in Java, like `Thread.sleep` or any of its `lock` machinery then those things are going to block a thread. So this is why we say ZIO is 100% blocking but the Java thread is not.
 
 All of the pieces of machinery ZIO gives us are 100% asynchronous and non-blocking. As they don't block and monopolize the thread, all of the async work is executed on the primary thread pool in ZIO.
+

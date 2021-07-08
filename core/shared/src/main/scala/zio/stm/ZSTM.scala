@@ -198,8 +198,9 @@ final class ZSTM[-R, +E, +A] private[stm] (
    * Returns an `STM` effect whose failure and success channels have been mapped by
    * the specified pair of functions, `f` and `g`.
    */
+  @deprecated("use mapBoth", "2.0.0")
   def bimap[E2, B](f: E => E2, g: A => B)(implicit ev: CanFail[E]): ZSTM[R, E2, B] =
-    foldM(e => ZSTM.fail(f(e)), a => ZSTM.succeedNow(g(a)))
+    mapBoth(f, g)
 
   /**
    * Recovers from all errors.
@@ -488,6 +489,13 @@ final class ZSTM[-R, +E, +A] private[stm] (
       case TExit.Die(t)     => ZSTM.die(t)
       case TExit.Retry      => ZSTM.retry
     }
+
+  /**
+   * Returns an `STM` effect whose failure and success channels have been mapped by
+   * the specified pair of functions, `f` and `g`.
+   */
+  def mapBoth[E2, B](f: E => E2, g: A => B)(implicit ev: CanFail[E]): ZSTM[R, E2, B] =
+    foldM(e => ZSTM.fail(f(e)), a => ZSTM.succeedNow(g(a)))
 
   /**
    * Maps from one error type to another.

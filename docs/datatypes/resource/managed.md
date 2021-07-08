@@ -3,7 +3,7 @@ id: managed
 title: "Managed"
 ---
 
-`Managed[E, A]` is a type alias for `Managed[Any, E, A]`, which represents a managed resource that has no requirements, and may fail with an `E`, or succeed with an `A`.
+`Managed[E, A]` is a type alias for `ZManaged[Any, E, A]`, which represents a managed resource that has no requirements, and may fail with an `E`, or succeed with an `A`.
 
 ```scala mdoc:invisible
 import zio.ZManaged

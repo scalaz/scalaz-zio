@@ -30,17 +30,31 @@ private[clock] trait PlatformSpecific {
 
     private[this] val ConstFalse = () => false
 
+    private val maxMillis = Long.MaxValue / 1000000L
+
     override def schedule(task: Runnable, duration: Duration): CancelToken = (duration: @unchecked) match {
       case Duration.Infinity => ConstFalse
-      case Duration.Finite(_) =>
-        val future = service.schedule(
-          new Runnable {
-            def run: Unit =
-              task.run()
-          },
-          duration.toNanos,
-          TimeUnit.NANOSECONDS
-        )
+      case _ =>
+        val millis = duration.toMillis
+        val future =
+          if (millis < maxMillis)
+            service.schedule(
+              new Runnable {
+                def run: Unit =
+                  task.run()
+              },
+              duration.toNanos,
+              TimeUnit.NANOSECONDS
+            )
+          else
+            service.schedule(
+              new Runnable {
+                def run: Unit =
+                  task.run()
+              },
+              millis,
+              TimeUnit.MILLISECONDS
+            )
 
         () => {
           val canceled = future.cancel(true)

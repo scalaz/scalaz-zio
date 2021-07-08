@@ -449,8 +449,8 @@ object ZTransducer extends ZTransducerPlatformSpecificConstructors {
    * Stream(1, 5, 1)
    *  .aggregate(
    *    ZTransducer
-   *      .foldWeightedDecompose(List[Int]())((i: Int) => i.toLong, 4,
-   *        (i: Int) => Chunk(i - 1, 1)) { (acc, el) =>
+   *      .foldWeightedDecompose(List[Int]())((_, i: Int) => i.toLong, 4,
+   *        (i: Int) => if (i > 1) Chunk(i - 1, 1) else Chunk(i)) { (acc, el) =>
    *        el :: acc
    *      }
    *      .map(_.reverse)

@@ -7,7 +7,7 @@ import zio.test.mock.Expectation._
 import zio.test.mock.internal.InvalidCall._
 import zio.test.mock.internal.MockException._
 import zio.test.mock.module.{PureModule, PureModuleMock}
-import zio.{Cause, Has, Layer, ULayer, ZIO, ZLayer}
+import zio.{Cause, Layer, Promise, ZIO}
 
 import java.util.regex.Pattern
 import scala.{Console => SConsole}
@@ -246,12 +246,16 @@ object ReportingTestUtils {
     withOffset(2)(s"""${red("- invalid repetition range 4 to 2 by -1")}\n""")
   )
 
-  val mock5: ZSpec[Any, String] = {
-    val failingLayer: ZLayer[Any, String, Has[String]] = ZIO.fail("failed!").toLayer
-    val mock: ULayer[PureModule]                       = PureModuleMock.ZeroParams(value("mocked"))
-    val f: ZIO[Has[String] with PureModule, String, String] =
-      ZIO.serviceWith[PureModule.Service](_.zeroParams) <* ZIO.service[String]
-    testM("Failing layer")(assertM(f.provideLayer(failingLayer ++ mock).untraced)(equalTo("mocked")))
+  val mock5: ZSpec[Any, String] = testM("Failing layer") {
+    for {
+      promise     <- Promise.make[Nothing, Unit]
+      failingLayer = (promise.await *> ZIO.fail("failed!")).toLayer[String]
+      mock = PureModuleMock.ZeroParams(value("mocked")).toLayer.tap { _ =>
+               promise.succeed(())
+             }
+      f       = ZIO.serviceWith[PureModule.Service](_.zeroParams) <* ZIO.service[String]
+      result <- f.provideLayer(failingLayer ++ mock).untraced
+    } yield assert(result)(equalTo("mocked"))
   }
 
   val mock5Expected: Vector[String] = Vector(

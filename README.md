@@ -108,6 +108,7 @@ Want to see your company here? [Submit a PR](https://github.com/zio/zio/edit/mas
 * [Risk Ident](https://riskident.com/)
 * [Rocker](https://rocker.com/)
 * [Rudder](https://www.rudder.io/)
+* [Scalac](https://scalac.io/)
 * [SecurityScorecard](https://www.securityscorecard.io/)
 * [SentinelOne](https://www.sentinelone.com/)
 * [Signicat](https://www.signicat.com/)
@@ -147,6 +148,9 @@ Want to see your company here? [Submit a PR](https://github.com/zio/zio/edit/mas
 
 [SoftwareMill][Link-SoftwareMill] generously provides ZIO with paid-for CircleCI build infrastructure.
 
+[![YourKit][Image-YourKit]][Link-YourKit]
+
+[YourKit][Link-YourKit] generously provides use of their monitoring and profiling tools to maximize the performance of ZIO applications.
 
 ---
 
@@ -181,6 +185,7 @@ Copyright 2017 - 2020 John A. De Goes and the ZIO Contributors. All rights reser
 [Link-Scalac]: https://scalac.io "Scalac"
 [Link-SoftwareMill]: https://softwaremill.com "SoftwareMill"
 [Link-SeptimalMind]: https://7mind.io "Septimal Mind"
+[Link-YourKit]: https://www.yourkit.com "YourKit"
 [Link-Discord]: https://discord.gg/2ccFBr4 "Discord"
 [Link-Twitter]: https://twitter.com/zioscala
 
@@ -200,3 +205,4 @@ Copyright 2017 - 2020 John A. De Goes and the ZIO Contributors. All rights reser
 [Image-Scalac]: ./website/static/img/scalac.svg "Scalac"
 [Image-SoftwareMill]: ./website/static/img/softwaremill.svg "SoftwareMill"
 [Image-SeptimalMind]: ./website/static/img/septimal_mind.svg "Septimal Mind"
+[Image-YourKit]: ./website/static/img/yourkit.png "YourKit"

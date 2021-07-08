@@ -445,7 +445,7 @@ lazy val testJunitRunnerTests = crossProject(JVMPlatform)
       "org.apache.maven.wagon" % "wagon-http"             % "3.4.3"  % Test,
       "org.eclipse.aether"     % "aether-connector-basic" % "1.1.0"  % Test,
       "org.eclipse.aether"     % "aether-transport-wagon" % "1.1.0"  % Test,
-      "org.slf4j"              % "slf4j-simple"           % "1.7.30" % Test
+      "org.slf4j"              % "slf4j-simple"           % "1.7.31" % Test
     )
   )
   .dependsOn(test)
@@ -496,12 +496,12 @@ lazy val benchmarks = project.module
     publish / skip := true,
     libraryDependencies ++=
       Seq(
-        "co.fs2"                    %% "fs2-core"       % "2.5.6",
+        "co.fs2"                    %% "fs2-core"       % "2.5.8",
         "com.google.code.findbugs"   % "jsr305"         % "3.0.2",
-        "com.twitter"               %% "util-core"      % "21.5.0",
+        "com.twitter"               %% "util-core"      % "21.6.0",
         "com.typesafe.akka"         %% "akka-stream"    % "2.6.15",
         "io.monix"                  %% "monix"          % "3.4.0",
-        "io.projectreactor"          % "reactor-core"   % "3.4.6",
+        "io.projectreactor"          % "reactor-core"   % "3.4.7",
         "io.reactivex.rxjava2"       % "rxjava"         % "2.2.21",
         "org.jctools"                % "jctools-core"   % "3.3.0",
         "org.ow2.asm"                % "asm"            % "9.1",
@@ -537,6 +537,11 @@ lazy val benchmarks = project.module
 lazy val jsdocs = project
   .settings(libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "1.0.0")
   .enablePlugins(ScalaJSPlugin)
+
+val http4sV     = "0.23.0-RC1"
+val doobieV     = "1.0.0-M5"
+val catsEffectV = "3.1.1"
+
 lazy val docs = project.module
   .in(file("zio-docs"))
   .settings(
@@ -552,13 +557,20 @@ lazy val docs = project.module
       "org.jsoup"           % "jsoup"                     % "1.13.1" % "provided",
       "org.reactivestreams" % "reactive-streams-examples" % "1.0.3"  % "provided",
       /* to evict 1.3.0 brought in by mdoc-js */
-      "org.scala-js"  % "scalajs-compiler"            % scalaJSVersion cross CrossVersion.full,
-      "org.scala-js" %% "scalajs-linker"              % scalaJSVersion,
-      "dev.zio"      %% "zio-interop-cats"            % "2.5.1.0",
-      "dev.zio"      %% "zio-interop-monix"           % "3.0.0.0-RC7",
-      "dev.zio"      %% "zio-interop-scalaz7x"        % "7.3.3.0",
-      "dev.zio"      %% "zio-interop-reactivestreams" % "1.3.5",
-      "dev.zio"      %% "zio-interop-twitter"         % "20.10.0.0"
+      "org.scala-js"   % "scalajs-compiler"            % scalaJSVersion cross CrossVersion.full,
+      "org.scala-js"  %% "scalajs-linker"              % scalaJSVersion,
+      "org.typelevel" %% "cats-effect"                 % catsEffectV,
+      "dev.zio"       %% "zio-interop-cats"            % "3.1.1.0",
+      "dev.zio"       %% "zio-interop-scalaz7x"        % "7.3.3.0",
+      "dev.zio"       %% "zio-interop-reactivestreams" % "1.3.5",
+      "dev.zio"       %% "zio-interop-twitter"         % "20.10.0.0",
+      "dev.zio"       %% "zio-zmx"                     % "0.0.6",
+      "org.tpolecat"  %% "doobie-core"                 % doobieV,
+      "org.tpolecat"  %% "doobie-h2"                   % doobieV,
+      "org.tpolecat"  %% "doobie-hikari"               % doobieV,
+      "org.http4s"    %% "http4s-blaze-server"         % http4sV,
+      "org.http4s"    %% "http4s-blaze-client"         % http4sV,
+      "org.http4s"    %% "http4s-dsl"                  % http4sV
     )
   )
   .settings(macroExpansionSettings)

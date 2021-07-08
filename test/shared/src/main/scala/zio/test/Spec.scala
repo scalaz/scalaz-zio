@@ -63,11 +63,9 @@ final case class Spec[-R, +E, +T](caseValue: SpecCase[R, E, T, Spec[R, E, T]]) {
   /**
    * Returns a new spec with remapped errors and tests.
    */
+  @deprecated("use mapBoth", "2.0.0")
   final def bimap[E1, T1](f: E => E1, g: T => T1)(implicit ev: CanFail[E]): Spec[R, E1, T1] =
-    transform[R, E1, T1] {
-      case SuiteCase(label, specs, exec)      => SuiteCase(label, specs.mapError(f), exec)
-      case TestCase(label, test, annotations) => TestCase(label, test.bimap(f, g), annotations)
-    }
+    mapBoth(f, g)
 
   /**
    * Returns the number of tests in the spec that satisfy the specified
@@ -223,6 +221,15 @@ final case class Spec[-R, +E, +T](caseValue: SpecCase[R, E, T, Spec[R, E, T]]) {
     n: Int
   )(failure: Cause[E] => ZIO[R1, E1, A], success: T => ZIO[R1, E1, A]): ZManaged[R1, Nothing, Spec[R1, E1, A]] =
     foreachExec(ExecutionStrategy.ParallelN(n))(failure, success)
+
+  /**
+   * Returns a new spec with remapped errors and tests.
+   */
+  final def mapBoth[E1, T1](f: E => E1, g: T => T1)(implicit ev: CanFail[E]): Spec[R, E1, T1] =
+    transform[R, E1, T1] {
+      case SuiteCase(label, specs, exec)      => SuiteCase(label, specs.mapError(f), exec)
+      case TestCase(label, test, annotations) => TestCase(label, test.mapBoth(f, g), annotations)
+    }
 
   /**
    * Returns a new spec with remapped errors.

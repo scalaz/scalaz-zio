@@ -492,19 +492,15 @@ trait ZStreamPlatformSpecificConstructors {
     /**
      * The remote address, i.e. the connected client
      */
-    def remoteAddress: IO[IOException, Option[SocketAddress]] = IO
-      .effect(
-        Option(socket.getRemoteAddress)
-      )
+    def remoteAddress: IO[IOException, SocketAddress] = IO
+      .effect(socket.getRemoteAddress)
       .refineToOrDie[IOException]
 
     /**
      * The local address, i.e. our server
      */
-    def localAddress: IO[IOException, Option[SocketAddress]] = IO
-      .effect(
-        Option(socket.getLocalAddress)
-      )
+    def localAddress: IO[IOException, SocketAddress] = IO
+      .effect(socket.getLocalAddress)
       .refineToOrDie[IOException]
 
     /**
@@ -559,6 +555,11 @@ trait ZStreamPlatformSpecificConstructors {
      * Close the underlying socket
      */
     def close(): UIO[Unit] = ZIO.effectTotal(socket.close())
+
+    /**
+     * Close only the write, so the remote end will see EOF
+     */
+    def closeWrite(): UIO[Unit] = ZIO.effectTotal(socket.shutdownOutput()).unit
   }
 
   object Connection {

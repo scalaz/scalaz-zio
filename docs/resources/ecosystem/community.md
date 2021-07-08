@@ -10,6 +10,7 @@ List of first-class ZIO support libraries from the community:
 - [distage](https://github.com/7mind/izumi) — Staged, transparent and debuggable runtime & compile-time Dependency Injection Framework
 - [idealingua](https://izumi.7mind.io/idealingua/) — API Definition, Data Modeling and RPC Language, optimized for fast prototyping – like gRPC, but with a human face
 - [logstage](https://izumi.7mind.io/logstage/) — Automatic structural logs from Scala string interpolations
+- [munit-zio](https://github.com/poslegm/munit-zio) — Lightweight bridge between ZIO and MUnit testing library
 - [rezilience](https://github.com/svroonland/rezilience) — Utilities for resilience and handling of transient errors
 - [slf4zio](https://github.com/mlangc/slf4zio) — Simple convenience layer on top of SLF4J for ZIO
 - [tranzactio](https://github.com/gaelrenoux/tranzactio) — ZIO wrapper for data access libraries like Doobie or Anorm

@@ -255,10 +255,10 @@ object URIO {
     ZIO.collectParN(n)(in)(f)
 
   /**
-   * @see See [[zio.ZIO.cond]]
+   * @see See [[zio.ZIO.debug]]
    */
-  def debug(message: String): UIO[Unit] =
-    ZIO.debug(message)
+  def debug(value: Any): UIO[Unit] =
+    ZIO.debug(value)
 
   /**
    * @see [[zio.ZIO.descriptor]]

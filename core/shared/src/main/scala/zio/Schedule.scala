@@ -307,6 +307,12 @@ sealed abstract class Schedule[-Env, -In, +Out] private (
   }
 
   /**
+   * A schedule that recurs during the given duration
+   */
+  def upTo(duration: Duration): Schedule[Env, In, Out] =
+    self <* Schedule.upTo(duration)
+
+  /**
    * Returns a new schedule with the specified effectfully computed delay added before the start
    * of each interval produced by this schedule.
    */
@@ -1039,6 +1045,12 @@ object Schedule {
 
     Schedule(loop(None, 0L))
   }
+
+  /**
+   * A schedule that recurs during the given duration
+   */
+  def upTo(duration: Duration): Schedule[Any, Any, Duration] =
+    elapsed.whileOutput(_ < duration)
 
   /**
    * A schedule that always recurs, producing a count of repeats: 0, 1, 2.

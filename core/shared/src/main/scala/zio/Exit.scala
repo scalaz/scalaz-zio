@@ -61,7 +61,9 @@ sealed abstract class Exit[+E, +A] extends Product with Serializable { self =>
   /**
    * Maps over both the error and value type.
    */
-  final def bimap[E1, A1](f: E => E1, g: A => A1): Exit[E1, A1] = mapError(f).map(g)
+  @deprecated("use mapBoth", "2.0.0")
+  final def bimap[E1, A1](f: E => E1, g: A => A1): Exit[E1, A1] =
+    mapBoth(f, g)
 
   final def exists(p: A => Boolean): Boolean =
     fold(_ => false, p)
@@ -136,6 +138,12 @@ sealed abstract class Exit[+E, +A] extends Product with Serializable { self =>
       case Success(v)     => Exit.succeed(f(v))
       case e @ Failure(_) => e
     }
+
+  /**
+   * Maps over both the error and value type.
+   */
+  final def mapBoth[E1, A1](f: E => E1, g: A => A1): Exit[E1, A1] =
+    mapError(f).map(g)
 
   /**
    * Maps over the error type.

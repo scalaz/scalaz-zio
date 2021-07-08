@@ -285,6 +285,9 @@ object SmartAssertionSpec extends ZIOBaseSpec {
         val string = "Sunday Everyday"
         assertTrue(string == "Saturday Todays")
       } @@ failing
-    )
+    ),
+    test("Package qualified identifiers") {
+      assertTrue(zio.duration.Duration.fromNanos(0) == zio.duration.Duration.Zero)
+    }
   )
 }

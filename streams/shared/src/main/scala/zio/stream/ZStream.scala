@@ -353,8 +353,9 @@ abstract class ZStream[-R, +E, +O](val process: ZManaged[R, Nothing, ZIO[R, Opti
    * Returns a stream whose failure and success channels have been mapped by
    * the specified pair of functions, `f` and `g`.
    */
+  @deprecated("use mapBoth", "2.0.0")
   def bimap[E1, O1](f: E => E1, g: O => O1)(implicit ev: CanFail[E]): ZStream[R, E1, O1] =
-    mapError(f).map(g)
+    mapBoth(f, g)
 
   /**
    * Fan out the stream, producing a list of streams that have the same
@@ -706,7 +707,7 @@ abstract class ZStream[-R, +E, +O](val process: ZManaged[R, Nothing, ZIO[R, Opti
     ZStream {
       for {
         os    <- self.process.mapM(BufferedPull.make(_))
-        pfSome = pf.andThen(_.bimap(Some(_), Chunk.single(_)))
+        pfSome = pf.andThen(_.mapBoth(Some(_), Chunk.single(_)))
         pull = {
           def go: ZIO[R1, Option[E1], Chunk[O1]] =
             os.pullElement.flatMap(o => pfSome.applyOrElse(o, (_: O) => go))
@@ -753,7 +754,7 @@ abstract class ZStream[-R, +E, +O](val process: ZManaged[R, Nothing, ZIO[R, Opti
       for {
         os   <- self.process.mapM(BufferedPull.make(_))
         done <- Ref.make(false).toManaged_
-        pfIO  = pf.andThen(_.bimap(Some(_), Chunk.single(_)))
+        pfIO  = pf.andThen(_.mapBoth(Some(_), Chunk.single(_)))
         pull = done.get.flatMap {
                  if (_) Pull.end
                  else
@@ -2019,6 +2020,13 @@ abstract class ZStream[-R, +E, +O](val process: ZManaged[R, Nothing, ZIO[R, Opti
     mapM(a => f(a).map(Chunk.fromIterable(_))).mapConcatChunk(identity)
 
   /**
+   * Returns a stream whose failure and success channels have been mapped by
+   * the specified pair of functions, `f` and `g`.
+   */
+  def mapBoth[E1, O1](f: E => E1, g: O => O1)(implicit ev: CanFail[E]): ZStream[R, E1, O1] =
+    mapError(f).map(g)
+
+  /**
    * Transforms the errors emitted by this stream using `f`.
    */
   def mapError[E2](f: E => E2): ZStream[R, E2, O] =
@@ -2045,7 +2053,7 @@ abstract class ZStream[-R, +E, +O](val process: ZManaged[R, Nothing, ZIO[R, Opti
   def mapM[R1 <: R, E1 >: E, O2](f: O => ZIO[R1, E1, O2]): ZStream[R1, E1, O2] =
     ZStream {
       self.process.mapM(BufferedPull.make(_)).map { pull =>
-        pull.pullElement.flatMap(f(_).bimap(Some(_), Chunk.single(_)))
+        pull.pullElement.flatMap(f(_).mapBoth(Some(_), Chunk.single(_)))
       }
     }
 
@@ -3009,7 +3017,9 @@ abstract class ZStream[-R, +E, +O](val process: ZManaged[R, Nothing, ZIO[R, Opti
    * Fails the stream with given error if it does not produce a value after d duration.
    */
   final def timeoutError[E1 >: E](e: => E1)(d: Duration): ZStream[R with Clock, E1, O] =
-    timeoutErrorCause(Cause.fail(e))(d)
+    self
+      .timeoutErrorCause(Cause.empty)(d)
+      .mapErrorCause(_ => Cause.fail(e))
 
   /**
    * Halts the stream with given cause if it does not produce a value after d duration.

@@ -103,17 +103,22 @@ class SmartAssertMacros(ctx: Quotes)  {
             case (tpeArgs, None) => Select.overloaded(param, name, tpeArgs, List.empty)
           }
 
-        lhs.tpe.widen.asType match {
-          case '[l] =>
-            val selectBody = '{
-              (from: l) => ${ body('{from}.asTerm).asExprOf[A] }
-            }
-            val lhsExpr = transform(lhs.asExprOf[l]).asExprOf[Arrow[Any, l]]
-            val assertExpr = '{Arrow.fromFunction[l, A](${selectBody})}
-            val pos = summon[PositionContext]
-            val span = Expr((lhs.pos.end - pos.start, method.pos.end - pos.start))
-            '{$lhsExpr >>> $assertExpr.span($span)}
-        }
+        val tpe = lhs.tpe.widen
+
+        if(tpe.typeSymbol.isPackageDef)
+          '{Arrow.succeed($expr).span(${method.span})}
+        else
+          tpe.asType match {
+            case '[l] =>
+              val selectBody = '{
+                (from: l) => ${ body('{from}.asTerm).asExprOf[A] }
+              }
+              val lhsExpr = transform(lhs.asExprOf[l]).asExprOf[Arrow[Any, l]]
+              val assertExpr = '{Arrow.fromFunction[l, A](${selectBody})}
+              val pos = summon[PositionContext]
+              val span = Expr((lhs.pos.end - pos.start, method.pos.end - pos.start))
+              '{$lhsExpr >>> $assertExpr.span($span)}
+          }
 
 
       case Unseal(tree) =>

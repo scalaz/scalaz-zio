@@ -484,8 +484,8 @@ object ZHub {
         val poller = pollers.poll(nullPoller)
         if (poller eq nullPoller) {
           subscribers.remove(subscription -> pollers)
-          if (!pollers.isEmpty()) subscribers.add(subscription -> pollers)
-          keepPolling = false
+          if (pollers.isEmpty()) keepPolling = false
+          else subscribers.add(subscription -> pollers)
         } else {
           subscription.poll(empty) match {
             case null =>

@@ -18,8 +18,8 @@ package zio
 
 import zio.internal.Sync
 
-import java.util.Map
 import java.util.concurrent.atomic.{AtomicInteger, AtomicReference}
+import java.util.{Comparator, Map}
 
 /**
  * A `ZScope[A]` is a value that allows adding finalizers identified by a key.
@@ -304,11 +304,10 @@ object ZScope {
             weakFinalizers.clear()
             strongFinalizers.clear()
 
-            java.util.Arrays.sort(
-              array,
-              (l: OrderedFinalizer, r: OrderedFinalizer) =>
-                if (l eq null) -1 else if (r eq null) 1 else l.order - r.order
-            )
+            val comparator: Comparator[OrderedFinalizer] = (l: OrderedFinalizer, r: OrderedFinalizer) =>
+              if (l eq null) -1 else if (r eq null) 1 else l.order - r.order
+
+            java.util.Arrays.sort(array, comparator)
 
             val a = exitValue.get()
 
