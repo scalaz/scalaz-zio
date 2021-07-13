@@ -49,7 +49,8 @@ package zio
 final class FiberRef[A] private[zio] (
   private[zio] val initial: A,
   private[zio] val fork: A => A,
-  private[zio] val join: (A, A) => A
+  private[zio] val join: (A, A) => A,
+  private[zio] val link: A => Unit
 ) extends Serializable { self =>
 
   /**
@@ -228,6 +229,11 @@ object FiberRef extends Serializable {
   /**
    * Creates a new `FiberRef` with given initial value.
    */
-  def make[A](initial: A, fork: A => A = (a: A) => a, join: (A, A) => A = ((_: A, a: A) => a)): UIO[FiberRef[A]] =
-    new ZIO.FiberRefNew(initial, fork, join)
+  def make[A](
+    initial: A,
+    fork: A => A = (a: A) => a,
+    join: (A, A) => A = ((_: A, a: A) => a),
+    link: A => Unit = (_: A) => ()
+  ): UIO[FiberRef[A]] =
+    new ZIO.FiberRefNew(initial, fork, join, link)
 }

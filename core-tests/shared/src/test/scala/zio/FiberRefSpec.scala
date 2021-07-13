@@ -1,6 +1,7 @@
 package zio
 
 import zio.FiberRefSpecUtil._
+import zio.ZRefSpec.current
 import zio.duration._
 import zio.test.Assertion._
 import zio.test.TestAspect._
@@ -345,6 +346,24 @@ object FiberRefSpec extends ZIOBaseSpec {
           value1   <- fiberRef.get
           value2   <- UIO(handle.get())
         } yield assert((value1, value2))(equalTo((initial, initial)))
+      },
+      testM("link to thread") {
+        val threadLocal = new ThreadLocal[Option[String]]() {
+          override def initialValue(): Option[String] = None
+        }
+        for {
+          _              <- FiberRef.make(current, link = (s: String) => threadLocal.set(Some(s)))
+          loopThreadVals <- ZIO.foreach(0 to 2000: Seq[Int])(_ => UIO(threadLocal.get))
+          blockingThreadVal <- zio.blocking.effectBlocking {
+                                 Thread.sleep(10)
+                                 threadLocal.get
+                               }.orDie
+          asyncThreadVal <- Live.live(zio.clock.sleep(10.millis)) *> UIO(threadLocal.get)
+        } yield {
+          assert(loopThreadVals)(forall(isSome(equalTo(current)))) &&
+          assert(blockingThreadVal)(isSome(equalTo(current))) &&
+          assert(asyncThreadVal)(isSome(equalTo(current)))
+        }
       }
     )
   )

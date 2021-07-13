@@ -651,7 +651,7 @@ object Fiber extends FiberPlatformSpecific {
   /**
    * A `FiberRef` that stores the name of the fiber, which defaults to `None`.
    */
-  val fiberName: FiberRef[Option[String]] = new FiberRef(None, identity, (old, _) => old)
+  val fiberName: FiberRef[Option[String]] = new FiberRef(None, identity, (old, _) => old, _ => ())
 
   /**
    * Lifts an [[zio.IO]] into a `Fiber`.

@@ -4641,8 +4641,12 @@ object ZIO extends ZIOCompanionPlatformSpecific {
     override def tag = Tags.EffectSuspendTotalWith
   }
 
-  private[zio] final class FiberRefNew[A](val initial: A, private[zio] val onFork: A => A, val onJoin: (A, A) => A)
-      extends UIO[FiberRef[A]] {
+  private[zio] final class FiberRefNew[A](
+    val initial: A,
+    private[zio] val onFork: A => A,
+    val onJoin: (A, A) => A,
+    val link: A => Unit
+  ) extends UIO[FiberRef[A]] {
     override def tag = Tags.FiberRefNew
   }
 
