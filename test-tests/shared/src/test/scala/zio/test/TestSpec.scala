@@ -35,7 +35,7 @@ object TestSpec extends ZIOBaseSpec {
           n += 1
           ZIO.succeed(assertCompletes)
         }
-      ).filterLabels(_ == "test2").get
+      ).filterLabels(_ == "test2")
       for {
         _ <- execute(spec)
       } yield assert(n)(equalTo(1))

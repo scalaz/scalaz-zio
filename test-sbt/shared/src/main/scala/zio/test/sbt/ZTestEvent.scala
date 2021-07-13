@@ -23,12 +23,12 @@ object ZTestEvent {
   ): Seq[ZTestEvent] =
     executedSpec.fold[Seq[ZTestEvent]] { c =>
       (c: @unchecked) match {
-        case ExecutedSpec.SuiteCase(_, results) => results.flatten
-        case ExecutedSpec.TestCase(label, result, annotations) =>
+        case ExecutedSpec.MultipleCase(results) => results.flatMap(zio.Chunk.fromIterable)
+        case ExecutedSpec.TestCase(result, annotations) =>
           Seq(
             ZTestEvent(
               fullyQualifiedName,
-              new TestSelector(label),
+              new TestSelector(???),
               toStatus(result),
               None,
               annotations.get(TestAnnotation.timing).toMillis,

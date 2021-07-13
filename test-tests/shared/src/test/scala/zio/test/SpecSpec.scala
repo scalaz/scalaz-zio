@@ -71,14 +71,14 @@ object SpecSpec extends ZIOBaseSpec {
           executedSpec <- execute(spec)
           successes = executedSpec.fold[Int] { c =>
                         (c: @unchecked) match {
-                          case ExecutedSpec.SuiteCase(_, counts) => counts.sum
-                          case ExecutedSpec.TestCase(_, test, _) => if (test.isRight) 1 else 0
+                          case ExecutedSpec.MultipleCase(counts) => counts.sum
+                          case ExecutedSpec.TestCase(test, _)    => if (test.isRight) 1 else 0
                         }
                       }
           failures = executedSpec.fold[Int] { c =>
                        (c: @unchecked) match {
-                         case ExecutedSpec.SuiteCase(_, counts) => counts.sum
-                         case ExecutedSpec.TestCase(_, test, _) => if (test.isLeft) 1 else 0
+                         case ExecutedSpec.MultipleCase(counts) => counts.sum
+                         case ExecutedSpec.TestCase(test, _)    => if (test.isLeft) 1 else 0
                        }
                      }
         } yield assert(successes)(equalTo(1)) && assert(failures)(equalTo(2))

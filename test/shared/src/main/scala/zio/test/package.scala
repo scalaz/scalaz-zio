@@ -570,13 +570,13 @@ package object test extends CompileVariants {
    * Builds a suite containing a number of other specs.
    */
   def suite[R, E, T](label: String)(specs: Spec[R, E, T]*): Spec[R, E, T] =
-    Spec.suite(label, ZManaged.succeedNow(specs.toVector), None)
+    Spec.labeled(label, Spec.multiple(Chunk.fromIterable(specs)))
 
   /**
    * Builds an effectual suite containing a number of other specs.
    */
   def suiteM[R, E, T](label: String)(specs: ZIO[R, E, Iterable[Spec[R, E, T]]]): Spec[R, E, T] =
-    Spec.suite(label, specs.map(_.toVector).toManaged_, None)
+    Spec.labeled(label, Spec.managed(specs.map(specs => Spec.multiple(Chunk.fromIterable(specs))).toManaged_))
 
   /**
    * Builds a spec with a single pure test.
@@ -588,9 +588,10 @@ package object test extends CompileVariants {
    * Builds a spec with a single effectful test.
    */
   def testM[R, E](label: String)(assertion: => ZIO[R, E, TestResult])(implicit loc: SourceLocation): ZSpec[R, E] =
-    Spec
-      .test(label, ZTest(assertion), TestAnnotationMap.empty)
-      .annotate(TestAnnotation.location, loc :: Nil)
+    Spec.labeled(
+      label,
+      Spec.test(ZTest(assertion), TestAnnotationMap.empty).annotate(TestAnnotation.location, loc :: Nil)
+    )
 
   /**
    * Passes version specific information to the specified function, which will

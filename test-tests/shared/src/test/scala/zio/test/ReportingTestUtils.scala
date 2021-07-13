@@ -97,7 +97,7 @@ object ReportingTestUtils {
   )
 
   val test4: Spec[Any, TestFailure[String], Nothing] =
-    Spec.test("Failing test", failed(Cause.fail("Fail")), TestAnnotationMap.empty)
+    Spec.labeled("Failing test", Spec.test(failed(Cause.fail("Fail")), TestAnnotationMap.empty))
   val test4Expected: Vector[String] = Vector(
     expectedFailure("Failing test"),
     withOffset(2)("Fiber failed.\n") +

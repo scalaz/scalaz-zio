@@ -12,8 +12,8 @@ object TestUtils {
     execSpec: ExecutedSpec[E]
   )(f: Either[TestFailure[E], TestSuccess] => Boolean): Boolean =
     execSpec.forall {
-      case ExecutedSpec.TestCase(_, test, _) => f(test)
-      case _                                 => true
+      case ExecutedSpec.TestCase(test, _) => f(test)
+      case _                              => true
     }
 
   def isIgnored[E](spec: ZSpec[environment.TestEnvironment, E]): UIO[Boolean] =

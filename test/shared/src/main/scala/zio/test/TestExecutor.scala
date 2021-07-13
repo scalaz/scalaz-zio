@@ -16,7 +16,7 @@
 
 package zio.test
 
-import zio.{ExecutionStrategy, Has, Layer, UIO, ZIO}
+import zio.{ExecutionStrategy, Has, Layer, UIO, ZIO, ZManaged}
 
 /**
  * A `TestExecutor[R, E]` is capable of executing specs that require an
@@ -45,11 +45,15 @@ object TestExecutor {
           }
         )
         .use(_.foldM[Any, Nothing, ExecutedSpec[E]](defExec) {
-          case Spec.SuiteCase(label, specs, _) =>
-            specs.map(specs => ExecutedSpec.suite(label, specs))
-          case Spec.TestCase(label, test, staticAnnotations) =>
+          case Spec.LabeledCase(label, spec) =>
+            ZManaged.succeedNow(ExecutedSpec.labeled(label, spec))
+          case Spec.ManagedCase(managed) =>
+            managed
+          case Spec.MultipleCase(specs) =>
+            ZManaged.succeedNow(ExecutedSpec.multiple(specs))
+          case Spec.TestCase(test, staticAnnotations) =>
             test.map { case (result, dynamicAnnotations) =>
-              ExecutedSpec.test(label, result, staticAnnotations ++ dynamicAnnotations)
+              ExecutedSpec.test(result, staticAnnotations ++ dynamicAnnotations)
             }.toManaged_
         }.useNow)
     val environment = env
