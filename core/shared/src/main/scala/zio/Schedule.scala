@@ -1085,7 +1085,7 @@ object Schedule {
   def fromFunction[A, B](f: A => B): Schedule[Any, A, B] = identity[A].map(f)
 
   /**
-   * A schedule that always recurs, which counts the number of recurrances.
+   * A schedule that always recurs, which counts the number of recurrences.
    */
   val count: Schedule[Any, Any, Long] =
     unfold(0L)(_ + 1L)
