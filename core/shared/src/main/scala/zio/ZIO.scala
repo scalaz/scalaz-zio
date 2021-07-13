@@ -3813,6 +3813,16 @@ object ZIO extends ZIOCompanionPlatformSpecific {
     (zio: ZIO[R, E, A]) => new ZIO.Provide(r, zio)
 
   /**
+   * Provides this effect with the the environment output by the specified
+   * layer, leaving all remaining environmental requirements to be provided
+   * later.
+   */
+  def provideSomeLayer[R0, R <: Has[_]: Tag, R1 <: Has[_], E, E1 >: E, A](layer: ZLayer[R0, E, R])(
+    zio: ZIO[R with R1, E1, A]
+  ): ZIO[R0 with R1, E1, A] =
+    zio.provideSomeLayer[R0 with R1](layer)
+
+  /**
    * Returns a effect that will never produce anything. The moral equivalent of
    * `while(true) {}`, only without the wasted CPU cycles. Fibers that suspended
    * running this effect are automatically garbage collected on the JVM,
