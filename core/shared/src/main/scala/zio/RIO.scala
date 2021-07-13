@@ -490,6 +490,14 @@ object RIO {
     ZIO.foreach(in)(f)
 
   /**
+   * @see See [[[zio.ZIO.foreachFlatten[R,E,A,B,Collection[+Element]<:Iterable[Element]]*]]]
+   */
+  def foreachFlatten[R, A, B, Collection[+Element] <: Iterable[Element]](
+    in: Collection[A]
+  )(f: A => RIO[R, Collection[B]])(implicit bf: BuildFrom[Collection[A], B, Collection[B]]): RIO[R, Collection[B]] =
+    ZIO.foreachFlatten(in)(f)
+
+  /**
    * @see See [[[zio.ZIO.foreach[R,E,A,B](in:Set*]]]
    */
   def foreach[R, A, B](in: Set[A])(f: A => RIO[R, B]): RIO[R, Set[B]] =

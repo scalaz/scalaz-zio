@@ -320,6 +320,26 @@ object ZManagedSpec extends ZIOBaseSpec {
         } yield assert(values)(equalTo(List(1, 2, 3, 3, 2, 1)))
       }
     ),
+    suite("foreachFlatten")(
+      testM("Returns elements in the correct order") {
+        def res(int: Int) =
+          ZManaged.succeed(List(int, int))
+
+        val managed = ZManaged.foreachFlatten(List(1, 2, 3, 4))(res)
+        managed.use[Any, Nothing, TestResult](res => ZIO.succeed(assert(res)(equalTo(List(1, 1, 2, 2, 3, 3, 4, 4)))))
+      },
+      testM("Runs finalizers") {
+        testFinalizersPar(4, res => ZManaged.foreach(List(1, 2, 3, 4))(_ => res))
+      },
+      testM("Invokes cleanups in reverse order of acquisition") {
+        for {
+          effects <- Ref.make[List[Int]](Nil)
+          res      = (x: Int) => ZManaged.make(effects.update(x :: _))(_ => effects.update(x :: _))
+          program  = ZManaged.foreach(List(1, 2, 3))(res)
+          values  <- program.use_(ZIO.unit) *> effects.get
+        } yield assert(values)(equalTo(List(1, 2, 3, 3, 2, 1)))
+      }
+    ),
     suite("foreach for Option")(
       testM("Returns elements if Some") {
         def res(int: Int) =

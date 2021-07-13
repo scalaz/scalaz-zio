@@ -454,6 +454,14 @@ object IO {
     ZIO.foreach(in)(f)
 
   /**
+   * @see See [[[zio.ZIO.foreachFlatten[R,E,A,B,Collection[+Element]<:Iterable[Element]]*]]]
+   */
+  def foreachFlatten[E, A, B, Collection[+Element] <: Iterable[Element]](
+    in: Collection[A]
+  )(f: A => IO[E, Collection[B]])(implicit bf: BuildFrom[Collection[A], B, Collection[B]]): IO[E, Collection[B]] =
+    ZIO.foreachFlatten(in)(f)
+
+  /**
    * @see See [[[zio.ZIO.foreach[R,E,A,B](in:Set*]]]
    */
   def foreach[E, A, B](in: Set[A])(f: A => IO[E, B]): IO[E, Set[B]] =

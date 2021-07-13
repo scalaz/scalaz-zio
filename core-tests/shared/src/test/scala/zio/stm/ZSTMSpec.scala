@@ -975,6 +975,26 @@ object ZSTMSpec extends ZIOBaseSpec {
         } yield assert(v)(equalTo(expectedV))
       }
     ),
+    suite("foreachFlatten")(
+      testM("performs an action on each list element and return a single transaction that contains the result") {
+        for {
+          tvar     <- TRef.makeCommit(0)
+          list      = List(1, 2, 3, 4, 5)
+          expectedV = list.sum
+          res      <- STM.foreachFlatten(list)(a => tvar.update(_ + a).as(List(a, a))).commit
+          v        <- tvar.get.commit
+        } yield assert(v)(equalTo(expectedV)) && assert(res)(equalTo(list.flatMap(a => List(a, a))))
+      },
+      testM("performs an action on each chunk element and return a single transaction that contains the result") {
+        for {
+          tvar     <- TRef.makeCommit(0)
+          chunk     = Chunk(1, 2, 3, 4, 5)
+          expectedV = chunk.foldRight(0)(_ + _)
+          res      <- STM.foreachFlatten(chunk)(a => tvar.update(_ + a).as(Chunk(a, a))).commit
+          v        <- tvar.get.commit
+        } yield assert(v)(equalTo(expectedV)) && assert(res)(equalTo(chunk.flatMap(a => List(a, a))))
+      }
+    ),
     suite("foreach_")(
       testM("performs actions in order given a list") {
         for {

@@ -1202,6 +1202,20 @@ object ZSTM {
     }.map(_.result())
 
   /**
+   * Applies the function `f` to each element of the `Collection[A]`,
+   * flattens the intermediate `Collection[B]`'s, returning a transactional
+   * effect that produces a new `Collection[B]`.
+   */
+  def foreachFlatten[R, E, A, B, Collection[+Element] <: Iterable[Element]](
+    in: Collection[A]
+  )(
+    f: A => ZSTM[R, E, Collection[B]]
+  )(implicit bf: BuildFrom[Collection[A], B, Collection[B]]): ZSTM[R, E, Collection[B]] =
+    in.foldLeft[ZSTM[R, E, Builder[B, Collection[B]]]](ZSTM.succeed(bf.newBuilder(in))) { (tx, a) =>
+      tx.zipWith(f(a))(_ ++= _)
+    }.map(_.result())
+
+  /**
    * Applies the function `f` to each element of the `Set[A]` and returns a
    * transactional effect that produces a new `Set[B]`.
    */

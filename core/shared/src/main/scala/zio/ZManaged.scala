@@ -1742,6 +1742,19 @@ object ZManaged extends ZManagedPlatformSpecific {
     })
 
   /**
+   * Applies the function `f` to each element of the `Collection[A]`, then
+   * flattens the intermediate `Collection[B]`'s into a new `Collection[B]`.
+   */
+  def foreachFlatten[R, E, A1, A2, Collection[+Element] <: Iterable[Element]](in: Collection[A1])(
+    f: A1 => ZManaged[R, E, Collection[A2]]
+  )(implicit bf: BuildFrom[Collection[A1], A2, Collection[A2]]): ZManaged[R, E, Collection[A2]] =
+    ZManaged(ZIO.foreach(in.toList)(f(_).zio).map { result =>
+      val (fins, ass) = result.unzip
+      val as          = ass.flatten
+      (e => ZIO.foreach(fins.reverse)(_.apply(e)), bf.fromSpecific(in)(as))
+    })
+
+  /**
    * Applies the function `f` if the argument is non-empty and
    * returns the results in a new `Option[A2]`.
    */

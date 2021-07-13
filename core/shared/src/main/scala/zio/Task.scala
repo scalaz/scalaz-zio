@@ -460,6 +460,14 @@ object Task extends TaskPlatformSpecific {
     ZIO.foreach(in)(f)
 
   /**
+   * @see See [[[zio.ZIO.foreach[R,E,A,B,Collection[+Element]<:Iterable[Element]]*]]]
+   */
+  def foreachFlatten[A, B, Collection[+Element] <: Iterable[Element]](
+    in: Collection[A]
+  )(f: A => Task[Collection[B]])(implicit bf: BuildFrom[Collection[A], B, Collection[B]]): Task[Collection[B]] =
+    ZIO.foreachFlatten(in)(f)
+
+  /**
    * @see See [[[zio.ZIO.foreach[R,E,A,B](in:Set*]]]
    */
   def foreach[A, B](in: Set[A])(f: A => Task[B]): Task[Set[B]] =

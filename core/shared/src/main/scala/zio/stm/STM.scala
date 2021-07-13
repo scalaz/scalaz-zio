@@ -168,6 +168,14 @@ object STM {
     ZSTM.foreach(in)(f)
 
   /**
+   * @see See [[[zio.stm.ZSTM.foreachFlatten[R,E,A,B,Collection[+Element]<:Iterable[Element]]*]]]
+   */
+  def foreachFlatten[E, A, B, Collection[+Element] <: Iterable[Element]](
+    in: Collection[A]
+  )(f: A => STM[E, Collection[B]])(implicit bf: BuildFrom[Collection[A], B, Collection[B]]): STM[E, Collection[B]] =
+    ZSTM.foreachFlatten(in)(f)
+
+  /**
    * @see See [[[zio.stm.ZSTM.foreach[R,E,A,B](in:Set*]]]
    */
   def foreach[E, A, B](in: Set[A])(f: A => STM[E, B]): STM[E, Set[B]] =

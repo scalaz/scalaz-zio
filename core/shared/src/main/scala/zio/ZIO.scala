@@ -2978,6 +2978,19 @@ object ZIO extends ZIOCompanionPlatformSpecific {
     ).map(_.result())
 
   /**
+   * Applies the function `f` to each element of the `Collection[A]`, then
+   * flattens the intermediate `Collection[B]`'s into a new `Collection[B]`.
+   */
+  def foreachFlatten[R, E, A, B, Collection[+Element] <: Iterable[Element]](
+    in: Collection[A]
+  )(
+    f: A => ZIO[R, E, Collection[B]]
+  )(implicit bf: BuildFrom[Collection[A], B, Collection[B]]): ZIO[R, E, Collection[B]] =
+    in.foldLeft[ZIO[R, E, Builder[B, Collection[B]]]](effectTotal(bf.newBuilder(in)))((io, a) =>
+      io.zipWith(f(a))(_ ++= _)
+    ).map(_.result())
+
+  /**
    * Determines whether all elements of the `Iterable[A]` satisfy the effectual
    * predicate `f`.
    */

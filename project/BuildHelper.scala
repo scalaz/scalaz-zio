@@ -123,14 +123,27 @@ object BuildHelper {
     // One of -Ydelambdafy:inline or -Yrepl-class-based must be given to
     // avoid deadlocking on parallel operations, see
     //   https://issues.scala-lang.org/browse/SI-9076
-    Compile / console / scalacOptions := Seq(
-      "-Ypartial-unification",
-      "-language:higherKinds",
-      "-language:existentials",
-      "-Yno-adapted-args",
-      "-Xsource:2.13",
-      "-Yrepl-class-based"
-    ),
+    Compile / console / scalacOptions :=
+      (CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((2, 12)) =>
+          Seq(
+            "-Ypartial-unification",
+            "-Yno-adapted-args"
+          )
+        case Some((2, 11)) =>
+          Seq(
+            "-Ypartial-unification",
+            "-Xexperimental",
+            "-Yno-adapted-args"
+          )
+        case _ =>
+          Seq.empty
+      }) ++ Seq(
+        "-language:higherKinds",
+        "-language:existentials",
+        "-Xsource:2.13",
+        "-Yrepl-class-based"
+      ),
     Compile / console / initialCommands := initialCommandsStr
   )
 

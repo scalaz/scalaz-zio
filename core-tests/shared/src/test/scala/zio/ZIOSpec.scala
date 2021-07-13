@@ -738,6 +738,27 @@ object ZIOSpec extends ZIOBaseSpec {
         assertM(res.run)(dies(isSubtype[NumberFormatException](anything)))
       } @@ zioTag(errors)
     ),
+    suite("foreachFlatten")(
+      testM("returns the list of results") {
+        checkAllM(functionListIOGen, listGen) { (f, list) =>
+          val res = IO.foreachFlatten(list)(f)
+          assertM(res)(isSubtype[List[Int]](anything) && hasSize(equalTo(1000)))
+        }
+      },
+      testM("both evaluates effects and returns the list of results in the same order") {
+        val list = List("1", "2", "3")
+        for {
+          ref     <- Ref.make(List.empty[String])
+          res     <- IO.foreachFlatten(list)(x => ref.update(_ :+ x) *> IO.effectTotal[List[Int]](List(x.toInt, x.toInt)))
+          effects <- ref.get
+        } yield assert(effects)(equalTo(list)) && assert(res)(equalTo(List(1, 1, 2, 2, 3, 3)))
+      },
+      testM("fails if one of the effects fails") {
+        val list = List("1", "h", "3")
+        val res  = IO.foreachFlatten(list)(x => IO.effectTotal[List[Int]](List(x.toInt, x.toInt)))
+        assertM(res.run)(dies(isSubtype[NumberFormatException](anything)))
+      } @@ zioTag(errors)
+    ),
     suite("foreach_")(
       testM("runs effects in order") {
         val as = List(1, 2, 3, 4, 5)
@@ -3786,6 +3807,9 @@ object ZIOSpec extends ZIOBaseSpec {
 
   def functionIOGen: Gen[Random with Sized, String => Task[Int]] =
     Gen.function[Random with Sized, String, Task[Int]](Gen.successes(Gen.anyInt))
+
+  def functionListIOGen: Gen[Random with Sized, String => Task[List[Int]]] =
+    Gen.function[Random with Sized, String, Task[List[Int]]](Gen.successes(Gen.listOfN(10)(Gen.anyInt)))
 
   def listGen: Gen[Random with Sized, List[String]] =
     Gen.listOfN(100)(Gen.alphaNumericString)
