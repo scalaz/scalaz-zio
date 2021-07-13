@@ -4093,35 +4093,43 @@ object ZStream extends ZStreamPlatformSpecificConstructors {
     repeatEffectWith(UIO.succeed(a), schedule)
 
   /**
-   * Accesses the specified service in the environment of the effect.
+   * Accesses the specified service in the environment of the stream.
    */
   def service[A: Tag]: ZStream[Has[A], Nothing, A] =
     ZStream.access(_.get[A])
 
   /**
-   * Accesses the specified services in the environment of the effect.
+   * Accesses the specified services in the environment of the stream.
    */
   def services[A: Tag, B: Tag]: ZStream[Has[A] with Has[B], Nothing, (A, B)] =
     ZStream.access(r => (r.get[A], r.get[B]))
 
   /**
-   * Accesses the specified services in the environment of the effect.
+   * Accesses the specified services in the environment of the stream.
    */
   def services[A: Tag, B: Tag, C: Tag]: ZStream[Has[A] with Has[B] with Has[C], Nothing, (A, B, C)] =
     ZStream.access(r => (r.get[A], r.get[B], r.get[C]))
 
   /**
-   * Accesses the specified services in the environment of the effect.
+   * Accesses the specified services in the environment of the stream.
    */
   def services[A: Tag, B: Tag, C: Tag, D: Tag]
     : ZStream[Has[A] with Has[B] with Has[C] with Has[D], Nothing, (A, B, C, D)] =
     ZStream.access(r => (r.get[A], r.get[B], r.get[C], r.get[D]))
 
   /**
-   * Effectfully accesses the specified service in the environment of the effect.
+   * Accesses the specified service in the environment of the stream in the
+   * context of an effect.
    */
   def serviceWith[Service]: ServiceWithPartiallyApplied[Service] =
     new ServiceWithPartiallyApplied[Service]
+
+  /**
+   * Accesses the specified service in the environment of the stream in the
+   * context of a stream.
+   */
+  def serviceWithStream[Service]: ServiceWithStreamPartiallyApplied[Service] =
+    new ServiceWithStreamPartiallyApplied[Service]
 
   /**
    * Creates a single-valued pure stream
@@ -4276,6 +4284,13 @@ object ZStream extends ZStreamPlatformSpecificConstructors {
       tag: Tag[Service]
     ): ZStream[Has[Service], E, A] =
       ZStream.fromEffect(ZIO.serviceWith(f))
+  }
+
+  final class ServiceWithStreamPartiallyApplied[Service](private val dummy: Boolean = true) extends AnyVal {
+    def apply[E, A](f: Service => ZStream[Has[Service], E, A])(implicit
+      tag: Tag[Service]
+    ): ZStream[Has[Service], E, A] =
+      ZStream.service[Service].flatMap(f)
   }
 
   /**
