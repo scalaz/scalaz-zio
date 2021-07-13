@@ -1,6 +1,5 @@
 package zio
 
-import com.github.ghik.silencer.silent
 import zio.test.Assertion._
 import zio.test.TestAspect.nonFlaky
 import zio.test._
@@ -9,85 +8,85 @@ object ZRefMSpec extends ZIOBaseSpec {
 
   import ZIOTag._
 
-  def spec: ZSpec[Environment, Failure] = suite("ZRefMSpec")(
+  def spec: ZSpec[Environment, Failure] = suite("ZRefSynchronizedSpec")(
     suite("atomic")(
       test("get") {
         for {
-          refM  <- RefM.make(current)
-          value <- refM.get
+          ref   <- Ref.Synchronized.make(current)
+          value <- ref.get
         } yield assert(value)(equalTo(current))
       },
       test("getAndUpdate") {
         for {
-          refM   <- RefM.make(current)
-          value1 <- refM.getAndUpdateZIO(_ => IO.succeed(update))
-          value2 <- refM.get
+          ref    <- Ref.Synchronized.make(current)
+          value1 <- ref.getAndUpdateZIO(_ => IO.succeed(update))
+          value2 <- ref.get
         } yield assert(value1)(equalTo(current)) && assert(value2)(equalTo(update))
       },
       test("getAndUpdate with failure") {
         for {
-          refM  <- RefM.make[String](current)
-          value <- refM.getAndUpdateZIO(_ => IO.fail(failure)).exit
+          ref   <- Ref.Synchronized.make[String](current)
+          value <- ref.getAndUpdateZIO(_ => IO.fail(failure)).exit
         } yield assert(value)(fails(equalTo(failure)))
       },
       test("getAndUpdateSome") {
         for {
-          refM   <- RefM.make[State](Active)
-          value1 <- refM.getAndUpdateSomeZIO { case Closed => IO.succeed(Active) }
-          value2 <- refM.get
+          ref    <- Ref.Synchronized.make[State](Active)
+          value1 <- ref.getAndUpdateSomeZIO { case Closed => IO.succeed(Active) }
+          value2 <- ref.get
         } yield assert(value1)(equalTo(Active)) && assert(value2)(equalTo(Active))
       },
       test("getAndUpdateSome twice") {
         for {
-          refM   <- RefM.make[State](Active)
-          value1 <- refM.getAndUpdateSomeZIO { case Active => IO.succeed(Changed) }
-          value2 <- refM.getAndUpdateSomeZIO {
+          ref    <- Ref.Synchronized.make[State](Active)
+          value1 <- ref.getAndUpdateSomeZIO { case Active => IO.succeed(Changed) }
+          value2 <- ref.getAndUpdateSomeZIO {
                       case Active  => IO.succeed(Changed)
                       case Changed => IO.succeed(Closed)
                     }
-          value3 <- refM.get
+          value3 <- ref.get
         } yield assert(value1)(equalTo(Active)) && assert(value2)(equalTo(Changed)) && assert(value3)(equalTo(Closed))
       },
       test("getAndUpdateSome with failure") {
         for {
-          refM  <- RefM.make[State](Active)
-          value <- refM.getAndUpdateSomeZIO { case Active => IO.fail(failure) }.exit
+          ref   <- Ref.Synchronized.make[State](Active)
+          value <- ref.getAndUpdateSomeZIO { case Active => IO.fail(failure) }.exit
         } yield assert(value)(fails(equalTo(failure)))
       },
       test("interrupt parent fiber and update") {
         for {
-          promise    <- Promise.make[Nothing, RefM[State]]
+          promise    <- Promise.make[Nothing, Ref.Synchronized[State]]
           latch      <- Promise.make[Nothing, Unit]
-          makeAndWait = promise.complete(RefM.make[State](Active)) *> latch.await
+          makeAndWait = promise.complete(Ref.Synchronized.make[State](Active)) *> latch.await
           fiber      <- makeAndWait.fork
-          refM       <- promise.await
+          ref        <- promise.await
           _          <- fiber.interrupt
-          value      <- refM.updateAndGetZIO(_ => ZIO.succeed(Closed))
+          value      <- ref.updateAndGetZIO(_ => ZIO.succeed(Closed))
         } yield assert(value)(equalTo(Closed))
       } @@ zioTag(interruption),
       test("modify") {
         for {
-          refM  <- RefM.make(current)
-          r     <- refM.modifyZIO(_ => IO.succeed(("hello", update)))
-          value <- refM.get
+          ref   <- Ref.Synchronized.make(current)
+          r     <- ref.modifyZIO(_ => IO.succeed(("hello", update)))
+          value <- ref.get
         } yield assert(r)(equalTo("hello")) && assert(value)(equalTo(update))
       },
       test("modify with failure") {
         for {
-          refM <- RefM.make[String](current)
-          r    <- refM.modifyZIO(_ => IO.fail(failure)).exit
+          ref <- Ref.Synchronized.make[String](current)
+          r   <- ref.modifyZIO(_ => IO.fail(failure)).exit
         } yield assert(r)(fails(equalTo(failure)))
       } @@ zioTag(errors),
       test("modify twice") {
         for {
-          refM   <- RefM.make[State](Active)
-          r1     <- refM.modifySomeZIO("doesn't change the state") { case Active => IO.succeed("changed" -> Changed) }
-          value1 <- refM.get
-          r2 <- refM.modifySomeZIO("doesn't change the state") {
+          ref    <- Ref.Synchronized.make[State](Active)
+          r1     <- ref.modifySomeZIO("doesn't change the state") { case Active => IO.succeed("changed" -> Changed) }
+          value1 <- ref.get
+          r2 <- ref.modifySomeZIO("doesn't change the state") {
                   case Active  => IO.succeed("changed" -> Changed)
                   case Changed => IO.succeed("closed" -> Closed)
                 }
-          value2 <- refM.get
+          value2 <- ref.get
         } yield assert(r1)(equalTo("changed")) &&
           assert(value1)(equalTo(Changed)) &&
           assert(r2)(equalTo("closed")) &&
@@ -95,61 +94,61 @@ object ZRefMSpec extends ZIOBaseSpec {
       },
       test("modifySome") {
         for {
-          refM  <- RefM.make[State](Active)
-          r     <- refM.modifySomeZIO("State doesn't change") { case Closed => IO.succeed("active" -> Active) }
-          value <- refM.get
+          ref   <- Ref.Synchronized.make[State](Active)
+          r     <- ref.modifySomeZIO("State doesn't change") { case Closed => IO.succeed("active" -> Active) }
+          value <- ref.get
         } yield assert(r)(equalTo("State doesn't change")) && assert(value)(equalTo(Active))
       },
       test("modifySome with failure not triggered") {
         for {
-          refM <- RefM.make[State](Active)
+          ref <- Ref.Synchronized.make[State](Active)
           r <-
-            refM.modifySomeZIO("State doesn't change") { case Closed => IO.fail(failure) }.orDieWith(new Exception(_))
-          value <- refM.get
+            ref.modifySomeZIO("State doesn't change") { case Closed => IO.fail(failure) }.orDieWith(new Exception(_))
+          value <- ref.get
         } yield assert(r)(equalTo("State doesn't change")) && assert(value)(equalTo(Active))
       } @@ zioTag(errors),
       test("modifySome with failure") {
         for {
-          refM  <- RefM.make[State](Active)
-          value <- refM.modifySomeZIO("State doesn't change") { case Active => IO.fail(failure) }.exit
+          ref   <- Ref.Synchronized.make[State](Active)
+          value <- ref.modifySomeZIO("State doesn't change") { case Active => IO.fail(failure) }.exit
         } yield assert(value)(fails(equalTo(failure)))
       } @@ zioTag(errors),
       test("modifySome with fatal error") {
         for {
-          refM  <- RefM.make[State](Active)
-          value <- refM.modifySomeZIO("State doesn't change") { case Active => IO.dieMessage(fatalError) }.exit
+          ref   <- Ref.Synchronized.make[State](Active)
+          value <- ref.modifySomeZIO("State doesn't change") { case Active => IO.dieMessage(fatalError) }.exit
         } yield assert(value)(dies(hasMessage(equalTo(fatalError))))
       } @@ zioTag(errors),
       test("set") {
         for {
-          refM  <- RefM.make(current)
-          _     <- refM.set(update)
-          value <- refM.get
+          ref   <- Ref.Synchronized.make(current)
+          _     <- ref.set(update)
+          value <- ref.get
         } yield assert(value)(equalTo(update))
       },
       test("updateAndGet") {
         for {
-          refM  <- RefM.make(current)
-          value <- refM.updateAndGetZIO(_ => IO.succeed(update))
+          ref   <- Ref.Synchronized.make(current)
+          value <- ref.updateAndGetZIO(_ => IO.succeed(update))
         } yield assert(value)(equalTo(update))
       },
       test("updateAndGet with failure") {
         for {
-          refM  <- RefM.make[String](current)
-          value <- refM.updateAndGetZIO(_ => IO.fail(failure)).exit
+          ref   <- Ref.Synchronized.make[String](current)
+          value <- ref.updateAndGetZIO(_ => IO.fail(failure)).exit
         } yield assert(value)(fails(equalTo(failure)))
       } @@ zioTag(errors),
       test("updateSomeAndGet") {
         for {
-          refM  <- RefM.make[State](Active)
-          value <- refM.updateSomeAndGetZIO { case Closed => IO.succeed(Active) }
+          ref   <- Ref.Synchronized.make[State](Active)
+          value <- ref.updateSomeAndGetZIO { case Closed => IO.succeed(Active) }
         } yield assert(value)(equalTo(Active))
       },
       test("updateSomeAndGet twice") {
         for {
-          refM   <- RefM.make[State](Active)
-          value1 <- refM.updateSomeAndGetZIO { case Active => IO.succeed(Changed) }
-          value2 <- refM.updateSomeAndGetZIO {
+          ref    <- Ref.Synchronized.make[State](Active)
+          value1 <- ref.updateSomeAndGetZIO { case Active => IO.succeed(Changed) }
+          value2 <- ref.updateSomeAndGetZIO {
                       case Active  => IO.succeed(Changed)
                       case Changed => IO.succeed(Closed)
                     }
@@ -157,8 +156,8 @@ object ZRefMSpec extends ZIOBaseSpec {
       },
       test("updateSomeAndGet with failure") {
         for {
-          refM  <- RefM.make[State](Active)
-          value <- refM.updateSomeAndGetZIO { case Active => IO.fail(failure) }.exit
+          ref   <- Ref.Synchronized.make[State](Active)
+          value <- ref.updateSomeAndGetZIO { case Active => IO.fail(failure) }.exit
         } yield assert(value)(fails(equalTo(failure)))
       } @@ zioTag(errors)
     ),
@@ -172,81 +171,81 @@ object ZRefMSpec extends ZIOBaseSpec {
       },
       test("get") {
         for {
-          refM  <- Derived.make(current)
-          value <- refM.get
+          ref   <- Derived.make(current)
+          value <- ref.get
         } yield assert(value)(equalTo(current))
       },
       test("getAndUpdate") {
         for {
-          refM   <- Derived.make(current)
-          value1 <- refM.getAndUpdateZIO(_ => IO.succeed(update))
-          value2 <- refM.get
+          ref    <- Derived.make(current)
+          value1 <- ref.getAndUpdateZIO(_ => IO.succeed(update))
+          value2 <- ref.get
         } yield assert(value1)(equalTo(current)) && assert(value2)(equalTo(update))
       },
       test("getAndUpdate with failure") {
         for {
-          refM  <- Derived.make[String](current)
-          value <- refM.getAndUpdateZIO(_ => IO.fail(failure)).exit
+          ref   <- Derived.make[String](current)
+          value <- ref.getAndUpdateZIO(_ => IO.fail(failure)).exit
         } yield assert(value)(fails(equalTo(failure)))
       },
       test("getAndUpdateSome") {
         for {
-          refM   <- Derived.make[State](Active)
-          value1 <- refM.getAndUpdateSomeZIO { case Closed => IO.succeed(Active) }
-          value2 <- refM.get
+          ref    <- Derived.make[State](Active)
+          value1 <- ref.getAndUpdateSomeZIO { case Closed => IO.succeed(Active) }
+          value2 <- ref.get
         } yield assert(value1)(equalTo(Active)) && assert(value2)(equalTo(Active))
       },
       test("getAndUpdateSome twice") {
         for {
-          refM   <- Derived.make[State](Active)
-          value1 <- refM.getAndUpdateSomeZIO { case Active => IO.succeed(Changed) }
-          value2 <- refM.getAndUpdateSomeZIO {
+          ref    <- Derived.make[State](Active)
+          value1 <- ref.getAndUpdateSomeZIO { case Active => IO.succeed(Changed) }
+          value2 <- ref.getAndUpdateSomeZIO {
                       case Active  => IO.succeed(Changed)
                       case Changed => IO.succeed(Closed)
                     }
-          value3 <- refM.get
+          value3 <- ref.get
         } yield assert(value1)(equalTo(Active)) && assert(value2)(equalTo(Changed)) && assert(value3)(equalTo(Closed))
       },
       test("getAndUpdateSome with failure") {
         for {
-          refM  <- Derived.make[State](Active)
-          value <- refM.getAndUpdateSomeZIO { case Active => IO.fail(failure) }.exit
+          ref   <- Derived.make[State](Active)
+          value <- ref.getAndUpdateSomeZIO { case Active => IO.fail(failure) }.exit
         } yield assert(value)(fails(equalTo(failure)))
       },
       test("interrupt parent fiber and update") {
         for {
-          promise    <- Promise.make[Nothing, RefM[State]]
+          promise    <- Promise.make[Nothing, Ref.Synchronized[State]]
           latch      <- Promise.make[Nothing, Unit]
           makeAndWait = promise.complete(Derived.make[State](Active)) *> latch.await
           fiber      <- makeAndWait.fork
-          refM       <- promise.await
+          ref        <- promise.await
           _          <- fiber.interrupt
-          value      <- refM.updateAndGetZIO(_ => ZIO.succeed(Closed))
+          value      <- ref.updateAndGetZIO(_ => ZIO.succeed(Closed))
         } yield assert(value)(equalTo(Closed))
       } @@ zioTag(interruption),
       test("modify") {
         for {
-          refM  <- Derived.make(current)
-          r     <- refM.modifyZIO(_ => IO.succeed(("hello", update)))
-          value <- refM.get
+          ref   <- Derived.make(current)
+          r     <- ref.modifyZIO(_ => IO.succeed(("hello", update)))
+          value <- ref.get
         } yield assert(r)(equalTo("hello")) && assert(value)(equalTo(update))
       },
       test("modify with failure") {
         for {
-          refM <- Derived.make[String](current)
-          r    <- refM.modifyZIO(_ => IO.fail(failure)).exit
+          ref <- Derived.make[String](current)
+          r   <- ref.modifyZIO(_ => IO.fail(failure)).exit
         } yield assert(r)(fails(equalTo(failure)))
       } @@ zioTag(errors),
       test("modify twice") {
         for {
-          refM   <- Derived.make[State](Active)
-          r1     <- refM.modifySomeZIO("doesn't change the state") { case Active => IO.succeed("changed" -> Changed) }
-          value1 <- refM.get
-          r2 <- refM.modifySomeZIO("doesn't change the state") {
+          ref    <- Derived.make[State](Active)
+          r1     <- ref.modifySomeZIO("doesn't change the state") { case Active => IO.succeed("changed" -> Changed) }
+          value1 <- ref.get
+          r2 <- ref.modifySomeZIO("doesn't change the state") {
                   case Active  => IO.succeed("changed" -> Changed)
                   case Changed => IO.succeed("closed" -> Closed)
                 }
-          value2 <- refM.get
+          value2 <- ref.get
         } yield assert(r1)(equalTo("changed")) &&
           assert(value1)(equalTo(Changed)) &&
           assert(r2)(equalTo("closed")) &&
@@ -254,61 +253,61 @@ object ZRefMSpec extends ZIOBaseSpec {
       },
       test("modifySome") {
         for {
-          refM  <- Derived.make[State](Active)
-          r     <- refM.modifySomeZIO("State doesn't change") { case Closed => IO.succeed("active" -> Active) }
-          value <- refM.get
+          ref   <- Derived.make[State](Active)
+          r     <- ref.modifySomeZIO("State doesn't change") { case Closed => IO.succeed("active" -> Active) }
+          value <- ref.get
         } yield assert(r)(equalTo("State doesn't change")) && assert(value)(equalTo(Active))
       },
       test("modifySome with failure not triggered") {
         for {
-          refM <- Derived.make[State](Active)
+          ref <- Derived.make[State](Active)
           r <-
-            refM.modifySomeZIO("State doesn't change") { case Closed => IO.fail(failure) }.orDieWith(new Exception(_))
-          value <- refM.get
+            ref.modifySomeZIO("State doesn't change") { case Closed => IO.fail(failure) }.orDieWith(new Exception(_))
+          value <- ref.get
         } yield assert(r)(equalTo("State doesn't change")) && assert(value)(equalTo(Active))
       } @@ zioTag(errors),
       test("modifySome with failure") {
         for {
-          refM  <- Derived.make[State](Active)
-          value <- refM.modifySomeZIO("State doesn't change") { case Active => IO.fail(failure) }.exit
+          ref   <- Derived.make[State](Active)
+          value <- ref.modifySomeZIO("State doesn't change") { case Active => IO.fail(failure) }.exit
         } yield assert(value)(fails(equalTo(failure)))
       } @@ zioTag(errors),
       test("modifySome with fatal error") {
         for {
-          refM  <- Derived.make[State](Active)
-          value <- refM.modifySomeZIO("State doesn't change") { case Active => IO.dieMessage(fatalError) }.exit
+          ref   <- Derived.make[State](Active)
+          value <- ref.modifySomeZIO("State doesn't change") { case Active => IO.dieMessage(fatalError) }.exit
         } yield assert(value)(dies(hasMessage(equalTo(fatalError))))
       } @@ zioTag(errors),
       test("set") {
         for {
-          refM  <- Derived.make(current)
-          _     <- refM.set(update)
-          value <- refM.get
+          ref   <- Derived.make(current)
+          _     <- ref.set(update)
+          value <- ref.get
         } yield assert(value)(equalTo(update))
       },
       test("updateAndGet") {
         for {
-          refM  <- Derived.make(current)
-          value <- refM.updateAndGetZIO(_ => IO.succeed(update))
+          ref   <- Derived.make(current)
+          value <- ref.updateAndGetZIO(_ => IO.succeed(update))
         } yield assert(value)(equalTo(update))
       },
       test("updateAndGet with failure") {
         for {
-          refM  <- Derived.make[String](current)
-          value <- refM.updateAndGetZIO(_ => IO.fail(failure)).exit
+          ref   <- Derived.make[String](current)
+          value <- ref.updateAndGetZIO(_ => IO.fail(failure)).exit
         } yield assert(value)(fails(equalTo(failure)))
       } @@ zioTag(errors),
       test("updateSomeAndGet") {
         for {
-          refM  <- Derived.make[State](Active)
-          value <- refM.updateSomeAndGetZIO { case Closed => IO.succeed(Active) }
+          ref   <- Derived.make[State](Active)
+          value <- ref.updateSomeAndGetZIO { case Closed => IO.succeed(Active) }
         } yield assert(value)(equalTo(Active))
       },
       test("updateSomeAndGet twice") {
         for {
-          refM   <- Derived.make[State](Active)
-          value1 <- refM.updateSomeAndGetZIO { case Active => IO.succeed(Changed) }
-          value2 <- refM.updateSomeAndGetZIO {
+          ref    <- Derived.make[State](Active)
+          value1 <- ref.updateSomeAndGetZIO { case Active => IO.succeed(Changed) }
+          value2 <- ref.updateSomeAndGetZIO {
                       case Active  => IO.succeed(Changed)
                       case Changed => IO.succeed(Closed)
                     }
@@ -316,8 +315,8 @@ object ZRefMSpec extends ZIOBaseSpec {
       },
       test("updateSomeAndGet with failure") {
         for {
-          refM  <- Derived.make[State](Active)
-          value <- refM.updateSomeAndGetZIO { case Active => IO.fail(failure) }.exit
+          ref   <- Derived.make[State](Active)
+          value <- ref.updateSomeAndGetZIO { case Active => IO.fail(failure) }.exit
         } yield assert(value)(fails(equalTo(failure)))
       } @@ zioTag(errors)
     ),
@@ -331,81 +330,81 @@ object ZRefMSpec extends ZIOBaseSpec {
       },
       test("get") {
         for {
-          refM  <- DerivedAll.make(current)
-          value <- refM.get
+          ref   <- DerivedAll.make(current)
+          value <- ref.get
         } yield assert(value)(equalTo(current))
       },
       test("getAndUpdate") {
         for {
-          refM   <- DerivedAll.make(current)
-          value1 <- refM.getAndUpdateZIO(_ => IO.succeed(update))
-          value2 <- refM.get
+          ref    <- DerivedAll.make(current)
+          value1 <- ref.getAndUpdateZIO(_ => IO.succeed(update))
+          value2 <- ref.get
         } yield assert(value1)(equalTo(current)) && assert(value2)(equalTo(update))
       },
       test("getAndUpdate with failure") {
         for {
-          refM  <- DerivedAll.make[String](current)
-          value <- refM.getAndUpdateZIO(_ => IO.fail(failure)).exit
+          ref   <- DerivedAll.make[String](current)
+          value <- ref.getAndUpdateZIO(_ => IO.fail(failure)).exit
         } yield assert(value)(fails(equalTo(failure)))
       },
       test("getAndUpdateSome") {
         for {
-          refM   <- DerivedAll.make[State](Active)
-          value1 <- refM.getAndUpdateSomeZIO { case Closed => IO.succeed(Active) }
-          value2 <- refM.get
+          ref    <- DerivedAll.make[State](Active)
+          value1 <- ref.getAndUpdateSomeZIO { case Closed => IO.succeed(Active) }
+          value2 <- ref.get
         } yield assert(value1)(equalTo(Active)) && assert(value2)(equalTo(Active))
       },
       test("getAndUpdateSome twice") {
         for {
-          refM   <- DerivedAll.make[State](Active)
-          value1 <- refM.getAndUpdateSomeZIO { case Active => IO.succeed(Changed) }
-          value2 <- refM.getAndUpdateSomeZIO {
+          ref    <- DerivedAll.make[State](Active)
+          value1 <- ref.getAndUpdateSomeZIO { case Active => IO.succeed(Changed) }
+          value2 <- ref.getAndUpdateSomeZIO {
                       case Active  => IO.succeed(Changed)
                       case Changed => IO.succeed(Closed)
                     }
-          value3 <- refM.get
+          value3 <- ref.get
         } yield assert(value1)(equalTo(Active)) && assert(value2)(equalTo(Changed)) && assert(value3)(equalTo(Closed))
       },
       test("getAndUpdateSome with failure") {
         for {
-          refM  <- DerivedAll.make[State](Active)
-          value <- refM.getAndUpdateSomeZIO { case Active => IO.fail(failure) }.exit
+          ref   <- DerivedAll.make[State](Active)
+          value <- ref.getAndUpdateSomeZIO { case Active => IO.fail(failure) }.exit
         } yield assert(value)(fails(equalTo(failure)))
       },
       test("interrupt parent fiber and update") {
         for {
-          promise    <- Promise.make[Nothing, RefM[State]]
+          promise    <- Promise.make[Nothing, Ref.Synchronized[State]]
           latch      <- Promise.make[Nothing, Unit]
           makeAndWait = promise.complete(DerivedAll.make[State](Active)) *> latch.await
           fiber      <- makeAndWait.fork
-          refM       <- promise.await
+          ref        <- promise.await
           _          <- fiber.interrupt
-          value      <- refM.updateAndGetZIO(_ => ZIO.succeed(Closed))
+          value      <- ref.updateAndGetZIO(_ => ZIO.succeed(Closed))
         } yield assert(value)(equalTo(Closed))
       } @@ zioTag(interruption),
       test("modify") {
         for {
-          refM  <- DerivedAll.make(current)
-          r     <- refM.modifyZIO(_ => IO.succeed(("hello", update)))
-          value <- refM.get
+          ref   <- DerivedAll.make(current)
+          r     <- ref.modifyZIO(_ => IO.succeed(("hello", update)))
+          value <- ref.get
         } yield assert(r)(equalTo("hello")) && assert(value)(equalTo(update))
       },
       test("modify with failure") {
         for {
-          refM <- DerivedAll.make[String](current)
-          r    <- refM.modifyZIO(_ => IO.fail(failure)).exit
+          ref <- DerivedAll.make[String](current)
+          r   <- ref.modifyZIO(_ => IO.fail(failure)).exit
         } yield assert(r)(fails(equalTo(failure)))
       } @@ zioTag(errors),
       test("modify twice") {
         for {
-          refM   <- DerivedAll.make[State](Active)
-          r1     <- refM.modifySomeZIO("doesn't change the state") { case Active => IO.succeed("changed" -> Changed) }
-          value1 <- refM.get
-          r2 <- refM.modifySomeZIO("doesn't change the state") {
+          ref    <- DerivedAll.make[State](Active)
+          r1     <- ref.modifySomeZIO("doesn't change the state") { case Active => IO.succeed("changed" -> Changed) }
+          value1 <- ref.get
+          r2 <- ref.modifySomeZIO("doesn't change the state") {
                   case Active  => IO.succeed("changed" -> Changed)
                   case Changed => IO.succeed("closed" -> Closed)
                 }
-          value2 <- refM.get
+          value2 <- ref.get
         } yield assert(r1)(equalTo("changed")) &&
           assert(value1)(equalTo(Changed)) &&
           assert(r2)(equalTo("closed")) &&
@@ -413,61 +412,61 @@ object ZRefMSpec extends ZIOBaseSpec {
       },
       test("modifySome") {
         for {
-          refM  <- DerivedAll.make[State](Active)
-          r     <- refM.modifySomeZIO("State doesn't change") { case Closed => IO.succeed("active" -> Active) }
-          value <- refM.get
+          ref   <- DerivedAll.make[State](Active)
+          r     <- ref.modifySomeZIO("State doesn't change") { case Closed => IO.succeed("active" -> Active) }
+          value <- ref.get
         } yield assert(r)(equalTo("State doesn't change")) && assert(value)(equalTo(Active))
       },
       test("modifySome with failure not triggered") {
         for {
-          refM <- DerivedAll.make[State](Active)
+          ref <- DerivedAll.make[State](Active)
           r <-
-            refM.modifySomeZIO("State doesn't change") { case Closed => IO.fail(failure) }.orDieWith(new Exception(_))
-          value <- refM.get
+            ref.modifySomeZIO("State doesn't change") { case Closed => IO.fail(failure) }.orDieWith(new Exception(_))
+          value <- ref.get
         } yield assert(r)(equalTo("State doesn't change")) && assert(value)(equalTo(Active))
       } @@ zioTag(errors),
       test("modifySome with failure") {
         for {
-          refM  <- DerivedAll.make[State](Active)
-          value <- refM.modifySomeZIO("State doesn't change") { case Active => IO.fail(failure) }.exit
+          ref   <- DerivedAll.make[State](Active)
+          value <- ref.modifySomeZIO("State doesn't change") { case Active => IO.fail(failure) }.exit
         } yield assert(value)(fails(equalTo(failure)))
       } @@ zioTag(errors),
       test("modifySome with fatal error") {
         for {
-          refM  <- DerivedAll.make[State](Active)
-          value <- refM.modifySomeZIO("State doesn't change") { case Active => IO.dieMessage(fatalError) }.exit
+          ref   <- DerivedAll.make[State](Active)
+          value <- ref.modifySomeZIO("State doesn't change") { case Active => IO.dieMessage(fatalError) }.exit
         } yield assert(value)(dies(hasMessage(equalTo(fatalError))))
       } @@ zioTag(errors),
       test("set") {
         for {
-          refM  <- DerivedAll.make(current)
-          _     <- refM.set(update)
-          value <- refM.get
+          ref   <- DerivedAll.make(current)
+          _     <- ref.set(update)
+          value <- ref.get
         } yield assert(value)(equalTo(update))
       },
       test("updateAndGet") {
         for {
-          refM  <- DerivedAll.make(current)
-          value <- refM.updateAndGetZIO(_ => IO.succeed(update))
+          ref   <- DerivedAll.make(current)
+          value <- ref.updateAndGetZIO(_ => IO.succeed(update))
         } yield assert(value)(equalTo(update))
       },
       test("updateAndGet with failure") {
         for {
-          refM  <- DerivedAll.make[String](current)
-          value <- refM.updateAndGetZIO(_ => IO.fail(failure)).exit
+          ref   <- DerivedAll.make[String](current)
+          value <- ref.updateAndGetZIO(_ => IO.fail(failure)).exit
         } yield assert(value)(fails(equalTo(failure)))
       } @@ zioTag(errors),
       test("updateSomeAndGet") {
         for {
-          refM  <- DerivedAll.make[State](Active)
-          value <- refM.updateSomeAndGetZIO { case Closed => IO.succeed(Active) }
+          ref   <- DerivedAll.make[State](Active)
+          value <- ref.updateSomeAndGetZIO { case Closed => IO.succeed(Active) }
         } yield assert(value)(equalTo(Active))
       },
       test("updateSomeAndGet twice") {
         for {
-          refM   <- DerivedAll.make[State](Active)
-          value1 <- refM.updateSomeAndGetZIO { case Active => IO.succeed(Changed) }
-          value2 <- refM.updateSomeAndGetZIO {
+          ref    <- DerivedAll.make[State](Active)
+          value1 <- ref.updateSomeAndGetZIO { case Active => IO.succeed(Changed) }
+          value2 <- ref.updateSomeAndGetZIO {
                       case Active  => IO.succeed(Changed)
                       case Changed => IO.succeed(Closed)
                     }
@@ -475,16 +474,16 @@ object ZRefMSpec extends ZIOBaseSpec {
       },
       test("updateSomeAndGet with failure") {
         for {
-          refM  <- DerivedAll.make[State](Active)
-          value <- refM.updateSomeAndGetZIO { case Active => IO.fail(failure) }.exit
+          ref   <- DerivedAll.make[State](Active)
+          value <- ref.updateSomeAndGetZIO { case Active => IO.fail(failure) }.exit
         } yield assert(value)(fails(equalTo(failure)))
       } @@ zioTag(errors)
     ),
     suite("zip")(
       test("updates can be performed atomically") {
         for {
-          left    <- RefM.make(0)
-          right   <- RefM.make(1)
+          left    <- Ref.Synchronized.make(0)
+          right   <- Ref.Synchronized.make(1)
           composed = left <*> right
           effect   = composed.update { case (a, b) => (b, a + b) }
           _       <- ZIO.collectAllParDiscard(ZIO.replicate(20)(effect))
@@ -494,8 +493,8 @@ object ZRefMSpec extends ZIOBaseSpec {
       },
       test("partial writes cannot be observed by other fibers") {
         for {
-          left    <- RefM.make(0)
-          right   <- RefM.make(0)
+          left    <- Ref.Synchronized.make(0)
+          right   <- Ref.Synchronized.make(0)
           composed = left <*> right
           effect   = composed.getAndUpdate { case (a, b) => (a + 1, b + 1) }
           _       <- ZIO.forkAllDiscard(ZIO.replicate(100)(effect))
@@ -503,17 +502,7 @@ object ZRefMSpec extends ZIOBaseSpec {
           (a, b)   = tuple
         } yield assert(a)(equalTo(b))
       }
-    ) @@ nonFlaky,
-    suite("combinators")(
-      test("dequeueRef") {
-        for {
-          data        <- RefM.dequeueRef(0): @silent("deprecated")
-          (ref, queue) = data
-          _           <- ZIO.collectAllPar(ZIO.replicate(100)(ref.update(_ + 1)))
-          value       <- ZIO.collectAll(ZIO.replicate(100)(queue.take))
-        } yield assert(value)(equalTo((1 to 100).toList))
-      }
-    )
+    ) @@ nonFlaky
   )
 
   val (current, update) = ("value", "new value")
@@ -526,12 +515,14 @@ object ZRefMSpec extends ZIOBaseSpec {
   case object Closed  extends State
 
   object Derived {
-    def make[A](a: A): UIO[RefM[A]] =
-      RefM.make(a).map(ref => ref.foldZIO(identity, identity, ZIO.succeed(_), ZIO.succeed(_)))
+    def make[A](a: A): UIO[Ref.Synchronized[A]] =
+      Ref.Synchronized.make(a).map(ref => ref.foldZIO(identity, identity, ZIO.succeed(_), ZIO.succeed(_)))
   }
 
   object DerivedAll {
-    def make[A](a: A): UIO[RefM[A]] =
-      RefM.make(a).map(ref => ref.foldAllZIO(identity, identity, identity, a => _ => ZIO.succeed(a), ZIO.succeed(_)))
+    def make[A](a: A): UIO[Ref.Synchronized[A]] =
+      Ref.Synchronized
+        .make(a)
+        .map(ref => ref.foldAllZIO(identity, identity, identity, a => _ => ZIO.succeed(a), ZIO.succeed(_)))
   }
 }

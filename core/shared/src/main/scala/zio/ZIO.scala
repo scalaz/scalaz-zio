@@ -439,7 +439,7 @@ sealed trait ZIO[-R, +E, +A] extends Serializable with ZIOPlatformSpecific[R, E,
         _ <- self.to(p)
       } yield Some((start + timeToLive.toNanos, p))
 
-    def get(cache: RefM[Option[(Long, Promise[E, A])]]): ZIO[R with Has[Clock], E, A] =
+    def get(cache: Ref.Synchronized[Option[(Long, Promise[E, A])]]): ZIO[R with Has[Clock], E, A] =
       ZIO.uninterruptibleMask { restore =>
         Clock.nanoTime.flatMap { time =>
           cache.updateSomeAndGetZIO {
@@ -449,12 +449,12 @@ sealed trait ZIO[-R, +E, +A] extends Serializable with ZIOPlatformSpecific[R, E,
         }
       }
 
-    def invalidate(cache: RefM[Option[(Long, Promise[E, A])]]): UIO[Unit] =
+    def invalidate(cache: Ref.Synchronized[Option[(Long, Promise[E, A])]]): UIO[Unit] =
       cache.set(None)
 
     for {
       r     <- ZIO.environment[R with Has[Clock]]
-      cache <- RefM.make[Option[(Long, Promise[E, A])]](None)
+      cache <- Ref.Synchronized.make[Option[(Long, Promise[E, A])]](None)
     } yield (get(cache).provide(r), invalidate(cache))
   }
 
@@ -4411,7 +4411,7 @@ object ZIO extends ZIOCompanionPlatformSpecific {
    * Returns a memoized version of the specified effectual function.
    */
   def memoize[R, E, A, B](f: A => ZIO[R, E, B]): UIO[A => ZIO[R, E, B]] =
-    RefM.make(Map.empty[A, Promise[E, B]]).map { ref => a =>
+    Ref.Synchronized.make(Map.empty[A, Promise[E, B]]).map { ref => a =>
       for {
         promise <- ref.modifyZIO { map =>
                      map.get(a) match {

@@ -4344,7 +4344,7 @@ object ZLayer extends ZLayerCompanionVersionSpecific {
      * Constructs an empty memo map.
      */
     def make: UIO[MemoMap] =
-      RefM
+      Ref.Synchronized
         .make[Map[ZLayer[Nothing, Any, Any], (IO[Any, Any], ZManaged.Finalizer)]](Map.empty)
         .map { ref =>
           new MemoMap { self =>

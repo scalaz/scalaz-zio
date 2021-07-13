@@ -19,6 +19,9 @@ package zio
 object Ref extends Serializable {
   private[zio] type Atomic[A] = ZRef.Atomic[A]
 
+  type Synchronized[A] = ZRef.Synchronized[Any, Any, Nothing, Nothing, A, A]
+  val Synchronized: ZRef.Synchronized.type = ZRef.Synchronized
+
   /**
    * @see [[zio.ZRef.make]]
    */

@@ -196,7 +196,7 @@ object ZTransducer extends ZTransducerPlatformSpecificConstructors {
       val toCollect = Math.max(0, n)
 
       ZManaged.scope.flatMap { scope =>
-        ZRefM.makeManaged(State.initial).map { stateRef =>
+        Ref.Synchronized.makeManaged(State.initial).map { stateRef =>
           {
             case None =>
               stateRef.getAndSet(State.initial).flatMap {

@@ -2291,7 +2291,7 @@ abstract class ZStream[-R, +E, +O](val process: ZManaged[R, Nothing, ZIO[R, Opti
 
       for {
         handoff <- ZStream.Handoff.make[Take[E1, O3]].toManaged
-        done    <- RefM.makeManaged[Option[Boolean]](None)
+        done    <- Ref.Synchronized.makeManaged[Option[Boolean]](None)
         chunksL <- self.process
         chunksR <- that.process
         handler = (pull: Pull[R1, E1, O3], terminate: Boolean) =>

@@ -11,11 +11,11 @@ import zio.stream._
 
 trait SubscriptionRef[A] {
   def changes: ZStream[Any, Nothing, A]
-  def ref: RefM[A]
+  def ref: Ref.Synchronized[A]
 }
 ```
 
-The `ref` allows us to access a `RefM` containing the current value. We can use all the normal methods on `RefM` to `get`, `set`, or `modify` the current value.
+The `ref` allows us to access a `Ref.Synchronized` containing the current value. We can use all the normal methods on `Ref.Synchronized` to `get`, `set`, or `modify` the current value.
 
 The `changes` stream can be consumed to observe the current value as well as all changes to that value. Since `changes` is just a description of a stream, each time we run the stream we will observe the current value as of that point in time as well as all changes after that.
 
@@ -38,11 +38,11 @@ import zio.stream._
 ```
 
 ```scala mdoc
-def server(ref: RefM[Long]): UIO[Nothing] =
+def server(ref: Ref[Long]): UIO[Nothing] =
   ref.update(_ + 1).forever
 ```
 
-Notice that `server` just takes a `RefM` and does not need to know anything about `SubscriptionRef`. From its perspective it is just updating a value.
+Notice that `server` just takes a `Ref` and does not need to know anything about `SubscriptionRef`. From its perspective it is just updating a value.
 
 ```scala mdoc
 def client(changes: ZStream[Any, Nothing, Long]): URIO[Has[Random], Chunk[Long]] =

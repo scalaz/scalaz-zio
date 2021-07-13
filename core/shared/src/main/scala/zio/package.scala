@@ -61,12 +61,17 @@ package object zio
   type ZEnqueue[-R, +E, -A] = ZQueue[R, Nothing, E, Any, A, Any]
   type Enqueue[-A]          = ZQueue[Any, Nothing, Nothing, Any, A, Any]
 
-  type Ref[A]      = ZRef[Any, Any, Nothing, Nothing, A, A]
-  type ERef[+E, A] = ZRef[Any, Any, E, E, A, A]
+  type Ref[A] = ZRef[Any, Any, Nothing, Nothing, A, A]
 
-  type ZRefM[-RA, -RB, +EA, +EB, -A, +B] = ZRef.ZRefM[RA, RB, EA, EB, A, B]
-  type RefM[A]                           = ZRefM[Any, Any, Nothing, Nothing, A, A]
-  type ERefM[+E, A]                      = ZRefM[Any, Any, E, E, A, A]
+  type ERef[+E, A] = ZRef[Any, Any, E, E, A, A]
+  val ERef: ZRef.type = ZRef
+
+  @deprecated("use ZRef.Synchronized", "2.0.0")
+  type ZRefM[-RA, -RB, +EA, +EB, -A, +B] = ZRef.Synchronized[RA, RB, EA, EB, A, B]
+  @deprecated("use Ref.Synchronized", "2.0.0")
+  type RefM[A] = ZRefM[Any, Any, Nothing, Nothing, A, A]
+  @deprecated("use ERef.Synchronized", "2.0.0")
+  type ERefM[+E, A] = ZRefM[Any, Any, E, E, A, A]
 
   type FiberRef[A] = ZFiberRef[Nothing, Nothing, A, A]
   val FiberRef: ZFiberRef.type = ZFiberRef

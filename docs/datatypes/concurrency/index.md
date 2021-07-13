@@ -84,7 +84,7 @@ Let's take a quick look at ZIO concurrent primitives, what are they and why they
 
 `Ref` and `Promise` are the two simple concurrency primitives which provide an orthogonal basis for building concurrency structures. They are assembly language of other concurrent data structures:
 
-- **[Ref](ref.md)** — `Ref` and all its variant like [`ZRef`](zref.md), [`ZRefM`](zrefm.md) and [`RefM`](refm.md) are building blocks for writing concurrent stateful applications. Anytime we need to share information between multiple fibers, and those fibers have to update the same information, they need to communicate through something that provides the guarantee of atomicity. So all of these `Ref` primitives are atomic and thread-safe. They provide us a reliable foundation for synchronizing concurrent programs.
+- **[Ref](ref.md)** — `Ref` and all its variant like [`ZRef`](zref.md), [`ZRef.Synchronized`](zrefsynchronized.md) and [`Ref.Synchronized`](refsynchronized.md) are building blocks for writing concurrent stateful applications. Anytime we need to share information between multiple fibers, and those fibers have to update the same information, they need to communicate through something that provides the guarantee of atomicity. So all of these `Ref` primitives are atomic and thread-safe. They provide us a reliable foundation for synchronizing concurrent programs.
 
 - **[Promise](promise.md)** — A `Promise` is a model of a variable that may be set a single time, and awaited on by many fibers. This primitive is very useful when we need some point of synchronization between two or multiple fibers.
 

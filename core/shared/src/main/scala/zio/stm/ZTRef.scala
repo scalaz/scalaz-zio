@@ -151,7 +151,7 @@ sealed abstract class ZTRef[+EA, +EB, -A, +B] extends Serializable { self =>
     ca: C => B => STM[EC, A],
     bd: B => STM[ED, D]
   ): ZTRef[EC, ED, C, D] =
-    new ZTRef.ZTRefM[EC, ED, C, D] {
+    new ZTRef.ZTRefSTM[EC, ED, C, D] {
       def atomic: ZTRef.Atomic[_] =
         self.atomic
       def get: STM[ED, D] =
@@ -173,7 +173,7 @@ sealed abstract class ZTRef[+EA, +EB, -A, +B] extends Serializable { self =>
     ca: C => STM[EC, A],
     bd: B => STM[ED, D]
   ): ZTRef[EC, ED, C, D] =
-    new ZTRef.ZTRefM[EC, ED, C, D] {
+    new ZTRef.ZTRefSTM[EC, ED, C, D] {
       def atomic: ZTRef.Atomic[_] =
         self.atomic
       def get: STM[ED, D] =
@@ -473,7 +473,7 @@ object ZTRef {
       }.absolve
   }
 
-  private abstract class ZTRefM[+EA, +EB, -A, +B] extends ZTRef[EA, EB, A, B] {
+  private abstract class ZTRefSTM[+EA, +EB, -A, +B] extends ZTRef[EA, EB, A, B] {
 
     protected def atomic: Atomic[_]
 
@@ -551,8 +551,8 @@ object ZTRef {
               }
             }
           }.absolve
-        case zTRefM: ZTRefM[E, E, A, A] =>
-          zTRefM.get.flatMap(a => f(a) match { case (b, a) => zTRefM.set(a).as(b) })
+        case zTRefSTM: ZTRefSTM[E, E, A, A] =>
+          zTRefSTM.get.flatMap(a => f(a) match { case (b, a) => zTRefSTM.set(a).as(b) })
       }
 
     def modifySome[B](default: B)(pf: PartialFunction[A, (B, A)]): STM[E, B] =

@@ -98,8 +98,8 @@ object TestClock extends Serializable {
     clockState: Ref[TestClock.Data],
     live: Live,
     annotations: Annotations,
-    warningState: RefM[TestClock.WarningData],
-    suspendedWarningState: RefM[TestClock.SuspendedWarningData]
+    warningState: Ref.Synchronized[TestClock.WarningData],
+    suspendedWarningState: Ref.Synchronized[TestClock.SuspendedWarningData]
   ) extends Clock
       with TestClock {
 
@@ -368,8 +368,8 @@ object TestClock extends Serializable {
       live                  <- ZManaged.service[Live]
       annotations           <- ZManaged.service[Annotations]
       clockState            <- Ref.make(data).toManaged
-      warningState          <- RefM.make(WarningData.start).toManaged
-      suspendedWarningState <- RefM.make(SuspendedWarningData.start).toManaged
+      warningState          <- Ref.Synchronized.make(WarningData.start).toManaged
+      suspendedWarningState <- Ref.Synchronized.make(SuspendedWarningData.start).toManaged
       test <-
         Managed.acquireReleaseWith(UIO(Test(clockState, live, annotations, warningState, suspendedWarningState))) {
           test =>
