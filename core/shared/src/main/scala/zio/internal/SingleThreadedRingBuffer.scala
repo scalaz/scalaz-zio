@@ -62,7 +62,11 @@ private[zio] final class SingleThreadedRingBuffer[A](capacity: Int) {
     var i                    = 0
     var result: List[AnyRef] = Nil
     while (i < array.length) {
-      result ::= array(i)
+      // https://github.com/zio/zio/issues/4384: We might concurrently drop the last
+      // element of the Ringbuffer and create the reversed list. Therefore we omit
+      // Null elements from the result.
+      val elem = array(i)
+      if (elem != null) result ::= elem
       i += 1
     }
     result
