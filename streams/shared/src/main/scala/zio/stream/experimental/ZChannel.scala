@@ -1247,6 +1247,11 @@ object ZChannel {
       new Fold.K((_: Any) => ZChannel.fail(e), (_: Any) => ZChannel.fail(e))
     )
 
+  def readOrIdentity[Env, Err, InElem, Done, OutElem](
+    in: InElem => ZChannel[Any, Err, InElem, Done, Err, OutElem, Done]
+  ): ZChannel[Env, Err, InElem, Done, Err, OutElem, Done] =
+    readWith(in, ZChannel.fail(_), ZChannel.end(_))
+
   def read[In]: ZChannel[Any, Any, In, Any, None.type, Nothing, In] =
     readOrFail(None)
 
