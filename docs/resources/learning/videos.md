@@ -92,6 +92,9 @@ title:  "Videos"
 ### ZIO SQL
 - [ZIO WORLD - ZIO SQL](https://www.youtube.com/watch?v=cIMA6iT9B-k) by Jakub Czuchnowski (March 2020) — Jakub Czuchnowski summarized the latest work in ZIO SQL, demonstrating type-inferred, type-safe queries with the full-range of SQL features, including database-specific functions, with working SELECT/DELETE/UPDATE for Postgres.
 
+### ZIO Optics
+- [Zymposium - Optics](https://www.youtube.com/watch?v=-km5ohYhJa4) by Adam Fraser and Kit Langton (June 2021) — Optics are great tools for working with parts of larger data structures and come up in disguise in many places such as ZIO Test assertions.
+
 ### ZIO Pulsar
 - [ZIO World - ZIO PULSAR](https://www.youtube.com/watch?v=tpwydDqQBmk) by Jakub Czuchnowski (March 2020) — A new library that offers a native, first-class ZIO experience for Pulsar, the Kafka competitor gaining traction for some use cases.
 
