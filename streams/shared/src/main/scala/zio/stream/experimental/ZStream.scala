@@ -1071,20 +1071,17 @@ class ZStream[-R, +E, +A](val channel: ZChannel[R, Any, Any, Any, E, Chunk[A], A
    * Drops all elements of the stream for as long as the specified predicate
    * evaluates to `true`.
    */
-  final def dropWhile(f: A => Boolean): ZStream[R, E, A] = {
-    def loop: ZChannel[R, E, Chunk[A], Any, E, Chunk[A], Any] =
-      ZChannel.readWith(
-        (in: Chunk[A]) => {
-          val leftover = in.dropWhile(f)
-          val more     = leftover.isEmpty
+  final def dropWhile(f: A => Boolean): ZStream[R, E, A] =
+    pipeThrough(ZSink.dropWhile[E, A](f))
 
-          if (more) loop else ZChannel.write(leftover) *> ZChannel.identity[E, Chunk[A], Any]
-        },
-        (e: E) => ZChannel.fail(e),
-        (_: Any) => ZChannel.unit
-      )
-    new ZStream(channel >>> loop)
-  }
+  /**
+   * Drops all elements of the stream for as long as the specified predicate
+   * produces an effect that evalutates to `true`
+   *
+   * @see [[dropWhile]]
+   */
+  final def dropWhileM[R1 <: R, E1 >: E](f: A => ZIO[R1, E1, Boolean]): ZStream[R1, E1, A] =
+    pipeThrough(ZSink.dropWhileM[R1, E1, A](f))
 
   /**
    * Drops all elements of the stream until the specified predicate evaluates
@@ -2266,6 +2263,14 @@ class ZStream[-R, +E, +A](val channel: ZChannel[R, Any, Any, Any, E, Chunk[A], A
       } yield (z, new ZStream(producer))
     }).flatten
   }
+
+  /**
+   * Pipes all of the values from this stream through the provided sink.
+   *
+   * @see [[transduce]]
+   */
+  def pipeThrough[R1 <: R, E1 >: E, E2, L, Z](sink: ZSink[R1, E1, A, E2, L, Z]): ZStream[R1, E2, L] =
+    new ZStream(self.channel >>> sink.channel)
 
   /**
    * Provides the stream with its required environment, which eliminates

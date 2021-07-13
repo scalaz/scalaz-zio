@@ -571,6 +571,33 @@ object ZSink {
   def drain[Err]: ZSink[Any, Err, Any, Err, Nothing, Unit] =
     new ZSink(ZChannel.read[Any].unit.repeated.catchAll(_ => ZChannel.unit))
 
+  def dropWhile[Err, In](p: In => Boolean): ZSink[Any, Err, In, Err, In, Any] = {
+    lazy val loop: ZChannel[Any, Err, Chunk[In], Any, Err, Chunk[In], Any] = ZChannel.readWith(
+      (in: Chunk[In]) => {
+        val leftover = in.dropWhile(p)
+        val more     = leftover.isEmpty
+        if (more) loop else ZChannel.write(leftover) *> ZChannel.identity[Err, Chunk[In], Any]
+      },
+      (e: Err) => ZChannel.fail(e),
+      (_: Any) => ZChannel.unit
+    )
+    new ZSink(loop)
+  }
+
+  def dropWhileM[R, InErr, In](p: In => ZIO[R, InErr, Boolean]): ZSink[R, InErr, In, InErr, In, Any] = {
+    lazy val loop: ZChannel[R, InErr, Chunk[In], Any, InErr, Chunk[In], Any] = ZChannel.readWith(
+      (in: Chunk[In]) =>
+        ZChannel.unwrap(in.dropWhileM(p).map { leftover =>
+          val more = leftover.isEmpty
+          if (more) loop else ZChannel.write(leftover) *> ZChannel.identity[InErr, Chunk[In], Any]
+        }),
+      (e: InErr) => ZChannel.fail(e),
+      (_: Any) => ZChannel.unit
+    )
+
+    new ZSink(loop)
+  }
+
   /**
    * Returns a lazily constructed sink that may require effects for its creation.
    */
