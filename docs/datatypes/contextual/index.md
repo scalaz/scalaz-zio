@@ -195,7 +195,7 @@ Let's start learning this pattern by writing a `Logging` service:
 
 3. **Service Definition** — Then we create the `Logging` companion object. Inside the companion object, we define the service definition with a trait named `Service`. Traits are how we define services. A service could be all the stuff that is related to one concept with singular responsibility.
 
-4. **Service Implementation** — After that, we implement our service by creating a new Service and then lifting that entire implementation into the `ZLayer` data type by using the `ZIO.succeed` constructor.
+4. **Service Implementation** — After that, we implement our service by creating a new Service and then lifting that entire implementation into the `ZLayer` data type by using the `ZLayer.succeed` constructor.
 
 5. **Defining Dependencies** — If our service has a dependency on other services, we should use constructors like `ZLayer.fromService` and `ZLayer.fromServices`.
 
@@ -361,7 +361,7 @@ That's it! Very simple! ZIO encourages us to follow some of the best practices i
 >
 > In _Module Pattern 2.0_ we don't use type aliases for Has wrappers, like `type Logging = Has[Logging.Service]`. So unlike the previous pattern, we encourage using explicitly the `Has` wrappers whenever we want to specify the dependency on a service.
 >
-> So instead of writing `ZLayer[Console with Clock, Nothing, Logging]`, we write `ZLayer[Has[Logging] with Has[Clock], Nothing, Has[Logging]]`.
+> So instead of writing `ZLayer[Console with Clock, Nothing, Logging]`, we write `ZLayer[Has[Console] with Has[Clock], Nothing, Has[Logging]]`.
 
 Finally, we provide required layers to our `app` effect:
 
