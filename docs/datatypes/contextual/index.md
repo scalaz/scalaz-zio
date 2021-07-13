@@ -338,19 +338,23 @@ case class LoggingLive(console: Console.Service, clock: Clock.Service) extends L
 }
 ```
 
-4. **Defining ZLayer** — Now, we create a companion object for `LoggingLive` data type and lift the service implementation into the `ZLayer`:
+4. **Defining ZLayer** — Now, we create a companion object for the `Logging` service interface and lift the service implementation into a `ZLayer`:
 
 ```scala mdoc:silent
-object LoggingLive {
-  val layer: URLayer[Has[Console.Service] with Has[Clock.Service], Has[Logging]] =
+object Logging {
+  val live: URLayer[Has[Console.Service] with Has[Clock.Service], Has[Logging]] =
     (LoggingLive(_, _)).toLayer
 }
 ```
 
 5. **Accessor Methods** — Finally, to create the API more ergonomic, it's better to write accessor methods for all of our service methods. Just like what we did in Module Pattern 1.0, but with a slight change, in this case, instead of using `ZIO.accessM` we use `ZIO.serviceWith` method to define accessors inside the service companion object:
 
-```scala mdoc:silent
+```scala mdoc:silent:nest
 object Logging {
+
+  val live: URLayer[Has[Console.Service] with Has[Clock.Service], Has[Logging]] =
+    (LoggingLive(_, _)).toLayer
+
   def log(line: String): URIO[Has[Logging], Unit] = ZIO.serviceWith[Logging](_.log(line))
 }
 ```
@@ -370,7 +374,7 @@ Finally, we provide required layers to our `app` effect:
  val app = Logging.log("Application Started")
 
  zio.Runtime.default.unsafeRun(
-   app.provideLayer(LoggingLive.layer)
+   app.provideLayer(Logging.live)
  )
 ```
 
@@ -514,15 +518,14 @@ trait Logging {
 }
 
 object Logging {
-  def log(line: String) = ZIO.serviceWith[Logging](_.log(line))
-}
 
-object LoggingLive {
-  val layer: ULayer[Has[Logging]] = ZLayer.succeed {
+  val live: ULayer[Has[Logging]] = ZLayer.succeed {
     new Logging {
       override def log(str: String): UIO[Unit] = ???
     }
   }
+
+  def log(line: String) = ZIO.serviceWith[Logging](_.log(line))
 }
 
 val myApp: ZIO[Has[Logging] with Console with Clock, Nothing, Unit] = for {
@@ -537,5 +540,5 @@ This program uses two ZIO built-in services, `Console` and `Clock`. We don't nee
 By using `ZIO#provideCustomLayer` we only provide the `Logging` layer, and it returns a `ZIO` effect which only requires `ZEnv`:
 
 ```scala mdoc:silent
-val mainEffect: ZIO[ZEnv, Nothing, Unit] = myApp.provideCustomLayer(LoggingLive.layer)
+val mainEffect: ZIO[ZEnv, Nothing, Unit] = myApp.provideCustomLayer(Logging.live)
 ```
