@@ -121,7 +121,7 @@ private[zio] trait ChunkLike[+A]
   /**
    * Generates a readable string representation of this chunk.
    */
-  override final def mkString: String =
+  override def mkString: String =
     mkString("")
 
   /**

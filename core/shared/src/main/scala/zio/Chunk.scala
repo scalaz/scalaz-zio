@@ -1577,6 +1577,17 @@ object Chunk extends ChunkFactory with ChunkPlatformSpecific {
 
     override private[zio] def reverseArrayIterator[A1 >: A]: Iterator[Array[A1]] =
       Iterator.single(array.asInstanceOf[Array[A1]])
+
+    /**
+     * Generates a readable string representation of this chunk.
+     */
+    override def mkString: String =
+      array.asInstanceOf[AnyRef] match {
+        case a: Array[Char] =>
+          new String(a)
+        case _ =>
+          mkString("", "", "")
+      }
   }
 
   private final case class Concat[A](override protected val left: Chunk[A], override protected val right: Chunk[A])
