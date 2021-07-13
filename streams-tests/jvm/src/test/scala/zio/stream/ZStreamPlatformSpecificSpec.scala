@@ -304,7 +304,40 @@ object ZStreamPlatformSpecificSpec extends ZIOBaseSpec {
 
             _ <- server.interrupt
           } yield assert(receive)(equalTo(message)))
-        })
+        }),
+        testM("write large") {
+          val message = "XABCDEFGHIJKMNOP" * 180000
+          for {
+            refOut     <- Ref.make("")
+            refWritten <- Ref.make(0)
+
+            server <- ZStream
+                        .fromSocketServer(8885)
+                        .foreach(c =>
+                          ZStream.fromChunk(Chunk.fromIterable(message.getBytes)).run(c.write).flatMap(refWritten.set _)
+                        )
+                        .fork
+
+            _ <- socketClient(8885).use { c =>
+                   val buffer = ByteBuffer.allocate(message.getBytes.length)
+
+                   ZIO
+                     .fromFutureJava(c.read(buffer))
+                     .repeatUntil(_ < 1)
+                     .flatMap { _ =>
+                       (buffer: Buffer).flip()
+                       refOut.update(_ => new String(buffer.array))
+                     }
+                 }.retry(Schedule.forever)
+
+            receive <- refOut.get.repeatWhileM(s => ZIO.succeed(s.isEmpty))
+
+            _ <- server.interrupt
+
+            serverWritten <- refWritten.get
+
+          } yield assert(receive)(equalTo(message)) && assert(serverWritten)(equalTo(message.length))
+        }
       ),
       suite("fromOutputStreamWriter")(
         testM("reads what is written") {

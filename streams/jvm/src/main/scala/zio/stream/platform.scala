@@ -22,7 +22,13 @@ import zio.stream.compression._
 
 import java.io._
 import java.net.{InetSocketAddress, SocketAddress}
-import java.nio.channels.{AsynchronousServerSocketChannel, AsynchronousSocketChannel, CompletionHandler, FileChannel}
+import java.nio.channels.{
+  AsynchronousServerSocketChannel,
+  AsynchronousSocketChannel,
+  ClosedChannelException,
+  CompletionHandler,
+  FileChannel
+}
 import java.nio.file.StandardOpenOption._
 import java.nio.file.{OpenOption, Path}
 import java.nio.{Buffer, ByteBuffer}
@@ -523,7 +529,10 @@ trait ZStreamPlatformSpecificConstructors {
                   callback(ZIO.succeed(Option(Chunk.fromByteBuffer(buff) -> bytesRead.toInt)))
                 }
 
-                override def failed(error: Throwable, attachment: Void): Unit = callback(ZIO.fail(error))
+                override def failed(error: Throwable, attachment: Void): Unit = error match {
+                  case _: ClosedChannelException => callback(ZIO.succeed(Option.empty))
+                  case _                         => callback(ZIO.fail(error))
+                }
               }
             )
           }
@@ -532,22 +541,32 @@ trait ZStreamPlatformSpecificConstructors {
     /**
      * Write the entire Chuck[Byte] to the socket channel.
      * The caller of this function is NOT responsible for closing the `AsynchronousSocketChannel`.
-     *
-     * The sink will yield the count of bytes written.
      */
     def write: Sink[Throwable, Byte, Nothing, Int] =
-      ZSink.foldLeftChunksM(0) { case (nbBytesWritten, c) =>
-        IO.effectAsync[Throwable, Int] { callback =>
-          socket.write(
-            ByteBuffer.wrap(c.toArray),
-            null,
-            new CompletionHandler[Integer, Void] {
-              override def completed(result: Integer, attachment: Void): Unit =
-                callback(ZIO.succeed(nbBytesWritten + result.toInt))
+      ZSink.foldLeftChunksM(0) {
+        case (nbBytesWritten, c) => {
+          val buffer = ByteBuffer.wrap(c.toArray)
+          IO.effectAsync[Throwable, Int] { callback =>
+            var totalWritten = 0
+            socket.write(
+              buffer,
+              buffer,
+              new CompletionHandler[Integer, ByteBuffer] {
+                override def completed(result: Integer, attachment: ByteBuffer): Unit = {
+                  totalWritten += result
+                  if (attachment.hasRemaining)
+                    socket.write(attachment, attachment, this)
+                  else
+                    callback(ZIO.succeed(nbBytesWritten + totalWritten))
+                }
 
-              override def failed(error: Throwable, attachment: Void): Unit = callback(ZIO.fail(error))
-            }
-          )
+                override def failed(error: Throwable, attachment: ByteBuffer): Unit = error match {
+                  case _: ClosedChannelException => callback(ZIO.succeed(0))
+                  case _                         => callback(ZIO.fail(error))
+                }
+              }
+            )
+          }
         }
       }
 
