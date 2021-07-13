@@ -304,6 +304,10 @@ object ChunkSpec extends ZIOBaseSpec {
       val fn = Gen.function[Random with Sized, Int, Boolean](Gen.boolean)
       check(mediumChunks(intGen), fn)((chunk, p) => assert(chunk.exists(p))(equalTo(chunk.toList.exists(p))))
     },
+    testM("indexOf") {
+      val fn = Gen.function[Random with Sized, Int, Boolean](Gen.boolean)
+      check(mediumChunks(intGen), fn)((chunk, p) => assert(chunk.indexOf(p))(equalTo(chunk.toList.indexOf(p))))
+    },
     testM("forall") {
       val fn = Gen.function[Random with Sized, Int, Boolean](Gen.boolean)
       check(mediumChunks(intGen), fn)((chunk, p) => assert(chunk.forall(p))(equalTo(chunk.toList.forall(p))))
