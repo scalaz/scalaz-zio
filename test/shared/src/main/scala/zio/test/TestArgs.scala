@@ -16,19 +16,27 @@
 
 package zio.test
 
-final case class TestArgs(testSearchTerms: List[String], tagSearchTerms: List[String], testTaskPolicy: Option[String])
+final case class TestArgs(
+  testSearchTerms: List[String],
+  tagSearchTerms: List[String],
+  testTaskPolicy: Option[String],
+  testRenderer: Option[String],
+  printSummary: Boolean
+)
 
 object TestArgs {
-  def empty: TestArgs = TestArgs(List.empty[String], List.empty[String], None)
+  def empty: TestArgs = TestArgs(List.empty[String], List.empty[String], None, None, printSummary = true)
 
   def parse(args: Array[String]): TestArgs = {
     // TODO: Add a proper command-line parser
     val parsedArgs = args
       .sliding(2, 2)
       .collect {
-        case Array("-t", term)      => ("testSearchTerm", term)
-        case Array("-tags", term)   => ("tagSearchTerm", term)
-        case Array("-policy", name) => ("policy", name)
+        case Array("-t", term)        => ("testSearchTerm", term)
+        case Array("-tags", term)     => ("tagSearchTerm", term)
+        case Array("-policy", name)   => ("policy", name)
+        case Array("-renderer", name) => ("renderer", name)
+        case Array("-summary", flag)  => ("summary", flag)
       }
       .toList
       .groupBy(_._1)
@@ -39,6 +47,8 @@ object TestArgs {
     val terms          = parsedArgs.getOrElse("testSearchTerm", Nil)
     val tags           = parsedArgs.getOrElse("tagSearchTerm", Nil)
     val testTaskPolicy = parsedArgs.getOrElse("policy", Nil).headOption
-    TestArgs(terms, tags, testTaskPolicy)
+    val testRenderer   = parsedArgs.getOrElse("renderer", Nil).headOption.map(_.toLowerCase)
+    val printSummary   = parsedArgs.getOrElse("summary", Nil).headOption.forall(_.toBoolean)
+    TestArgs(terms, tags, testTaskPolicy, testRenderer, printSummary)
   }
 }

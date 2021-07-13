@@ -19,8 +19,8 @@ package zio.test.render
 import zio.test.TestAnnotationRenderer
 
 trait TestRenderer {
-  def render(result: ExecutionResult, testAnnotationRenderer: TestAnnotationRenderer): String
+  def render(results: Seq[ExecutionResult], testAnnotationRenderer: TestAnnotationRenderer): Seq[String]
 }
 object TestRenderer {
-  lazy val default = ConsoleRenderer
+  lazy val default: TestRenderer = ConsoleRenderer
 }

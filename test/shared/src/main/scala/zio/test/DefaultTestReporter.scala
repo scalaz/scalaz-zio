@@ -30,8 +30,6 @@ import scala.annotation.tailrec
 import scala.util.Try
 
 object DefaultTestReporter {
-  private val tabSize = 2
-
   def render[E](
     executedSpec: ExecutedSpec[E],
     includeCause: Boolean
@@ -61,7 +59,7 @@ object DefaultTestReporter {
             else (Passed, Seq(renderSuiteSucceeded(label, depth)))
 
           val allAnnotations = annotations :: ancestors
-          val rest           = specs.flatMap(loop(_, depth + tabSize, allAnnotations))
+          val rest           = specs.flatMap(loop(_, depth + 1, allAnnotations))
 
           rendered(Suite, label, status, depth, renderedLabel.flatMap(_.lines): _*)
             .withAnnotations(allAnnotations) +: rest
@@ -116,9 +114,9 @@ object DefaultTestReporter {
 
   def apply[E](testRenderer: TestRenderer, testAnnotationRenderer: TestAnnotationRenderer): TestReporter[E] = {
     (duration: Duration, executedSpec: ExecutedSpec[E]) =>
-      val rendered = render(executedSpec, true).map(result => testRenderer.render(result, testAnnotationRenderer))
-      val stats    = testRenderer.render(logStats(duration, executedSpec), testAnnotationRenderer)
-      TestLogger.logLine((rendered ++ Seq(stats)).mkString("\n"))
+      val rendered = testRenderer.render(render(executedSpec, true), testAnnotationRenderer)
+      val stats    = testRenderer.render(logStats(duration, executedSpec) :: Nil, testAnnotationRenderer)
+      TestLogger.logLine((rendered ++ stats).mkString("\n"))
   }
 
   private def logStats[E](duration: Duration, executedSpec: ExecutedSpec[E]): ExecutionResult = {
@@ -206,7 +204,7 @@ object DefaultTestReporter {
 
         errorMessageLines ++ Chunk(Line.fromString(codeString, offset)) ++ (nested
           .flatMap(renderFailureCase(_, offset, true))
-          .map(_.withOffset(offset + tabSize)) ++
+          .map(_.withOffset(offset + 1)) ++
           Chunk.fromIterable(path.map { case (label, value) => dim(s"$label = ") + primary(value.toString) }) ++
           Chunk(detail(s"☛ $location").toLine))
     }
@@ -229,7 +227,7 @@ object DefaultTestReporter {
 
   private def renderAssertionLocation(av: AssertionValue, offset: Int) = av.sourceLocation.fold(Message()) { location =>
     detail(s"☛ $location").toLine
-      .withOffset(offset + tabSize)
+      .withOffset(offset + 2)
       .toMessage
   }
 
@@ -243,7 +241,7 @@ object DefaultTestReporter {
       Message(message)
     }
     val mockExceptions = defects.collect { case exception: MockException =>
-      renderMockException(exception).map(withOffset(offset + tabSize))
+      renderMockException(exception).map(withOffset(offset + 1))
     }
     val remaining =
       cause.stripSomeDefects {
@@ -262,7 +260,7 @@ object DefaultTestReporter {
         prefix ++ Message(
           remainingCause.prettyPrint
             .split("\n")
-            .map(s => withOffset(offset + tabSize)(Line.fromString(s)))
+            .map(s => withOffset(offset + 1)(Line.fromString(s)))
             .toVector
         )
       case None =>
@@ -284,7 +282,7 @@ object DefaultTestReporter {
         Message(
           Seq(
             error(s"- unexpected call to $method with arguments").toLine,
-            withOffset(tabSize)(detail(args.toString).toLine)
+            withOffset(1)(detail(args.toString).toLine)
           )
         )
 
@@ -300,13 +298,13 @@ object DefaultTestReporter {
     failedMatches.map {
       case InvalidCall.InvalidArguments(invoked, args, assertion) =>
         val header = error(s"- $invoked called with invalid arguments").toLine
-        (header +: renderTestFailure("", assertImpl(args)(assertion)).drop(1)).withOffset(tabSize)
+        (header +: renderTestFailure("", assertImpl(args)(assertion)).drop(1)).withOffset(1)
 
       case InvalidCall.InvalidCapability(invoked, expected, assertion) =>
         Message(
           Seq(
-            withOffset(tabSize)(error(s"- invalid call to $invoked").toLine),
-            withOffset(tabSize * 2)(
+            withOffset(1)(error(s"- invalid call to $invoked").toLine),
+            withOffset(2)(
               Fragment(s"expected $expected with arguments ") + detail(assertion.toString)
             )
           )
@@ -315,8 +313,8 @@ object DefaultTestReporter {
       case InvalidCall.InvalidPolyType(invoked, args, expected, assertion) =>
         Message(
           Seq(
-            withOffset(tabSize)(error(s"- $invoked called with arguments $args and invalid polymorphic type").toLine),
-            withOffset(tabSize * 2)(
+            withOffset(1)(error(s"- $invoked called with arguments $args and invalid polymorphic type").toLine),
+            withOffset(2)(
               Fragment(s"expected $expected with arguments ") + detail(assertion.toString)
             )
           )
@@ -333,7 +331,7 @@ object DefaultTestReporter {
 
         case (ident, Expectation.And(children, state, _, _)) :: tail if state.isFailed =>
           val title       = Line.fromString("in any order", ident)
-          val unsatisfied = children.filter(_.state.isFailed).map(ident + tabSize -> _)
+          val unsatisfied = children.filter(_.state.isFailed).map(ident + 1 -> _)
           loop(unsatisfied ++ tail, lines :+ title)
 
         case (ident, Expectation.Call(method, assertion, _, state, _)) :: tail if state.isFailed =>
@@ -343,12 +341,12 @@ object DefaultTestReporter {
 
         case (ident, Expectation.Chain(children, state, _, _)) :: tail if state.isFailed =>
           val title       = Line.fromString("in sequential order", ident)
-          val unsatisfied = children.filter(_.state.isFailed).map(ident + tabSize -> _)
+          val unsatisfied = children.filter(_.state.isFailed).map(ident + 1 -> _)
           loop(unsatisfied ++ tail, lines :+ title)
 
         case (ident, Expectation.Or(children, state, _, _)) :: tail if state.isFailed =>
           val title       = Line.fromString("one of", ident)
-          val unsatisfied = children.map(ident + tabSize -> _)
+          val unsatisfied = children.map(ident + 1 -> _)
           loop(unsatisfied ++ tail, lines :+ title)
 
         case (ident, Expectation.Repeated(child, range, state, _, _, completed)) :: tail if state.isFailed =>
@@ -359,14 +357,14 @@ object DefaultTestReporter {
               s"repeated $completed times not in range $min to $max by ${range.step}",
               ident
             )
-          val unsatisfied = ident + tabSize -> child
+          val unsatisfied = ident + 1 -> child
           loop(unsatisfied :: tail, lines :+ title)
 
         case _ :: tail =>
           loop(tail, lines)
       }
 
-    val lines = loop(List(tabSize -> expectation), Vector.empty)
+    val lines = loop(List(1 -> expectation), Vector.empty)
     Message(lines)
   }
 
@@ -399,7 +397,7 @@ object DefaultTestReporter {
       case Some(details) =>
         val shrunken = details.shrunkenInput.toString
         val initial  = details.initialInput.toString
-        val renderShrunken = withOffset(offset + tabSize)(
+        val renderShrunken = withOffset(offset + 1)(
           Fragment(
             s"Test failed after ${details.iterations + 1} iteration${if (details.iterations > 0) "s" else ""} with input: "
           ) +
@@ -407,21 +405,21 @@ object DefaultTestReporter {
         )
         if (initial == shrunken) renderShrunken.toMessage
         else
-          renderShrunken + withOffset(offset + tabSize)(
+          renderShrunken + withOffset(offset + 1)(
             Fragment(s"Original input before shrinking was: ") + error(initial)
           )
       case None => Message.empty
     }
 
   private def renderFragment(fragment: AssertionValue, offset: Int): Line =
-    withOffset(offset + tabSize) {
+    withOffset(offset + 1) {
       primary(renderValue(fragment)) +
         renderSatisfied(fragment) +
         detail(fragment.printAssertion)
     }
 
   private def renderWhole(fragment: AssertionValue, whole: AssertionValue, offset: Int): Line =
-    withOffset(offset + tabSize) {
+    withOffset(offset + 1) {
       primary(renderValue(whole)) +
         renderSatisfied(whole) ++
         highlight(detail(whole.printAssertion), fragment.printAssertion)

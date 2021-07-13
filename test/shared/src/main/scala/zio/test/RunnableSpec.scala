@@ -17,6 +17,7 @@
 package zio.test
 
 import zio._
+import zio.test.render._
 
 /**
  * A `RunnableSpec` has a main function and can be run by the JVM / Scala.js.
@@ -25,29 +26,32 @@ abstract class RunnableSpec[R, E] extends AbstractRunnableSpec {
   override type Environment = R
   override type Failure     = E
 
-  private def run(spec: ZSpec[Environment, Failure]): URIO[Has[TestLogger] with Has[Clock], Int] =
+  private def run(spec: ZSpec[Environment, Failure], testArgs: TestArgs): URIO[Has[TestLogger] with Has[Clock], Int] = {
+    val filteredSpec = FilteredSpec(spec, testArgs)
+    val testReporter = testArgs.testRenderer.fold(runner.reporter)(createTestReporter)
     for {
-      results <- runSpec(spec)
+      results <- runner.withReporter(testReporter).run(aspects.foldLeft(filteredSpec)(_ @@ _))
       hasFailures = results.exists {
                       case ExecutedSpec.TestCase(_, test, _) => test.isLeft
                       case _                                 => false
                     }
-      summary = SummaryBuilder.buildSummary(results)
-      _      <- TestLogger.logLine(summary.summary)
+      _ <- TestLogger
+             .logLine(SummaryBuilder.buildSummary(results).summary)
+             .when(testArgs.printSummary)
     } yield if (hasFailures) 1 else 0
+  }
 
   /**
    * A simple main function that can be used to run the spec.
    */
   final def main(args: Array[String]): Unit = {
-    val testArgs     = TestArgs.parse(args)
-    val filteredSpec = FilteredSpec(spec, testArgs)
-    val runtime      = runner.runtime
+    val testArgs = TestArgs.parse(args)
+    val runtime  = runner.runtime
     if (TestPlatform.isJVM) {
-      val exitCode = runtime.unsafeRun(run(filteredSpec).provideLayer(runner.bootstrap))
+      val exitCode = runtime.unsafeRun(run(spec, testArgs).provideLayer(runner.bootstrap))
       doExit(exitCode)
     } else if (TestPlatform.isJS) {
-      runtime.unsafeRunAsyncWith[Nothing, Int](run(filteredSpec).provideLayer(runner.bootstrap)) { exit =>
+      runtime.unsafeRunAsyncWith[Nothing, Int](run(spec, testArgs).provideLayer(runner.bootstrap)) { exit =>
         val exitCode = exit.getOrElse(_ => 1)
         doExit(exitCode)
       }
@@ -62,4 +66,12 @@ abstract class RunnableSpec[R, E] extends AbstractRunnableSpec {
     sys.env.exists { case (k, v) =>
       k.contains("JAVA_MAIN_CLASS") && v == "ammonite.Main"
     }
+
+  private def createTestReporter(rendererName: String): TestReporter[Failure] = {
+    val renderer = rendererName match {
+      case "intellij" => IntelliJRenderer
+      case _          => TestRenderer.default
+    }
+    DefaultTestReporter(renderer, TestAnnotationRenderer.default)
+  }
 }

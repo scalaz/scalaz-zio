@@ -30,9 +30,8 @@ object SummaryBuilder {
       case _                          => false
     }
     val failures = extractFailures(executedSpec)
-    val rendered = failures
-      .flatMap(DefaultTestReporter.render(_, false))
-      .map(result => ConsoleRenderer.render(result, TestAnnotationRenderer.silent))
+    val rendered = ConsoleRenderer
+      .render(failures.flatMap(DefaultTestReporter.render(_, false)), TestAnnotationRenderer.silent)
       .mkString("\n")
     Summary(success, fail, ignore, rendered)
   }
