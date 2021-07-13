@@ -3610,6 +3610,12 @@ object ZStream extends ZStreamPlatformSpecificConstructors {
     fromEffect(ZIO.environment[R])
 
   /**
+   * Creates a stream and executes the effect without emitting elements
+   */
+  def execute[R, E, A](f: ZIO[R, E, A]): ZStream[R, E, Nothing] =
+    fromEffect(f).drain
+
+  /**
    * The stream that always fails with the `error`
    */
   def fail[E](error: => E): ZStream[Any, E, Nothing] =

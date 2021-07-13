@@ -3645,6 +3645,13 @@ object ZStreamSpec extends ZIOBaseSpec {
             result <- ZStream.environment[String].provide("test").runCollect.map(_.head)
           } yield assert(result)(equalTo("test"))
         },
+        test("execute") {
+          for {
+            ref <- Ref.make(false)
+            _ <- ZStream.execute(ref.set(true)).runCollect.map(_.head)
+            expected <- ref.get
+          } yield assert(ref.get)(isTrue)
+        },
         suite("finalizer")(
           testM("happy path") {
             for {
