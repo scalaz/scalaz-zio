@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package zio.test
+package zio.test.internal.myers
 
 import zio.Chunk
 

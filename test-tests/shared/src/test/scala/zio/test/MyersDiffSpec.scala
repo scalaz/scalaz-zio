@@ -2,6 +2,7 @@ package zio.test
 
 import zio.Chunk
 import zio.test.Assertion._
+import zio.test.internal.myers.{DiffResult, MyersDiff}
 
 object MyersDiffSpec extends ZIOBaseSpec {
 
@@ -38,7 +39,7 @@ object MyersDiffSpec extends ZIOBaseSpec {
       val original = "ABCABBA"
       val modified = "CBABAC"
 
-      import Action._
+      import zio.test.internal.myers.Action._
       assert(MyersDiff.diff(original, modified))(
         equalTo(
           DiffResult(
