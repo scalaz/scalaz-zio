@@ -379,14 +379,6 @@ object ZRef extends Serializable {
     protected def unsafeSetAsync(a: A): ZIO[RA, EA, Unit]
 
     /**
-     * A symbolic alias for `zip`.
-     */
-    final def <*>[RA1 <: RA, RB1 <: RB, EA1 >: EA, EB1 >: EB, A2, B2](
-      that: ZRefM[RA1, RB1, EA1, EB1, A2, B2]
-    ): ZRef[RA1, RB1, EA1, EB1, (A, A2), (B, B2)] =
-      self zip that
-
-    /**
      * Maps and filters the `get` value of the `ZRefM` with the specified partial
      * function, returning a `ZRefM` with a `get` value that succeeds with the
      * result of the partial function if it is defined or else fails with `None`.
@@ -734,25 +726,6 @@ object ZRef extends Serializable {
     override final def writeOnly: ZRefM[RA, RB, EA, Unit, A, Nothing] =
       fold(identity, _ => (), Right(_), _ => Left(()))
 
-    /**
-     * Combines this `ZRefM` with the specified `ZRefM` to create a new
-     * `ZRefM` with the `get` and `set` values of both. The new `ZRefM` value
-     * supports atomically modifying both of the underlying `ZRefM` values.
-     */
-    final def zip[RA1 <: RA, RB1 <: RB, EA1 >: EA, EB1 >: EB, A2, B2](
-      that: ZRefM[RA1, RB1, EA1, EB1, A2, B2]
-    ): ZRef[RA1, RB1, EA1, EB1, (A, A2), (B, B2)] =
-      new ZRefM[RA1, RB1, EA1, EB1, (A, A2), (B, B2)] {
-        val semaphores: Set[Semaphore] =
-          self.semaphores | that.semaphores
-        def unsafeGet: ZIO[RB1, EB1, (B, B2)] =
-          self.get <*> that.get
-        def unsafeSetAsync(a: (A, A2)): ZIO[RA1, EA1, Unit] =
-          self.unsafeSetAsync(a._1) *> that.unsafeSetAsync(a._2)
-        def unsafeSet(a: (A, A2)): ZIO[RA1, EA1, Unit] =
-          self.unsafeSet(a._1) *> that.unsafeSet(a._2)
-      }
-
     private final def withPermit[R, E, A](zio: ZIO[R, E, A]): ZIO[R, E, A] =
       ZIO.uninterruptibleMask { restore =>
         restore(STM.foreach(semaphores)(_.acquire).commit) *>
@@ -927,6 +900,48 @@ object ZRef extends Serializable {
        */
       def updateSomeAndGetZIO[R1 <: R, E1 >: E](pf: PartialFunction[A, ZIO[R1, E1, A]]): ZIO[R1, E1, A] =
         modifyZIO(v => pf.applyOrElse[A, ZIO[R1, E1, A]](v, ZIO.succeedNow).map(result => (result, result)))
+    }
+
+    implicit final class ZipSyntax[RA, RB, EA, EB, A, B](private val self: ZRefM[RA, RB, EA, EB, A, B]) extends AnyVal {
+
+      /**
+       * A symbolic alias for `zip`.
+       */
+      final def <*>[RA1 <: RA, RB1 <: RB, EA1 >: EA, EB1 >: EB, A2, B2](
+        that: ZRefM[RA1, RB1, EA1, EB1, A2, B2]
+      )(implicit
+        unzippable: Unzippable[A, A2],
+        zippable: Zippable[B, B2]
+      ): ZRefM[RA1, RB1, EA1, EB1, unzippable.In, zippable.Out] =
+        self zip that
+
+      /**
+       * Combines this `ZRefM` with the specified `ZRefM` to create a new
+       * `ZRefM` with the `get` and `set` values of both. The new `ZRefM` value
+       * supports atomically modifying both of the underlying `ZRefM` values.
+       */
+      final def zip[RA1 <: RA, RB1 <: RB, EA1 >: EA, EB1 >: EB, A2, B2](
+        that: ZRefM[RA1, RB1, EA1, EB1, A2, B2]
+      )(implicit
+        unzippable: Unzippable[A, A2],
+        zippable: Zippable[B, B2]
+      ): ZRefM[RA1, RB1, EA1, EB1, unzippable.In, zippable.Out] =
+        new ZRefM[RA1, RB1, EA1, EB1, unzippable.In, zippable.Out] {
+          val semaphores: Set[Semaphore] =
+            self.semaphores | that.semaphores
+          def unsafeGet: ZIO[RB1, EB1, zippable.Out] =
+            self.get <*> that.get
+          def unsafeSetAsync(in: unzippable.In): ZIO[RA1, EA1, Unit] =
+            unzippable.unzip(in) match {
+              case (a, a2) =>
+                self.unsafeSetAsync(a) *> that.unsafeSetAsync(a2)
+            }
+          def unsafeSet(in: unzippable.In): ZIO[RA1, EA1, Unit] =
+            unzippable.unzip(in) match {
+              case (a, a2) =>
+                self.unsafeSet(a) *> that.unsafeSet(a2)
+            }
+        }
     }
   }
 

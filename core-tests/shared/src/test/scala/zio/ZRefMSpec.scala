@@ -491,7 +491,7 @@ object ZRefMSpec extends ZIOBaseSpec {
           tuple   <- composed.get
           (a, b)   = tuple
         } yield assert(a)(equalTo(6765)) && assert(b)(equalTo(10946))
-      },
+      } @@ nonFlaky,
       test("partial writes cannot be observed by other fibers") {
         for {
           left    <- RefM.make(0)
@@ -502,8 +502,18 @@ object ZRefMSpec extends ZIOBaseSpec {
           tuple   <- composed.get
           (a, b)   = tuple
         } yield assert(a)(equalTo(b))
+      } @@ nonFlaky,
+      test("is compositional") {
+        lazy val x1: RefM[Int]                         = ???
+        lazy val x2: RefM[Unit]                        = ???
+        lazy val x3: RefM[String]                      = ???
+        lazy val x4: RefM[Boolean]                     = ???
+        lazy val actual                                = x1 <*> x2 <*> x3 <*> x4
+        lazy val expected: Ref[(Int, String, Boolean)] = actual
+        lazy val _                                     = expected
+        assertCompletes
       }
-    ) @@ nonFlaky,
+    ),
     suite("combinators")(
       test("dequeueRef") {
         for {
