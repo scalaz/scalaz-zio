@@ -479,6 +479,16 @@ object ZManagedSpec extends ZIOBaseSpec {
         ZIO.succeed(assertCompletes)
       }
     ),
+    suite("ifF")(
+      testM("returns `onTrue` if result of `b` is `true`") {
+        val managed = ZManaged.ifF(ZManaged.succeed(true))(true, false)
+        assertM(managed.use(ZIO.succeed(_)))(isTrue)
+      },
+      testM("returns `onFalse` if result of `b` is `false`") {
+        val managed = ZManaged.ifF(ZManaged.succeed(false))(true, false)
+        assertM(managed.use(ZIO.succeed(_)))(isFalse)
+      }
+    ),
     suite("lock")(
       testM("locks acquire, use, and release actions to the specified executor") {
         val executor: UIO[Executor] = ZIO.descriptorWith(descriptor => ZIO.succeedNow(descriptor.executor))

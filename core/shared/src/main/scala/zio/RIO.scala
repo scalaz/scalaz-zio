@@ -685,6 +685,12 @@ object RIO {
     ZIO.ifM(b)
 
   /**
+   * @see [[zio.ZIO.ifM]]
+   */
+  def ifF[R](b: RIO[R, Boolean]): ZIO.IfF[R, Throwable] =
+    ZIO.ifF(b)
+
+  /**
    * @see [[zio.ZIO.infinity]]
    */
   val infinity: URIO[Clock, Nothing] = ZIO.sleep(Duration.fromNanos(Long.MaxValue)) *> ZIO.never

@@ -1276,6 +1276,12 @@ object ZSTM {
     new ZSTM.IfM(b)
 
   /**
+   * Returns `onTrue` if the result of `b` is `true` and `onFalse` otherwise.
+   */
+  def ifF[R, E](b: ZSTM[R, E, Boolean]): ZSTM.IfF[R, E] =
+    new ZSTM.IfF(b)
+
+  /**
    * Iterates with the specified transactional function. The moral equivalent
    * of:
    *
@@ -1613,6 +1619,11 @@ object ZSTM {
   final class IfM[R, E](private val b: ZSTM[R, E, Boolean]) {
     def apply[R1 <: R, E1 >: E, A](onTrue: => ZSTM[R1, E1, A], onFalse: => ZSTM[R1, E1, A]): ZSTM[R1, E1, A] =
       b.flatMap(b => if (b) onTrue else onFalse)
+  }
+
+  final class IfF[R, E](private val b: ZSTM[R, E, Boolean]) {
+    def apply[A](onTrue: => A, onFalse: => A): ZSTM[R, E, A] =
+      b.map(b => if (b) onTrue else onFalse)
   }
 
   final class UnlessM[R, E](private val b: ZSTM[R, E, Boolean]) {

@@ -652,6 +652,12 @@ object IO {
     ZIO.ifM(b)
 
   /**
+   * @see [[zio.ZIO.ifM]]
+   */
+  def ifF[E](b: IO[E, Boolean]): ZIO.IfF[Any, E] =
+    ZIO.ifF(b)
+
+  /**
    * @see See [[zio.ZIO.interrupt]]
    */
   val interrupt: UIO[Nothing] = ZIO.interrupt

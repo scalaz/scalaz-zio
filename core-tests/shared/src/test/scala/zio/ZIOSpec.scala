@@ -1127,6 +1127,16 @@ object ZIOSpec extends ZIOBaseSpec {
         ZIO.succeed(assertCompletes)
       }
     ),
+    suite("ifF")(
+      testM("returns `onTrue` if result of `b` is `true`") {
+        val zio = ZIO.ifF(ZIO.succeed(true))(true, false)
+        assertM(zio)(isTrue)
+      },
+      testM("returns `onFalse` if result of `b` is `false`") {
+        val zio = ZIO.ifF(ZIO.succeed(false))(true, false)
+        assertM(zio)(isFalse)
+      }
+    ),
     suite("ignore")(
       testM("return success as Unit") {
         assertM(ZIO.succeed(11).ignore)(equalTo(()))

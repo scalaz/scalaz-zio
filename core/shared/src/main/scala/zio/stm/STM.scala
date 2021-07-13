@@ -221,6 +221,12 @@ object STM {
     ZSTM.ifM(b)
 
   /**
+   * @see See [[zio.stm.ZSTM.ifF]]
+   */
+  def ifF[E](b: STM[E, Boolean]): ZSTM.IfF[Any, E] =
+    ZSTM.ifF(b)
+
+  /**
    * @see See [[zio.stm.ZSTM.iterate]]
    */
   def iterate[E, S](initial: S)(cont: S => Boolean)(body: S => STM[E, S]): STM[E, S] =

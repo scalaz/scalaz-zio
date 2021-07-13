@@ -1243,6 +1243,14 @@ object ZManaged extends ZManagedPlatformSpecific {
       b.flatMap(b => if (b) onTrue else onFalse)
   }
 
+  final class IfF[R, E](private val b: ZManaged[R, E, Boolean]) extends AnyVal {
+    def apply[A](
+      onTrue: => A,
+      onFalse: => A
+    ): ZManaged[R, E, A] =
+      b.map(b => if (b) onTrue else onFalse)
+  }
+
   final class ProvideSomeLayer[R0 <: Has[_], -R, +E, +A](private val self: ZManaged[R, E, A]) extends AnyVal {
     def apply[E1 >: E, R1 <: Has[_]](
       layer: ZLayer[R0, E1, R1]
@@ -1923,6 +1931,12 @@ object ZManaged extends ZManagedPlatformSpecific {
    */
   def ifM[R, E](b: ZManaged[R, E, Boolean]): ZManaged.IfM[R, E] =
     new ZManaged.IfM(b)
+
+  /**
+   * Returns `onTrue` if the result of `b` is `true` and `onFalse` otherwise.
+   */
+  def ifF[R, E](b: ZManaged[R, E, Boolean]): ZManaged.IfF[R, E] =
+    new ZManaged.IfF(b)
 
   /**
    * Returns an effect that is interrupted as if by the fiber calling this

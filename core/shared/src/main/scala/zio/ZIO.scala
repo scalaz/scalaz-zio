@@ -3467,6 +3467,12 @@ object ZIO extends ZIOCompanionPlatformSpecific {
     new ZIO.IfM(b)
 
   /**
+   * Returns `onTrue` if the result of `b` is `true` and `onFalse` otherwise.
+   */
+  def ifF[R, E](b: ZIO[R, E, Boolean]): ZIO.IfF[R, E] =
+    new ZIO.IfF(b)
+
+  /**
    * Like [[never]], but fibers that running this effect won't be garbage
    * collected unless interrupted.
    */
@@ -4337,6 +4343,11 @@ object ZIO extends ZIOCompanionPlatformSpecific {
   final class IfM[R, E](private val b: ZIO[R, E, Boolean]) extends AnyVal {
     def apply[R1 <: R, E1 >: E, A](onTrue: => ZIO[R1, E1, A], onFalse: => ZIO[R1, E1, A]): ZIO[R1, E1, A] =
       b.flatMap(b => if (b) onTrue else onFalse)
+  }
+
+  final class IfF[R, E](private val b: ZIO[R, E, Boolean]) extends AnyVal {
+    def apply[A](onTrue: => A, onFalse: => A): ZIO[R, E, A] =
+      b.map(b => if (b) onTrue else onFalse)
   }
 
   final class UnlessM[R, E](private val b: ZIO[R, E, Boolean]) extends AnyVal {

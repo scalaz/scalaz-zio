@@ -623,6 +623,12 @@ object URIO {
     ZIO.ifM(b)
 
   /**
+   * @see [[zio.ZIO.ifM]]
+   */
+  def ifF[R](b: URIO[R, Boolean]): ZIO.IfF[R, Nothing] =
+    ZIO.ifF(b)
+
+  /**
    * @see [[zio.ZIO.infinity]]
    */
   val infinity: URIO[Clock, Nothing] = ZIO.sleep(Duration.fromNanos(Long.MaxValue)) *> ZIO.never

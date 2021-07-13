@@ -294,6 +294,16 @@ object ZSTMSpec extends ZIOBaseSpec {
           ZIO.succeed(assertCompletes)
         }
       ),
+      suite("ifF")(
+        testM("returns `onTrue` if result of `b` is `true`") {
+          val transaction = ZSTM.ifF(ZSTM.succeed(true))(true, false)
+          assertM(transaction.commit)(isTrue)
+        },
+        testM("returns `onFalse` if result of `b` is `false`") {
+          val transaction = ZSTM.ifF(ZSTM.succeed(false))(true, false)
+          assertM(transaction.commit)(isFalse)
+        }
+      ),
       suite("left")(
         testM("on Left value") {
           assertM(ZSTM.succeed(Left("Left")).left.commit)(equalTo("Left"))
