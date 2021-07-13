@@ -280,6 +280,13 @@ object Runtime {
   lazy val global: Runtime[ZEnv] = Runtime(ZEnv.Services.live, Platform.global)
 
   /**
+   * A version of the default runtime that tracks all fibers forked by tasks
+   * it executes.
+   */
+  lazy val supervised: Runtime[ZEnv] =
+    default.mapPlatform(_.withSupervisor(Supervisor.unsafeTrack(true)))
+
+  /**
    * Unsafely creates a `Runtime` from a `ZLayer` whose resources will be
    * allocated immediately, and not released until the `Runtime` is shut down
    * or the end of the application.

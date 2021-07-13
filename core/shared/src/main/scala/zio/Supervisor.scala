@@ -131,35 +131,8 @@ object Supervisor {
    * @param weak Whether or not to track the children in a weak set, if
    *             possible (platform-dependent).
    */
-  def track(weak: Boolean): UIO[Supervisor[Chunk[Fiber.Runtime[Any, Any]]]] = UIO {
-    val set: java.util.Set[Fiber.Runtime[Any, Any]] =
-      if (weak) Platform.newWeakSet[Fiber.Runtime[Any, Any]]()
-      else new java.util.HashSet[Fiber.Runtime[Any, Any]]()
-
-    new Supervisor[Chunk[Fiber.Runtime[Any, Any]]] {
-      def value: UIO[Chunk[Fiber.Runtime[Any, Any]]] =
-        UIO.effectTotal(
-          Sync(set)(Chunk.fromArray(set.toArray[Fiber.Runtime[Any, Any]](Array[Fiber.Runtime[Any, Any]]())))
-        )
-
-      def unsafeOnStart[R, E, A](
-        environment: R,
-        effect: ZIO[R, E, A],
-        parent: Option[Fiber.Runtime[Any, Any]],
-        fiber: Fiber.Runtime[E, A]
-      ): Propagation = {
-        Sync(set)(set.add(fiber))
-
-        Propagation.Continue
-      }
-
-      def unsafeOnEnd[R, E, A](value: Exit[E, A], fiber: Fiber.Runtime[E, A]): Propagation = {
-        Sync(set)(set.remove(fiber))
-
-        Propagation.Continue
-      }
-    }
-  }
+  def track(weak: Boolean): UIO[Supervisor[Chunk[Fiber.Runtime[Any, Any]]]] =
+    ZIO.effectTotal(unsafeTrack(weak))
 
   /**
    * Creates a new supervisor that tracks children in a set.
@@ -205,4 +178,34 @@ object Supervisor {
 
       def unsafeOnEnd[R, E, A](value: Exit[E, A], fiber: Fiber.Runtime[E, A]): Propagation = Propagation.Continue
     }
+
+  private[zio] def unsafeTrack(weak: Boolean) = {
+    val set: java.util.Set[Fiber.Runtime[Any, Any]] =
+      if (weak) Platform.newWeakSet[Fiber.Runtime[Any, Any]]()
+      else new java.util.HashSet[Fiber.Runtime[Any, Any]]()
+
+    new Supervisor[Chunk[Fiber.Runtime[Any, Any]]] {
+      def value: UIO[Chunk[Fiber.Runtime[Any, Any]]] =
+        UIO.effectTotal(
+          Sync(set)(Chunk.fromArray(set.toArray[Fiber.Runtime[Any, Any]](Array[Fiber.Runtime[Any, Any]]())))
+        )
+
+      def unsafeOnStart[R, E, A](
+        environment: R,
+        effect: ZIO[R, E, A],
+        parent: Option[Fiber.Runtime[Any, Any]],
+        fiber: Fiber.Runtime[E, A]
+      ): Propagation = {
+        Sync(set)(set.add(fiber))
+
+        Propagation.Continue
+      }
+
+      def unsafeOnEnd[R, E, A](value: Exit[E, A], fiber: Fiber.Runtime[E, A]): Propagation = {
+        Sync(set)(set.remove(fiber))
+
+        Propagation.Continue
+      }
+    }
+  }
 }
