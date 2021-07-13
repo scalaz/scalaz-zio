@@ -11,6 +11,9 @@ Once you've completed the initial translation, you'll find that ZIO is outfitted
 methods which have no Monix equivalents, so have fun exploring the API and see if you can rewrite some
 of your logic at a higher level of abstraction, with more powerful combinators and fewer lines code.
 
+If you are using operators from from Cats Effect extension methods see also 
+[here](https://zio.dev/docs/howto/migrate/from-cats-effect).
+
 ### Methods on Trait
 
 | Monix | ZIO |
