@@ -137,3 +137,60 @@ object AccountObserverMock extends Mock[Has[AccountObserver.Service]] {
     }
 }
 ```
+
+## ZLayer from primary constructor
+
+### Installation
+
+```scala
+libraryDependencies += "dev.zio" %% "zio-macros" % "<zio-version>"
+```
+
+### Description
+
+The `@layer[A]` generates a method named `layer` in companion object 
+that uses a primary constructor of annotated class to create a `ZLayer` of type `Has[A]`
+
+```scala
+import zio.macros.layer
+
+trait Foo
+
+@layer[Foo]
+final class DefaultFoo(int: Int, string: String) extends Foo
+```
+
+Will result in:
+
+```scala
+import zio._
+import zio.macros._
+
+trait Foo
+
+final class DefaultFoo(int: Int, string: String) extends Foo
+
+object DefaultFoo {
+  def layer(implicit lfc: ZLayerFromConstructor[DefaultFoo, Foo]): ZLayer[lfc.In, Nothing, Has[Foo]] =
+    lfc.layer
+}
+```
+
+> **Note:** the instance of `ZLayerFromConstructor` will be provided by a macro
+
+If you don't want to pollute a companion object with generated methods you can use `ZLayer.fromConstructor` syntax.
+
+```scala
+import zio.macros._
+
+trait Foo
+
+final class DefaultFoo(int: Int, string: String) extends Foo
+
+object Wiring {
+  val layer: ULayer[Has[Foo]] = 
+    (ZLayer.succeed(0) ++ ZLayer.succeed("")) >>>
+        ZLayer.fromConstructor[DefaultFoo, Foo] 
+}
+
+```
