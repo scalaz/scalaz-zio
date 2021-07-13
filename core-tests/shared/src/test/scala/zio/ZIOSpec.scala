@@ -1263,7 +1263,189 @@ object ZIOSpec extends ZIOBaseSpec {
             val expected = f(int, str1, str2, str3)
             assertM(actual)(equalTo(expected))
         }
+      },
+      //format: off
+      testM("with Tuple5") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String): String = i.toString + s1 + s2 + s3 + s4
+            val actual =
+              ZIO.mapN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4))(f)
+            val expected = f(int, str1, str2, str3, str4)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple6") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String): String = i.toString + s1 + s2 + s3 + s4 + s5
+            val actual =
+              ZIO.mapN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5))(f)
+            val expected = f(int, str1, str2, str3, str4, str5)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple7") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6
+            val actual =
+              ZIO.mapN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple8") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7
+            val actual =
+              ZIO.mapN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple9") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8
+            val actual =
+              ZIO.mapN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple10") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9
+            val actual =
+              ZIO.mapN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple11") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10
+            val actual =
+              ZIO.mapN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple12") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11
+            val actual =
+              ZIO.mapN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple13") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String, str12: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String, s12: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12
+            val actual =
+              ZIO.mapN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11), ZIO.succeed(str12))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple14") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String, str12: String, str13: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String, s12: String, s13: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12 + s13
+            val actual =
+              ZIO.mapN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11), ZIO.succeed(str12), ZIO.succeed(str13))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12, str13)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple15") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String, str12: String, str13: String, str14: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String, s12: String, s13: String, s14: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12 + s13 + s14
+            val actual =
+              ZIO.mapN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11), ZIO.succeed(str12), ZIO.succeed(str13), ZIO.succeed(str14))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12, str13, str14)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple16") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String, str12: String, str13: String, str14: String, str15: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String, s12: String, s13: String, s14: String, s15: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12 + s13 + s14 + s15
+            val actual =
+              ZIO.mapN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11), ZIO.succeed(str12), ZIO.succeed(str13), ZIO.succeed(str14), ZIO.succeed(str15))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12, str13, str14, str15)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple17") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String, str12: String, str13: String, str14: String, str15: String, str16: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String, s12: String, s13: String, s14: String, s15: String, s16: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12 + s13 + s14 + s15 + s16
+            val actual =
+              ZIO.mapN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11), ZIO.succeed(str12), ZIO.succeed(str13), ZIO.succeed(str14), ZIO.succeed(str15), ZIO.succeed(str16))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12, str13, str14, str15, str16)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple18") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String, str12: String, str13: String, str14: String, str15: String, str16: String, str17: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String, s12: String, s13: String, s14: String, s15: String, s16: String, s17: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12 + s13 + s14 + s15 + s16 + s17
+            val actual =
+              ZIO.mapN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11), ZIO.succeed(str12), ZIO.succeed(str13), ZIO.succeed(str14), ZIO.succeed(str15), ZIO.succeed(str16), ZIO.succeed(str17))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12, str13, str14, str15, str16, str17)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple19") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String, str12: String, str13: String, str14: String, str15: String, str16: String, str17: String, str18: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String, s12: String, s13: String, s14: String, s15: String, s16: String, s17: String, s18: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12 + s13 + s14 + s15 + s16 + s17 + s18
+            val actual =
+              ZIO.mapN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11), ZIO.succeed(str12), ZIO.succeed(str13), ZIO.succeed(str14), ZIO.succeed(str15), ZIO.succeed(str16), ZIO.succeed(str17), ZIO.succeed(str18))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12, str13, str14, str15, str16, str17, str18)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple20") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String, str12: String, str13: String, str14: String, str15: String, str16: String, str17: String, str18: String, str19: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String, s12: String, s13: String, s14: String, s15: String, s16: String, s17: String, s18: String, s19: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12 + s13 + s14 + s15 + s16 + s17 + s18 + s19
+            val actual =
+              ZIO.mapN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11), ZIO.succeed(str12), ZIO.succeed(str13), ZIO.succeed(str14), ZIO.succeed(str15), ZIO.succeed(str16), ZIO.succeed(str17), ZIO.succeed(str18), ZIO.succeed(str19))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12, str13, str14, str15, str16, str17, str18, str19)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple21") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String, str12: String, str13: String, str14: String, str15: String, str16: String, str17: String, str18: String, str19: String, str20: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String, s12: String, s13: String, s14: String, s15: String, s16: String, s17: String, s18: String, s19: String, s20: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12 + s13 + s14 + s15 + s16 + s17 + s18 + s19 + s20
+            val actual =
+              ZIO.mapN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11), ZIO.succeed(str12), ZIO.succeed(str13), ZIO.succeed(str14), ZIO.succeed(str15), ZIO.succeed(str16), ZIO.succeed(str17), ZIO.succeed(str18), ZIO.succeed(str19), ZIO.succeed(str20))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12, str13, str14, str15, str16, str17, str18, str19, str20)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple22") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String, str12: String, str13: String, str14: String, str15: String, str16: String, str17: String, str18: String, str19: String, str20: String, str21: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String, s12: String, s13: String, s14: String, s15: String, s16: String, s17: String, s18: String, s19: String, s20: String, s21: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12 + s13 + s14 + s15 + s16 + s17 + s18 + s19 + s20 + s21
+            val actual =
+              ZIO.mapN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11), ZIO.succeed(str12), ZIO.succeed(str13), ZIO.succeed(str14), ZIO.succeed(str15), ZIO.succeed(str16), ZIO.succeed(str17), ZIO.succeed(str18), ZIO.succeed(str19), ZIO.succeed(str20), ZIO.succeed(str21))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12, str13, str14, str15, str16, str17, str18, str19, str20, str21)
+            assertM(actual)(equalTo(expected))
+        }
       }
+      //format: on
     ),
     suite("mapParN")(
       testM("with Tuple2") {
@@ -1291,7 +1473,189 @@ object ZIOSpec extends ZIOBaseSpec {
             val expected = f(int, str1, str2, str3)
             assertM(actual)(equalTo(expected))
         }
+      },
+      //format: off
+      testM("with Tuple5") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String): String = i.toString + s1 + s2 + s3 + s4
+            val actual =
+              ZIO.mapParN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4))(f)
+            val expected = f(int, str1, str2, str3, str4)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple6") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String): String = i.toString + s1 + s2 + s3 + s4 + s5
+            val actual =
+              ZIO.mapParN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5))(f)
+            val expected = f(int, str1, str2, str3, str4, str5)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple7") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6
+            val actual =
+              ZIO.mapParN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple8") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7
+            val actual =
+              ZIO.mapParN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple9") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8
+            val actual =
+              ZIO.mapParN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple10") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9
+            val actual =
+              ZIO.mapParN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple11") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10
+            val actual =
+              ZIO.mapParN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple12") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11
+            val actual =
+              ZIO.mapParN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple13") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String, str12: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String, s12: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12
+            val actual =
+              ZIO.mapParN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11), ZIO.succeed(str12))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple14") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String, str12: String, str13: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String, s12: String, s13: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12 + s13
+            val actual =
+              ZIO.mapParN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11), ZIO.succeed(str12), ZIO.succeed(str13))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12, str13)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple15") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String, str12: String, str13: String, str14: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String, s12: String, s13: String, s14: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12 + s13 + s14
+            val actual =
+              ZIO.mapParN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11), ZIO.succeed(str12), ZIO.succeed(str13), ZIO.succeed(str14))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12, str13, str14)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple16") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String, str12: String, str13: String, str14: String, str15: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String, s12: String, s13: String, s14: String, s15: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12 + s13 + s14 + s15
+            val actual =
+              ZIO.mapParN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11), ZIO.succeed(str12), ZIO.succeed(str13), ZIO.succeed(str14), ZIO.succeed(str15))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12, str13, str14, str15)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple17") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String, str12: String, str13: String, str14: String, str15: String, str16: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String, s12: String, s13: String, s14: String, s15: String, s16: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12 + s13 + s14 + s15 + s16
+            val actual =
+              ZIO.mapParN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11), ZIO.succeed(str12), ZIO.succeed(str13), ZIO.succeed(str14), ZIO.succeed(str15), ZIO.succeed(str16))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12, str13, str14, str15, str16)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple18") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String, str12: String, str13: String, str14: String, str15: String, str16: String, str17: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String, s12: String, s13: String, s14: String, s15: String, s16: String, s17: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12 + s13 + s14 + s15 + s16 + s17
+            val actual =
+              ZIO.mapParN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11), ZIO.succeed(str12), ZIO.succeed(str13), ZIO.succeed(str14), ZIO.succeed(str15), ZIO.succeed(str16), ZIO.succeed(str17))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12, str13, str14, str15, str16, str17)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple19") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String, str12: String, str13: String, str14: String, str15: String, str16: String, str17: String, str18: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String, s12: String, s13: String, s14: String, s15: String, s16: String, s17: String, s18: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12 + s13 + s14 + s15 + s16 + s17 + s18
+            val actual =
+              ZIO.mapParN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11), ZIO.succeed(str12), ZIO.succeed(str13), ZIO.succeed(str14), ZIO.succeed(str15), ZIO.succeed(str16), ZIO.succeed(str17), ZIO.succeed(str18))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12, str13, str14, str15, str16, str17, str18)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple20") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String, str12: String, str13: String, str14: String, str15: String, str16: String, str17: String, str18: String, str19: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String, s12: String, s13: String, s14: String, s15: String, s16: String, s17: String, s18: String, s19: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12 + s13 + s14 + s15 + s16 + s17 + s18 + s19
+            val actual =
+              ZIO.mapParN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11), ZIO.succeed(str12), ZIO.succeed(str13), ZIO.succeed(str14), ZIO.succeed(str15), ZIO.succeed(str16), ZIO.succeed(str17), ZIO.succeed(str18), ZIO.succeed(str19))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12, str13, str14, str15, str16, str17, str18, str19)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple21") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String, str12: String, str13: String, str14: String, str15: String, str16: String, str17: String, str18: String, str19: String, str20: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String, s12: String, s13: String, s14: String, s15: String, s16: String, s17: String, s18: String, s19: String, s20: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12 + s13 + s14 + s15 + s16 + s17 + s18 + s19 + s20
+            val actual =
+              ZIO.mapParN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11), ZIO.succeed(str12), ZIO.succeed(str13), ZIO.succeed(str14), ZIO.succeed(str15), ZIO.succeed(str16), ZIO.succeed(str17), ZIO.succeed(str18), ZIO.succeed(str19), ZIO.succeed(str20))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12, str13, str14, str15, str16, str17, str18, str19, str20)
+            assertM(actual)(equalTo(expected))
+        }
+      },
+      testM("with Tuple22") {
+        checkM(Gen.anyInt, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString, Gen.alphaNumericString) {
+          (int: Int, str1: String, str2: String, str3: String, str4: String, str5: String, str6: String, str7: String, str8: String, str9: String, str10: String, str11: String, str12: String, str13: String, str14: String, str15: String, str16: String, str17: String, str18: String, str19: String, str20: String, str21: String) =>
+            def f(i: Int, s1: String, s2: String, s3: String, s4: String, s5: String, s6: String, s7: String, s8: String, s9: String, s10: String, s11: String, s12: String, s13: String, s14: String, s15: String, s16: String, s17: String, s18: String, s19: String, s20: String, s21: String): String = i.toString + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9 + s10 + s11 + s12 + s13 + s14 + s15 + s16 + s17 + s18 + s19 + s20 + s21
+            val actual =
+              ZIO.mapParN(ZIO.succeed(int), ZIO.succeed(str1), ZIO.succeed(str2), ZIO.succeed(str3), ZIO.succeed(str4), ZIO.succeed(str5), ZIO.succeed(str6), ZIO.succeed(str7), ZIO.succeed(str8), ZIO.succeed(str9), ZIO.succeed(str10), ZIO.succeed(str11), ZIO.succeed(str12), ZIO.succeed(str13), ZIO.succeed(str14), ZIO.succeed(str15), ZIO.succeed(str16), ZIO.succeed(str17), ZIO.succeed(str18), ZIO.succeed(str19), ZIO.succeed(str20), ZIO.succeed(str21))(f)
+            val expected = f(int, str1, str2, str3, str4, str5, str6, str7, str8, str9, str10, str11, str12, str13, str14, str15, str16, str17, str18, str19, str20, str21)
+            assertM(actual)(equalTo(expected))
+        }
       }
+      //format: on
     ),
     suite("memoize")(
       testM("non-memoized returns new instances on repeated calls") {

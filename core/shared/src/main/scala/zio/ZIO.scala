@@ -3600,6 +3600,407 @@ object ZIO extends ZIOCompanionPlatformSpecific {
     mapN(zio1, zio2, zio3, zio4)((_, _, _, _))
 
   /**
+   * Sequentially zips the specified effects. Specialized version of mapN.
+   */
+  def tupled[R, E, A, B, C, D, G](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G]
+  ): ZIO[R, E, (A, B, C, D, G)] =
+    mapN(zio1, zio2, zio3, zio4, zio5)((_, _, _, _, _))
+
+  /**
+   * Sequentially zips the specified effects. Specialized version of mapN.
+   */
+  def tupled[R, E, A, B, C, D, G, H](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H]
+  ): ZIO[R, E, (A, B, C, D, G, H)] =
+    mapN(zio1, zio2, zio3, zio4, zio5, zio6)((_, _, _, _, _, _))
+
+  /**
+   * Sequentially zips the specified effects. Specialized version of mapN.
+   */
+  def tupled[R, E, A, B, C, D, G, H, I](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I]
+  ): ZIO[R, E, (A, B, C, D, G, H, I)] =
+    mapN(zio1, zio2, zio3, zio4, zio5, zio6, zio7)((_, _, _, _, _, _, _))
+
+  /**
+   * Sequentially zips the specified effects. Specialized version of mapN.
+   */
+  def tupled[R, E, A, B, C, D, G, H, I, J](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J)] =
+    mapN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8)((_, _, _, _, _, _, _, _))
+
+  /**
+   * Sequentially zips the specified effects. Specialized version of mapN.
+   */
+  def tupled[R, E, A, B, C, D, G, H, I, J, K](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K)] =
+    mapN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9)((_, _, _, _, _, _, _, _, _))
+
+  /**
+   * Sequentially zips the specified effects. Specialized version of mapN.
+   */
+  def tupled[R, E, A, B, C, D, G, H, I, J, K, L](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L)] =
+    mapN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10)((_, _, _, _, _, _, _, _, _, _))
+
+  /**
+   * Sequentially zips the specified effects. Specialized version of mapN.
+   */
+  def tupled[R, E, A, B, C, D, G, H, I, J, K, L, M](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M)] =
+    mapN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11)((_, _, _, _, _, _, _, _, _, _, _))
+
+  /**
+   * Sequentially zips the specified effects. Specialized version of mapN.
+   */
+  def tupled[R, E, A, B, C, D, G, H, I, J, K, L, M, N](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N)] =
+    mapN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12)(
+      (_, _, _, _, _, _, _, _, _, _, _, _)
+    )
+
+  /**
+   * Sequentially zips the specified effects. Specialized version of mapN.
+   */
+  def tupled[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N, O)] =
+    mapN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12, zio13)(
+      (_, _, _, _, _, _, _, _, _, _, _, _, _)
+    )
+
+  /**
+   * Sequentially zips the specified effects. Specialized version of mapN.
+   */
+  def tupled[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N, O, P)] =
+    mapN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12, zio13, zio14)(
+      (_, _, _, _, _, _, _, _, _, _, _, _, _, _)
+    )
+
+  /**
+   * Sequentially zips the specified effects. Specialized version of mapN.
+   */
+  def tupled[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q)] =
+    mapN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12, zio13, zio14, zio15)(
+      (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _)
+    )
+
+  /**
+   * Sequentially zips the specified effects. Specialized version of mapN.
+   */
+  def tupled[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S)] =
+    mapN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12, zio13, zio14, zio15, zio16)(
+      (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)
+    )
+
+  /**
+   * Sequentially zips the specified effects. Specialized version of mapN.
+   */
+  def tupled[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T)] =
+    mapN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12, zio13, zio14, zio15, zio16, zio17)(
+      (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)
+    )
+
+  /**
+   * Sequentially zips the specified effects. Specialized version of mapN.
+   */
+  def tupled[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T],
+    zio18: ZIO[R, E, U]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U)] =
+    // format: off
+    mapN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12, zio13, zio14, zio15, zio16, zio17, zio18)(
+      (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)
+    )
+    // format: on
+
+  /**
+   * Sequentially zips the specified effects. Specialized version of mapN.
+   */
+  def tupled[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T],
+    zio18: ZIO[R, E, U],
+    zio19: ZIO[R, E, V]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V)] =
+    // format: off
+    mapN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12, zio13, zio14, zio15, zio16, zio17, zio18, zio19)(
+      (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)
+    )
+    // format: on
+
+  /**
+   * Sequentially zips the specified effects. Specialized version of mapN.
+   */
+  def tupled[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T],
+    zio18: ZIO[R, E, U],
+    zio19: ZIO[R, E, V],
+    zio20: ZIO[R, E, W]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W)] =
+    // format: off
+    mapN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12, zio13, zio14, zio15, zio16, zio17, zio18, zio19, zio20)(
+      (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)
+    )
+    // format: on
+
+  /**
+   * Sequentially zips the specified effects. Specialized version of mapN.
+   */
+  def tupled[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W, X](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T],
+    zio18: ZIO[R, E, U],
+    zio19: ZIO[R, E, V],
+    zio20: ZIO[R, E, W],
+    zio21: ZIO[R, E, X]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W, X)] =
+    // format: off
+    mapN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12, zio13, zio14, zio15, zio16, zio17, zio18, zio19, zio20, zio21)(
+      (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)
+    )
+    // format: on
+
+  /**
+   * Sequentially zips the specified effects. Specialized version of mapN.
+   */
+  def tupled[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W, X, Y](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T],
+    zio18: ZIO[R, E, U],
+    zio19: ZIO[R, E, V],
+    zio20: ZIO[R, E, W],
+    zio21: ZIO[R, E, X],
+    zio22: ZIO[R, E, Y]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W, X, Y)] =
+    // format: off
+    mapN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12, zio13, zio14, zio15, zio16, zio17, zio18, zio19, zio20, zio21, zio22)(
+      (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)
+    )
+    // format: on
+
+  /**
    * Zips the specified effects in parallel. Specialized version of mapParN.
    */
   def tupledPar[R, E, A, B](zio1: ZIO[R, E, A], zio2: ZIO[R, E, B]): ZIO[R, E, (A, B)] =
@@ -3621,6 +4022,409 @@ object ZIO extends ZIOCompanionPlatformSpecific {
     zio4: ZIO[R, E, D]
   ): ZIO[R, E, (A, B, C, D)] =
     mapParN(zio1, zio2, zio3, zio4)((_, _, _, _))
+
+  /**
+   * Zips the specified effects in parallel. Specialized version of mapParN.
+   */
+  def tupledPar[R, E, A, B, C, D, G](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G]
+  ): ZIO[R, E, (A, B, C, D, G)] =
+    mapParN(zio1, zio2, zio3, zio4, zio5)((_, _, _, _, _))
+
+  /**
+   * Zips the specified effects in parallel. Specialized version of mapParN.
+   */
+  def tupledPar[R, E, A, B, C, D, G, H](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H]
+  ): ZIO[R, E, (A, B, C, D, G, H)] =
+    mapParN(zio1, zio2, zio3, zio4, zio5, zio6)((_, _, _, _, _, _))
+
+  /**
+   * Zips the specified effects in parallel. Specialized version of mapParN.
+   */
+  def tupledPar[R, E, A, B, C, D, G, H, I](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I]
+  ): ZIO[R, E, (A, B, C, D, G, H, I)] =
+    mapParN(zio1, zio2, zio3, zio4, zio5, zio6, zio7)((_, _, _, _, _, _, _))
+
+  /**
+   * Zips the specified effects in parallel. Specialized version of mapParN.
+   */
+  def tupledPar[R, E, A, B, C, D, G, H, I, J](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J)] =
+    mapParN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8)((_, _, _, _, _, _, _, _))
+
+  /**
+   * Zips the specified effects in parallel. Specialized version of mapParN.
+   */
+  def tupledPar[R, E, A, B, C, D, G, H, I, J, K](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K)] =
+    mapParN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9)((_, _, _, _, _, _, _, _, _))
+
+  /**
+   * Zips the specified effects in parallel. Specialized version of mapParN.
+   */
+  def tupledPar[R, E, A, B, C, D, G, H, I, J, K, L](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L)] =
+    mapParN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10)((_, _, _, _, _, _, _, _, _, _))
+
+  /**
+   * Zips the specified effects in parallel. Specialized version of mapParN.
+   */
+  def tupledPar[R, E, A, B, C, D, G, H, I, J, K, L, M](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M)] =
+    mapParN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11)((_, _, _, _, _, _, _, _, _, _, _))
+
+  /**
+   * Zips the specified effects in parallel. Specialized version of mapParN.
+   */
+  def tupledPar[R, E, A, B, C, D, G, H, I, J, K, L, M, N](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N)] =
+    mapParN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12)(
+      (_, _, _, _, _, _, _, _, _, _, _, _)
+    )
+
+  /**
+   * Zips the specified effects in parallel. Specialized version of mapParN.
+   */
+  def tupledPar[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N, O)] =
+    mapParN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12, zio13)(
+      (_, _, _, _, _, _, _, _, _, _, _, _, _)
+    )
+
+  /**
+   * Zips the specified effects in parallel. Specialized version of mapParN.
+   */
+  def tupledPar[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N, O, P)] =
+    mapParN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12, zio13, zio14)(
+      (_, _, _, _, _, _, _, _, _, _, _, _, _, _)
+    )
+
+  /**
+   * Zips the specified effects in parallel. Specialized version of mapParN.
+   */
+  def tupledPar[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q)] =
+    mapParN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12, zio13, zio14, zio15)(
+      (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _)
+    )
+
+  /**
+   * Zips the specified effects in parallel. Specialized version of mapParN.
+   */
+  def tupledPar[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S)] =
+    mapParN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12, zio13, zio14, zio15, zio16)(
+      (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)
+    )
+
+  /**
+   * Zips the specified effects in parallel. Specialized version of mapParN.
+   */
+  def tupledPar[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T)] =
+    // format: off
+    mapParN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12, zio13, zio14, zio15, zio16, zio17)(
+      (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)
+    )
+    // format: on
+
+  /**
+   * Zips the specified effects in parallel. Specialized version of mapParN.
+   */
+  def tupledPar[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T],
+    zio18: ZIO[R, E, U]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U)] =
+    // format: off
+    mapParN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12, zio13, zio14, zio15, zio16, zio17, zio18)(
+      (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)
+    )
+    // format: on
+
+  /**
+   * Zips the specified effects in parallel. Specialized version of mapParN.
+   */
+  def tupledPar[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T],
+    zio18: ZIO[R, E, U],
+    zio19: ZIO[R, E, V]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V)] =
+    // format: off
+    mapParN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12, zio13, zio14, zio15, zio16, zio17, zio18, zio19)(
+      (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)
+    )
+    // format: on
+
+  /**
+   * Zips the specified effects in parallel. Specialized version of mapParN.
+   */
+  def tupledPar[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T],
+    zio18: ZIO[R, E, U],
+    zio19: ZIO[R, E, V],
+    zio20: ZIO[R, E, W]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W)] =
+    // format: off
+    mapParN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12, zio13, zio14, zio15, zio16, zio17, zio18, zio19, zio20)(
+      (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)
+    )
+    // format: on
+
+  /**
+   * Zips the specified effects in parallel. Specialized version of mapParN.
+   */
+  def tupledPar[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W, X](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T],
+    zio18: ZIO[R, E, U],
+    zio19: ZIO[R, E, V],
+    zio20: ZIO[R, E, W],
+    zio21: ZIO[R, E, X]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W, X)] =
+    // format: off
+    mapParN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12, zio13, zio14, zio15, zio16, zio17, zio18, zio19, zio20, zio21)(
+      (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)
+    )
+    // format: on
+
+  /**
+   * Zips the specified effects in parallel. Specialized version of mapParN.
+   */
+  def tupledPar[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W, X, Y](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T],
+    zio18: ZIO[R, E, U],
+    zio19: ZIO[R, E, V],
+    zio20: ZIO[R, E, W],
+    zio21: ZIO[R, E, X],
+    zio22: ZIO[R, E, Y]
+  ): ZIO[R, E, (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W, X, Y)] =
+    // format: off
+    mapParN(zio1, zio2, zio3, zio4, zio5, zio6, zio7, zio8, zio9, zio10, zio11, zio12, zio13, zio14, zio15, zio16, zio17, zio18, zio19, zio20, zio21, zio22)(
+      (_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _)
+    )
+    // format: on
 
   /**
    * Sequentially zips the specified effects using the specified combiner
@@ -3657,6 +4461,690 @@ object ZIO extends ZIOCompanionPlatformSpecific {
     } yield f(a, b, c, d)
 
   /**
+   * Sequentially zips the specified effects using the specified combiner
+   * function.
+   */
+  def mapN[R, E, A, B, C, D, G, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G]
+  )(
+    f: (A, B, C, D, G) => F
+  ): ZIO[R, E, F] =
+    for {
+      a <- zio1
+      b <- zio2
+      c <- zio3
+      d <- zio4
+      g <- zio5
+    } yield f(a, b, c, d, g)
+
+  /**
+   * Sequentially zips the specified effects using the specified combiner
+   * function.
+   */
+  def mapN[R, E, A, B, C, D, G, H, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H]
+  )(
+    f: (A, B, C, D, G, H) => F
+  ): ZIO[R, E, F] =
+    for {
+      a <- zio1
+      b <- zio2
+      c <- zio3
+      d <- zio4
+      g <- zio5
+      h <- zio6
+    } yield f(a, b, c, d, g, h)
+
+  /**
+   * Sequentially zips the specified effects using the specified combiner
+   * function.
+   */
+  def mapN[R, E, A, B, C, D, G, H, I, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I]
+  )(
+    f: (A, B, C, D, G, H, I) => F
+  ): ZIO[R, E, F] =
+    for {
+      a <- zio1
+      b <- zio2
+      c <- zio3
+      d <- zio4
+      g <- zio5
+      h <- zio6
+      i <- zio7
+    } yield f(a, b, c, d, g, h, i)
+
+  /**
+   * Sequentially zips the specified effects using the specified combiner
+   * function.
+   */
+  def mapN[R, E, A, B, C, D, G, H, I, J, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J]
+  )(
+    f: (A, B, C, D, G, H, I, J) => F
+  ): ZIO[R, E, F] =
+    for {
+      a <- zio1
+      b <- zio2
+      c <- zio3
+      d <- zio4
+      g <- zio5
+      h <- zio6
+      i <- zio7
+      j <- zio8
+    } yield f(a, b, c, d, g, h, i, j)
+
+  /**
+   * Sequentially zips the specified effects using the specified combiner
+   * function.
+   */
+  def mapN[R, E, A, B, C, D, G, H, I, J, K, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K]
+  )(
+    f: (A, B, C, D, G, H, I, J, K) => F
+  ): ZIO[R, E, F] =
+    for {
+      a <- zio1
+      b <- zio2
+      c <- zio3
+      d <- zio4
+      g <- zio5
+      h <- zio6
+      i <- zio7
+      j <- zio8
+      k <- zio9
+    } yield f(a, b, c, d, g, h, i, j, k)
+
+  /**
+   * Sequentially zips the specified effects using the specified combiner
+   * function.
+   */
+  def mapN[R, E, A, B, C, D, G, H, I, J, K, L, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L) => F
+  ): ZIO[R, E, F] =
+    for {
+      a <- zio1
+      b <- zio2
+      c <- zio3
+      d <- zio4
+      g <- zio5
+      h <- zio6
+      i <- zio7
+      j <- zio8
+      k <- zio9
+      l <- zio10
+    } yield f(a, b, c, d, g, h, i, j, k, l)
+
+  /**
+   * Sequentially zips the specified effects using the specified combiner
+   * function.
+   */
+  def mapN[R, E, A, B, C, D, G, H, I, J, K, L, M, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M) => F
+  ): ZIO[R, E, F] =
+    for {
+      a <- zio1
+      b <- zio2
+      c <- zio3
+      d <- zio4
+      g <- zio5
+      h <- zio6
+      i <- zio7
+      j <- zio8
+      k <- zio9
+      l <- zio10
+      m <- zio11
+    } yield f(a, b, c, d, g, h, i, j, k, l, m)
+
+  /**
+   * Sequentially zips the specified effects using the specified combiner
+   * function.
+   */
+  def mapN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N) => F
+  ): ZIO[R, E, F] =
+    for {
+      a <- zio1
+      b <- zio2
+      c <- zio3
+      d <- zio4
+      g <- zio5
+      h <- zio6
+      i <- zio7
+      j <- zio8
+      k <- zio9
+      l <- zio10
+      m <- zio11
+      n <- zio12
+    } yield f(a, b, c, d, g, h, i, j, k, l, m, n)
+
+  /**
+   * Sequentially zips the specified effects using the specified combiner
+   * function.
+   */
+  def mapN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N, O) => F
+  ): ZIO[R, E, F] =
+    for {
+      a <- zio1
+      b <- zio2
+      c <- zio3
+      d <- zio4
+      g <- zio5
+      h <- zio6
+      i <- zio7
+      j <- zio8
+      k <- zio9
+      l <- zio10
+      m <- zio11
+      n <- zio12
+      o <- zio13
+    } yield f(a, b, c, d, g, h, i, j, k, l, m, n, o)
+
+  /**
+   * Sequentially zips the specified effects using the specified combiner
+   * function.
+   */
+  def mapN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N, O, P) => F
+  ): ZIO[R, E, F] =
+    for {
+      a <- zio1
+      b <- zio2
+      c <- zio3
+      d <- zio4
+      g <- zio5
+      h <- zio6
+      i <- zio7
+      j <- zio8
+      k <- zio9
+      l <- zio10
+      m <- zio11
+      n <- zio12
+      o <- zio13
+      p <- zio14
+    } yield f(a, b, c, d, g, h, i, j, k, l, m, n, o, p)
+
+  /**
+   * Sequentially zips the specified effects using the specified combiner
+   * function.
+   */
+  def mapN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q) => F
+  ): ZIO[R, E, F] =
+    for {
+      a <- zio1
+      b <- zio2
+      c <- zio3
+      d <- zio4
+      g <- zio5
+      h <- zio6
+      i <- zio7
+      j <- zio8
+      k <- zio9
+      l <- zio10
+      m <- zio11
+      n <- zio12
+      o <- zio13
+      p <- zio14
+      q <- zio15
+    } yield f(a, b, c, d, g, h, i, j, k, l, m, n, o, p, q)
+
+  /**
+   * Sequentially zips the specified effects using the specified combiner
+   * function.
+   */
+  def mapN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S) => F
+  ): ZIO[R, E, F] =
+    for {
+      a <- zio1
+      b <- zio2
+      c <- zio3
+      d <- zio4
+      g <- zio5
+      h <- zio6
+      i <- zio7
+      j <- zio8
+      k <- zio9
+      l <- zio10
+      m <- zio11
+      n <- zio12
+      o <- zio13
+      p <- zio14
+      q <- zio15
+      s <- zio16
+    } yield f(a, b, c, d, g, h, i, j, k, l, m, n, o, p, q, s)
+
+  /**
+   * Sequentially zips the specified effects using the specified combiner
+   * function.
+   */
+  def mapN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T) => F
+  ): ZIO[R, E, F] =
+    for {
+      a <- zio1
+      b <- zio2
+      c <- zio3
+      d <- zio4
+      g <- zio5
+      h <- zio6
+      i <- zio7
+      j <- zio8
+      k <- zio9
+      l <- zio10
+      m <- zio11
+      n <- zio12
+      o <- zio13
+      p <- zio14
+      q <- zio15
+      s <- zio16
+      t <- zio17
+    } yield f(a, b, c, d, g, h, i, j, k, l, m, n, o, p, q, s, t)
+
+  /**
+   * Sequentially zips the specified effects using the specified combiner
+   * function.
+   */
+  def mapN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T],
+    zio18: ZIO[R, E, U]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U) => F
+  ): ZIO[R, E, F] =
+    for {
+      a <- zio1
+      b <- zio2
+      c <- zio3
+      d <- zio4
+      g <- zio5
+      h <- zio6
+      i <- zio7
+      j <- zio8
+      k <- zio9
+      l <- zio10
+      m <- zio11
+      n <- zio12
+      o <- zio13
+      p <- zio14
+      q <- zio15
+      s <- zio16
+      t <- zio17
+      u <- zio18
+    } yield f(a, b, c, d, g, h, i, j, k, l, m, n, o, p, q, s, t, u)
+
+  /**
+   * Sequentially zips the specified effects using the specified combiner
+   * function.
+   */
+  def mapN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T],
+    zio18: ZIO[R, E, U],
+    zio19: ZIO[R, E, V]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V) => F
+  ): ZIO[R, E, F] =
+    for {
+      a <- zio1
+      b <- zio2
+      c <- zio3
+      d <- zio4
+      g <- zio5
+      h <- zio6
+      i <- zio7
+      j <- zio8
+      k <- zio9
+      l <- zio10
+      m <- zio11
+      n <- zio12
+      o <- zio13
+      p <- zio14
+      q <- zio15
+      s <- zio16
+      t <- zio17
+      u <- zio18
+      v <- zio19
+    } yield f(a, b, c, d, g, h, i, j, k, l, m, n, o, p, q, s, t, u, v)
+
+  /**
+   * Sequentially zips the specified effects using the specified combiner
+   * function.
+   */
+  def mapN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T],
+    zio18: ZIO[R, E, U],
+    zio19: ZIO[R, E, V],
+    zio20: ZIO[R, E, W]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W) => F
+  ): ZIO[R, E, F] =
+    for {
+      a <- zio1
+      b <- zio2
+      c <- zio3
+      d <- zio4
+      g <- zio5
+      h <- zio6
+      i <- zio7
+      j <- zio8
+      k <- zio9
+      l <- zio10
+      m <- zio11
+      n <- zio12
+      o <- zio13
+      p <- zio14
+      q <- zio15
+      s <- zio16
+      t <- zio17
+      u <- zio18
+      v <- zio19
+      w <- zio20
+    } yield f(a, b, c, d, g, h, i, j, k, l, m, n, o, p, q, s, t, u, v, w)
+
+  /**
+   * Sequentially zips the specified effects using the specified combiner
+   * function.
+   */
+  def mapN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W, X, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T],
+    zio18: ZIO[R, E, U],
+    zio19: ZIO[R, E, V],
+    zio20: ZIO[R, E, W],
+    zio21: ZIO[R, E, X]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W, X) => F
+  ): ZIO[R, E, F] =
+    for {
+      a <- zio1
+      b <- zio2
+      c <- zio3
+      d <- zio4
+      g <- zio5
+      h <- zio6
+      i <- zio7
+      j <- zio8
+      k <- zio9
+      l <- zio10
+      m <- zio11
+      n <- zio12
+      o <- zio13
+      p <- zio14
+      q <- zio15
+      s <- zio16
+      t <- zio17
+      u <- zio18
+      v <- zio19
+      w <- zio20
+      x <- zio21
+    } yield f(a, b, c, d, g, h, i, j, k, l, m, n, o, p, q, s, t, u, v, w, x)
+
+  /**
+   * Sequentially zips the specified effects using the specified combiner
+   * function.
+   */
+  def mapN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W, X, Y, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T],
+    zio18: ZIO[R, E, U],
+    zio19: ZIO[R, E, V],
+    zio20: ZIO[R, E, W],
+    zio21: ZIO[R, E, X],
+    zio22: ZIO[R, E, Y]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W, X, Y) => F
+  ): ZIO[R, E, F] =
+    for {
+      a <- zio1
+      b <- zio2
+      c <- zio3
+      d <- zio4
+      g <- zio5
+      h <- zio6
+      i <- zio7
+      j <- zio8
+      k <- zio9
+      l <- zio10
+      m <- zio11
+      n <- zio12
+      o <- zio13
+      p <- zio14
+      q <- zio15
+      s <- zio16
+      t <- zio17
+      u <- zio18
+      v <- zio19
+      w <- zio20
+      x <- zio21
+      y <- zio22
+    } yield f(a, b, c, d, g, h, i, j, k, l, m, n, o, p, q, s, t, u, v, w, x, y)
+
+  /**
    * Returns an effect that executes the specified effects in parallel,
    * combining their results with the specified `f` function. If any effect
    * fails, then the other effects will be interrupted.
@@ -3690,6 +5178,486 @@ object ZIO extends ZIOCompanionPlatformSpecific {
     (zio1 <&> zio2 <&> zio3 <&> zio4).map { case (((a, b), c), d) =>
       f(a, b, c, d)
     }
+
+  /**
+   * Returns an effect that executes the specified effects in parallel,
+   * combining their results with the specified `f` function. If any effect
+   * fails, then the other effects will be interrupted.
+   */
+  def mapParN[R, E, A, B, C, D, G, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G]
+  )(
+    f: (A, B, C, D, G) => F
+  ): ZIO[R, E, F] =
+    (zio1 <&> zio2 <&> zio3 <&> zio4 <&> zio5).map { case ((((a, b), c), d), g) =>
+      f(a, b, c, d, g)
+    }
+
+  /**
+   * Returns an effect that executes the specified effects in parallel,
+   * combining their results with the specified `f` function. If any effect
+   * fails, then the other effects will be interrupted.
+   */
+  def mapParN[R, E, A, B, C, D, G, H, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H]
+  )(
+    f: (A, B, C, D, G, H) => F
+  ): ZIO[R, E, F] =
+    (zio1 <&> zio2 <&> zio3 <&> zio4 <&> zio5 <&> zio6).map { case (((((a, b), c), d), g), h) =>
+      f(a, b, c, d, g, h)
+    }
+
+  /**
+   * Returns an effect that executes the specified effects in parallel,
+   * combining their results with the specified `f` function. If any effect
+   * fails, then the other effects will be interrupted.
+   */
+  def mapParN[R, E, A, B, C, D, G, H, I, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I]
+  )(
+    f: (A, B, C, D, G, H, I) => F
+  ): ZIO[R, E, F] =
+    (zio1 <&> zio2 <&> zio3 <&> zio4 <&> zio5 <&> zio6 <&> zio7).map { case ((((((a, b), c), d), g), h), i) =>
+      f(a, b, c, d, g, h, i)
+    }
+
+  /**
+   * Returns an effect that executes the specified effects in parallel,
+   * combining their results with the specified `f` function. If any effect
+   * fails, then the other effects will be interrupted.
+   */
+  def mapParN[R, E, A, B, C, D, G, H, I, J, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J]
+  )(
+    f: (A, B, C, D, G, H, I, J) => F
+  ): ZIO[R, E, F] =
+    (zio1 <&> zio2 <&> zio3 <&> zio4 <&> zio5 <&> zio6 <&> zio7 <&> zio8).map {
+      case (((((((a, b), c), d), g), h), i), j) =>
+        f(a, b, c, d, g, h, i, j)
+    }
+
+  // format: off
+  /**
+   * Returns an effect that executes the specified effects in parallel,
+   * combining their results with the specified `f` function. If any effect
+   * fails, then the other effects will be interrupted.
+   */
+  def mapParN[R, E, A, B, C, D, G, H, I, J, K, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K]
+  )(
+    f: (A, B, C, D, G, H, I, J, K) => F
+  ): ZIO[R, E, F] =
+    (zio1 <&> zio2 <&> zio3 <&> zio4 <&> zio5 <&> zio6 <&> zio7 <&> zio8 <&> zio9).map { case ((((((((a, b), c), d), g), h), i), j), k) =>
+      f(a, b, c, d, g, h, i, j, k)
+    }
+
+  /**
+   * Returns an effect that executes the specified effects in parallel,
+   * combining their results with the specified `f` function. If any effect
+   * fails, then the other effects will be interrupted.
+   */
+  def mapParN[R, E, A, B, C, D, G, H, I, J, K, L, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L) => F
+  ): ZIO[R, E, F] =
+    (zio1 <&> zio2 <&> zio3 <&> zio4 <&> zio5 <&> zio6 <&> zio7 <&> zio8 <&> zio9 <&> zio10).map { case (((((((((a, b), c), d), g), h), i), j), k), l) =>
+      f(a, b, c, d, g, h, i, j, k, l)
+    }
+
+  /**
+   * Returns an effect that executes the specified effects in parallel,
+   * combining their results with the specified `f` function. If any effect
+   * fails, then the other effects will be interrupted.
+   */
+  def mapParN[R, E, A, B, C, D, G, H, I, J, K, L, M, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M) => F
+  ): ZIO[R, E, F] =
+    (zio1 <&> zio2 <&> zio3 <&> zio4 <&> zio5 <&> zio6 <&> zio7 <&> zio8 <&> zio9 <&> zio10 <&> zio11).map { case ((((((((((a, b), c), d), g), h), i), j), k), l), m) =>
+      f(a, b, c, d, g, h, i, j, k, l, m)
+    }
+
+  /**
+   * Returns an effect that executes the specified effects in parallel,
+   * combining their results with the specified `f` function. If any effect
+   * fails, then the other effects will be interrupted.
+   */
+  def mapParN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N) => F
+  ): ZIO[R, E, F] =
+    (zio1 <&> zio2 <&> zio3 <&> zio4 <&> zio5 <&> zio6 <&> zio7 <&> zio8 <&> zio9 <&> zio10 <&> zio11 <&> zio12).map { case (((((((((((a, b), c), d), g), h), i), j), k), l), m), n) =>
+      f(a, b, c, d, g, h, i, j, k, l, m, n)
+    }
+
+  /**
+   * Returns an effect that executes the specified effects in parallel,
+   * combining their results with the specified `f` function. If any effect
+   * fails, then the other effects will be interrupted.
+   */
+  def mapParN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N, O) => F
+  ): ZIO[R, E, F] =
+    (zio1 <&> zio2 <&> zio3 <&> zio4 <&> zio5 <&> zio6 <&> zio7 <&> zio8 <&> zio9 <&> zio10 <&> zio11 <&> zio12 <&> zio13).map { case ((((((((((((a, b), c), d), g), h), i), j), k), l), m), n), o) =>
+      f(a, b, c, d, g, h, i, j, k, l, m, n, o)
+    }
+
+  /**
+   * Returns an effect that executes the specified effects in parallel,
+   * combining their results with the specified `f` function. If any effect
+   * fails, then the other effects will be interrupted.
+   */
+  def mapParN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N, O, P) => F
+  ): ZIO[R, E, F] =
+    (zio1 <&> zio2 <&> zio3 <&> zio4 <&> zio5 <&> zio6 <&> zio7 <&> zio8 <&> zio9 <&> zio10 <&> zio11 <&> zio12 <&> zio13 <&> zio14).map { case (((((((((((((a, b), c), d), g), h), i), j), k), l), m), n), o), p) =>
+      f(a, b, c, d, g, h, i, j, k, l, m, n, o, p)
+    }
+
+  /**
+   * Returns an effect that executes the specified effects in parallel,
+   * combining their results with the specified `f` function. If any effect
+   * fails, then the other effects will be interrupted.
+   */
+  def mapParN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q) => F
+  ): ZIO[R, E, F] =
+    (zio1 <&> zio2 <&> zio3 <&> zio4 <&> zio5 <&> zio6 <&> zio7 <&> zio8 <&> zio9 <&> zio10 <&> zio11 <&> zio12 <&> zio13 <&> zio14 <&> zio15).map { case ((((((((((((((a, b), c), d), g), h), i), j), k), l), m), n), o), p), q) =>
+      f(a, b, c, d, g, h, i, j, k, l, m, n, o, p, q)
+    }
+
+  /**
+   * Returns an effect that executes the specified effects in parallel,
+   * combining their results with the specified `f` function. If any effect
+   * fails, then the other effects will be interrupted.
+   */
+  def mapParN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S) => F
+  ): ZIO[R, E, F] =
+    (zio1 <&> zio2 <&> zio3 <&> zio4 <&> zio5 <&> zio6 <&> zio7 <&> zio8 <&> zio9 <&> zio10 <&> zio11 <&> zio12 <&> zio13 <&> zio14 <&> zio15 <&> zio16).map { case (((((((((((((((a, b), c), d), g), h), i), j), k), l), m), n), o), p), q), s) =>
+      f(a, b, c, d, g, h, i, j, k, l, m, n, o, p, q, s)
+    }
+
+  /**
+   * Returns an effect that executes the specified effects in parallel,
+   * combining their results with the specified `f` function. If any effect
+   * fails, then the other effects will be interrupted.
+   */
+  def mapParN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T) => F
+  ): ZIO[R, E, F] =
+    (zio1 <&> zio2 <&> zio3 <&> zio4 <&> zio5 <&> zio6 <&> zio7 <&> zio8 <&> zio9 <&> zio10 <&> zio11 <&> zio12 <&> zio13 <&> zio14 <&> zio15 <&> zio16 <&> zio17).map { case ((((((((((((((((a, b), c), d), g), h), i), j), k), l), m), n), o), p), q), s), t) =>
+      f(a, b, c, d, g, h, i, j, k, l, m, n, o, p, q, s, t)
+    }
+
+  /**
+   * Returns an effect that executes the specified effects in parallel,
+   * combining their results with the specified `f` function. If any effect
+   * fails, then the other effects will be interrupted.
+   */
+  def mapParN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T],
+    zio18: ZIO[R, E, U]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U) => F
+  ): ZIO[R, E, F] =
+    (zio1 <&> zio2 <&> zio3 <&> zio4 <&> zio5 <&> zio6 <&> zio7 <&> zio8 <&> zio9 <&> zio10 <&> zio11 <&> zio12 <&> zio13 <&> zio14 <&> zio15 <&> zio16 <&> zio17 <&> zio18).map { case (((((((((((((((((a, b), c), d), g), h), i), j), k), l), m), n), o), p), q), s), t), u) =>
+      f(a, b, c, d, g, h, i, j, k, l, m, n, o, p, q, s, t, u)
+    }
+
+  /**
+   * Returns an effect that executes the specified effects in parallel,
+   * combining their results with the specified `f` function. If any effect
+   * fails, then the other effects will be interrupted.
+   */
+  def mapParN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T],
+    zio18: ZIO[R, E, U],
+    zio19: ZIO[R, E, V]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V) => F
+  ): ZIO[R, E, F] =
+    (zio1 <&> zio2 <&> zio3 <&> zio4 <&> zio5 <&> zio6 <&> zio7 <&> zio8 <&> zio9 <&> zio10 <&> zio11 <&> zio12 <&> zio13 <&> zio14 <&> zio15 <&> zio16 <&> zio17 <&> zio18 <&> zio19).map { case ((((((((((((((((((a, b), c), d), g), h), i), j), k), l), m), n), o), p), q), s), t), u), v) =>
+      f(a, b, c, d, g, h, i, j, k, l, m, n, o, p, q, s, t, u, v)
+    }
+
+  /**
+   * Returns an effect that executes the specified effects in parallel,
+   * combining their results with the specified `f` function. If any effect
+   * fails, then the other effects will be interrupted.
+   */
+  def mapParN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T],
+    zio18: ZIO[R, E, U],
+    zio19: ZIO[R, E, V],
+    zio20: ZIO[R, E, W]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W) => F
+  ): ZIO[R, E, F] =
+    (zio1 <&> zio2 <&> zio3 <&> zio4 <&> zio5 <&> zio6 <&> zio7 <&> zio8 <&> zio9 <&> zio10 <&> zio11 <&> zio12 <&> zio13 <&> zio14 <&> zio15 <&> zio16 <&> zio17 <&> zio18 <&> zio19 <&> zio20).map { case (((((((((((((((((((a, b), c), d), g), h), i), j), k), l), m), n), o), p), q), s), t), u), v), w) =>
+      f(a, b, c, d, g, h, i, j, k, l, m, n, o, p, q, s, t, u, v, w)
+    }
+
+  /**
+   * Returns an effect that executes the specified effects in parallel,
+   * combining their results with the specified `f` function. If any effect
+   * fails, then the other effects will be interrupted.
+   */
+  def mapParN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W, X, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T],
+    zio18: ZIO[R, E, U],
+    zio19: ZIO[R, E, V],
+    zio20: ZIO[R, E, W],
+    zio21: ZIO[R, E, X]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W, X) => F
+  ): ZIO[R, E, F] =
+    (zio1 <&> zio2 <&> zio3 <&> zio4 <&> zio5 <&> zio6 <&> zio7 <&> zio8 <&> zio9 <&> zio10 <&> zio11 <&> zio12 <&> zio13 <&> zio14 <&> zio15 <&> zio16 <&> zio17 <&> zio18 <&> zio19 <&> zio20 <&> zio21).map { case ((((((((((((((((((((a, b), c), d), g), h), i), j), k), l), m), n), o), p), q), s), t), u), v), w), x) =>
+      f(a, b, c, d, g, h, i, j, k, l, m, n, o, p, q, s, t, u, v, w, x)
+    }
+
+  /**
+   * Returns an effect that executes the specified effects in parallel,
+   * combining their results with the specified `f` function. If any effect
+   * fails, then the other effects will be interrupted.
+   */
+  def mapParN[R, E, A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W, X, Y, F](
+    zio1: ZIO[R, E, A],
+    zio2: ZIO[R, E, B],
+    zio3: ZIO[R, E, C],
+    zio4: ZIO[R, E, D],
+    zio5: ZIO[R, E, G],
+    zio6: ZIO[R, E, H],
+    zio7: ZIO[R, E, I],
+    zio8: ZIO[R, E, J],
+    zio9: ZIO[R, E, K],
+    zio10: ZIO[R, E, L],
+    zio11: ZIO[R, E, M],
+    zio12: ZIO[R, E, N],
+    zio13: ZIO[R, E, O],
+    zio14: ZIO[R, E, P],
+    zio15: ZIO[R, E, Q],
+    zio16: ZIO[R, E, S],
+    zio17: ZIO[R, E, T],
+    zio18: ZIO[R, E, U],
+    zio19: ZIO[R, E, V],
+    zio20: ZIO[R, E, W],
+    zio21: ZIO[R, E, X],
+    zio22: ZIO[R, E, Y]
+  )(
+    f: (A, B, C, D, G, H, I, J, K, L, M, N, O, P, Q, S, T, U, V, W, X, Y) => F
+  ): ZIO[R, E, F] =
+    (zio1 <&> zio2 <&> zio3 <&> zio4 <&> zio5 <&> zio6 <&> zio7 <&> zio8 <&> zio9 <&> zio10 <&> zio11 <&> zio12 <&> zio13 <&> zio14 <&> zio15 <&> zio16 <&> zio17 <&> zio18 <&> zio19 <&> zio20 <&> zio21 <&> zio22).map { case (((((((((((((((((((((a, b), c), d), g), h), i), j), k), l), m), n), o), p), q), s), t), u), v), w), x), y) =>
+      f(a, b, c, d, g, h, i, j, k, l, m, n, o, p, q, s, t, u, v, w, x, y)
+    }
+  // format: on
 
   /**
    * Returns a memoized version of the specified effectual function.
