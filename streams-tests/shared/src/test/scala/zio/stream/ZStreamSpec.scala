@@ -488,6 +488,36 @@ object ZStreamSpec extends ZIOBaseSpec {
                     .range(1, 5)
                     .tap(i => ref.update(i :: _) *> latch.succeed(()).when(i == 4))
                     .buffer(2)
+              l <- s.process.use(as => as *> latch.await *> ref.get)
+            } yield assert(l.reverse)(equalTo((1 to 4).toList))
+          }
+        ),
+        suite("bufferChunks")(
+          testM("maintains chunks and ordering")(checkM(tinyChunkOf(Gen.chunkOf(Gen.anyInt))) { chunk =>
+            assertM(
+              ZStream
+                .fromChunks(chunk: _*)
+                .bufferChunks(2)
+                .runCollect
+            )(equalTo(chunk.flatten))
+          }),
+          testM("buffer the Stream with Error") {
+            val e = new RuntimeException("boom")
+            assertM(
+              (ZStream.range(0, 10) ++ ZStream.fail(e))
+                .bufferChunks(2)
+                .runCollect
+                .run
+            )(fails(equalTo(e)))
+          },
+          testM("fast producer progress independently") {
+            for {
+              ref   <- Ref.make(List[Int]())
+              latch <- Promise.make[Nothing, Unit]
+              s = ZStream
+                    .range(1, 5)
+                    .tap(i => ref.update(i :: _) *> latch.succeed(()).when(i == 4))
+                    .bufferChunks(2)
               l <- s.process.use { as =>
                      for {
                        _ <- as
@@ -496,6 +526,96 @@ object ZStreamSpec extends ZIOBaseSpec {
                      } yield l
                    }
             } yield assert(l.reverse)(equalTo((1 to 4).toList))
+          }
+        ),
+        suite("bufferChunksDropping")(
+          testM("buffer the Stream with Error") {
+            val e = new RuntimeException("boom")
+            assertM(
+              (ZStream.range(1, 1000) ++ ZStream.fail(e) ++ ZStream.range(1001, 2000))
+                .bufferChunksDropping(2)
+                .runCollect
+                .run
+            )(fails(equalTo(e)))
+          },
+          testM("fast producer progress independently") {
+            for {
+              ref    <- Ref.make(List.empty[Int])
+              latch1 <- Promise.make[Nothing, Unit]
+              latch2 <- Promise.make[Nothing, Unit]
+              latch3 <- Promise.make[Nothing, Unit]
+              latch4 <- Promise.make[Nothing, Unit]
+              s1 = ZStream(0) ++ ZStream
+                     .fromEffect(latch1.await)
+                     .flatMap(_ => ZStream.range(1, 17).chunkN(1).ensuring(latch2.succeed(())))
+              s2 = ZStream
+                     .fromEffect(latch3.await)
+                     .flatMap(_ => ZStream.range(17, 25).chunkN(1).ensuring(latch4.succeed(())))
+              s = (s1 ++ s2).bufferChunksDropping(8)
+              snapshots <- s.process.use { as =>
+                             for {
+                               zero      <- as
+                               _         <- latch1.succeed(())
+                               _         <- latch2.await
+                               _         <- as.flatMap(a => ref.update(a.toList ::: _)).repeatN(7)
+                               snapshot1 <- ref.get
+                               _         <- latch3.succeed(())
+                               _         <- latch4.await
+                               _         <- as.flatMap(a => ref.update(a.toList ::: _)).repeatN(7)
+                               snapshot2 <- ref.get
+                             } yield (zero, snapshot1, snapshot2)
+                           }
+            } yield assert(snapshots._1)(equalTo(Chunk.single(0))) && assert(snapshots._2)(
+              equalTo(List(8, 7, 6, 5, 4, 3, 2, 1))
+            ) &&
+              assert(snapshots._3)(
+                equalTo(List(24, 23, 22, 21, 20, 19, 18, 17, 8, 7, 6, 5, 4, 3, 2, 1))
+              )
+          }
+        ),
+        suite("bufferChunksSliding")(
+          testM("buffer the Stream with Error") {
+            val e = new RuntimeException("boom")
+            assertM(
+              (ZStream.range(1, 1000) ++ ZStream.fail(e) ++ ZStream.range(1001, 2000))
+                .bufferChunksSliding(2)
+                .runCollect
+                .run
+            )(fails(equalTo(e)))
+          },
+          testM("fast producer progress independently") {
+            for {
+              ref    <- Ref.make(List.empty[Int])
+              latch1 <- Promise.make[Nothing, Unit]
+              latch2 <- Promise.make[Nothing, Unit]
+              latch3 <- Promise.make[Nothing, Unit]
+              latch4 <- Promise.make[Nothing, Unit]
+              s1 = ZStream(0) ++ ZStream
+                     .fromEffect(latch1.await)
+                     .flatMap(_ => ZStream.range(1, 17).chunkN(1).ensuring(latch2.succeed(())))
+              s2 = ZStream
+                     .fromEffect(latch3.await)
+                     .flatMap(_ => ZStream.range(17, 25).chunkN(1).ensuring(latch4.succeed(())))
+              s = (s1 ++ s2).bufferChunksSliding(8)
+              snapshots <- s.process.use { as =>
+                             for {
+                               zero      <- as
+                               _         <- latch1.succeed(())
+                               _         <- latch2.await
+                               _         <- as.flatMap(a => ref.update(a.toList ::: _)).repeatN(7)
+                               snapshot1 <- ref.get
+                               _         <- latch3.succeed(())
+                               _         <- latch4.await
+                               _         <- as.flatMap(a => ref.update(a.toList ::: _)).repeatN(7)
+                               snapshot2 <- ref.get
+                             } yield (zero, snapshot1, snapshot2)
+                           }
+            } yield assert(snapshots._1)(equalTo(Chunk.single(0))) && assert(snapshots._2)(
+              equalTo(List(16, 15, 14, 13, 12, 11, 10, 9))
+            ) &&
+              assert(snapshots._3)(
+                equalTo(List(24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9))
+              )
           }
         ),
         suite("bufferDropping")(
