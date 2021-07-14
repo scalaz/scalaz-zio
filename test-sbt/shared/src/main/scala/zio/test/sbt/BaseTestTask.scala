@@ -25,7 +25,7 @@ abstract class BaseTestTask(
   protected def run(eventHandler: EventHandler): ZIO[TestLogger with Clock, Throwable, Unit] =
     for {
       spec   <- if(args.fixSnapshots)
-        specInstance.fixSnapshot(FilteredSpec(specInstance.spec, args))
+        specInstance.fixSnapshot(FilteredSpec(specInstance.spec, args), taskDef.fullyQualifiedName())
       else
         specInstance.runSpec(FilteredSpec(specInstance.spec, args))
       summary = SummaryBuilder.buildSummary(spec)

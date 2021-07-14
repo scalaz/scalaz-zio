@@ -55,14 +55,14 @@ object SnapshotSpec extends ZIOBaseSpec {
           ZIO.bracket[R, E, scala.io.Source](
             Task(scala.io.Source.fromInputStream(getClass.getResourceAsStream(snapFileName))))(
             (s: scala.io.Source) => UIO(s.close()))(
-            (s: scala.io.Source) => Task(s.getLines.mkString("\n"))
-          ).map((snapshot: String) => CompileVariants.assertProxy(actual, "xx", label)(equalToSnapshot(snapshot)))
+            (s: scala.io.Source) => UIO(s.getLines.mkString("\n"))
+          ).map((snapshot: String) => CompileVariants.assertProxy(actual, snapshot, label)(equalToSnapshot(snapshot)))
       } yield res
     ) @@ tag(SNAPSHOT_TEST_FILE)
 
   override def spec: ZSpec[Any, Any] =
     suite("matchSnapshot suite")(
-      snapshotTest("firsta")("hellos"),
+      snapshotTest("firsta")("hellos2"),
       snapshotTestM("second")(Task("HEY")),
       snapshotTestM("no-snap-file")(Task("HEY")),
       //FIXME fails with
