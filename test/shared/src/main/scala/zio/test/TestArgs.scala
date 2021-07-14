@@ -16,14 +16,15 @@
 
 package zio.test
 
-final case class TestArgs(testSearchTerms: List[String], tagSearchTerms: List[String], testTaskPolicy: Option[String])
+final case class TestArgs(testSearchTerms: List[String], tagSearchTerms: List[String], testTaskPolicy: Option[String], fixSnapshots: Boolean)
 
 object TestArgs {
-  def empty: TestArgs = TestArgs(List.empty[String], List.empty[String], None)
+  def empty: TestArgs = TestArgs(List.empty[String], List.empty[String], None, false)
 
   def parse(args: Array[String]): TestArgs = {
     // TODO: Add a proper command-line parser
     val parsedArgs = args
+      .filter(_ != "-fixSnapshots")
       .sliding(2, 2)
       .collect {
         case Array("-t", term)      => ("testSearchTerm", term)
@@ -39,6 +40,7 @@ object TestArgs {
     val terms          = parsedArgs.getOrElse("testSearchTerm", Nil)
     val tags           = parsedArgs.getOrElse("tagSearchTerm", Nil)
     val testTaskPolicy = parsedArgs.getOrElse("policy", Nil).headOption
-    TestArgs(terms, tags, testTaskPolicy)
+    val fixSnapshots   = args.contains("-fixSnapshots")
+    TestArgs(terms, tags, testTaskPolicy, fixSnapshots)
   }
 }

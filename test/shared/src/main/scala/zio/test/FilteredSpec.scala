@@ -22,8 +22,9 @@ package zio.test
  */
 private[zio] object FilteredSpec {
   def apply[R, E](spec: ZSpec[R, E], args: TestArgs): ZSpec[R, E] = {
+    val tagSearchTerms = if(args.fixSnapshots) args.tagSearchTerms.appended("SNAPSHOT_TEST_FILE") else args.tagSearchTerms
     def filtered: Option[ZSpec[R, E]] =
-      (args.testSearchTerms, args.tagSearchTerms) match {
+      (args.testSearchTerms, tagSearchTerms) match {
         case (Nil, Nil) => None
         case (testSearchTerms, Nil) =>
           spec.filterLabels(label => testSearchTerms.exists(term => label.contains(term)))
