@@ -541,6 +541,7 @@ lazy val jsdocs = project
 val http4sV     = "0.23.0-RC1"
 val doobieV     = "1.0.0-M5"
 val catsEffectV = "3.1.1"
+val zioActorsV  = "0.0.9"
 
 lazy val docs = project.module
   .in(file("zio-docs"))
@@ -560,6 +561,18 @@ lazy val docs = project.module
       "org.scala-js"   % "scalajs-compiler"            % scalaJSVersion cross CrossVersion.full,
       "org.scala-js"  %% "scalajs-linker"              % scalaJSVersion,
       "org.typelevel" %% "cats-effect"                 % catsEffectV,
+      "dev.zio"       %% "zio-actors"                  % zioActorsV,
+      "dev.zio"       %% "zio-akka-cluster"            % "0.2.0",
+      "dev.zio"       %% "zio-cache"                   % "0.1.0",
+      "dev.zio"       %% "zio-config-magnolia"         % "1.0.6",
+      "dev.zio"       %% "zio-config-typesafe"         % "1.0.6",
+      "dev.zio"       %% "zio-config-refined"          % "1.0.6",
+      "dev.zio"       %% "zio-kafka"                   % "0.15.0",
+      "dev.zio"       %% "zio-logging"                 % "0.5.11",
+      "dev.zio"       %% "zio-nio"                     % "1.0.0-RC11",
+      "dev.zio"       %% "zio-optics"                  % "0.1.0",
+      "dev.zio"       %% "zio-prelude"                 % "1.0.0-RC5",
+      "dev.zio"       %% "zio-sqs"                     % "0.4.2",
       "dev.zio"       %% "zio-interop-cats"            % "3.1.1.0",
       "dev.zio"       %% "zio-interop-scalaz7x"        % "7.3.3.0",
       "dev.zio"       %% "zio-interop-reactivestreams" % "1.3.5",
