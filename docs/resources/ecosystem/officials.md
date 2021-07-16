@@ -937,6 +937,14 @@ object ZIORedisExample extends zio.App {
 
 ZIO SQS enables us to produce and consume elements to/from the Amazon SQS service. It is integrated with ZIO Streams, so we can produce and consume elements in a streaming fashion, element by element or micro-batching.
 
+### Installation
+
+In order to use this library, we need to add the following line in our `build.sbt` file:
+
+```scala
+libraryDependencies += "dev.zio" %% "zio-sqs" % "0.4.2"
+```
+
 ### Example
 
 In this example we produce a stream of events to the `MyQueue` and then consume them from that queue:
