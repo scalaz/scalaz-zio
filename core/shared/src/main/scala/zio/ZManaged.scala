@@ -2433,8 +2433,8 @@ object ZManaged extends ZManagedPlatformSpecific {
    *  ZManaged.serviceWithManaged[Foo](_.start())
    * }}}
    */
-  def serviceWithManaged[Service]: ServiceWithPartiallyApplied[Service] =
-    new ServiceWithPartiallyApplied[Service]
+  def serviceWithManaged[Service]: ServiceWithManagedPartiallyApplied[Service] =
+    new ServiceWithManagedPartiallyApplied[Service]
 
   /**
    *  Returns an effect with the optional value.
