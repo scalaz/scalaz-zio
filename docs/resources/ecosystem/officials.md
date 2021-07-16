@@ -931,7 +931,7 @@ object ZIORedisExample extends zio.App {
 
 ## ZIO SQS
 
-[ZIO SQS] is a ZIO-powered client for AWS SQS. It is built on top of the [AWS SDK for Java 2.0](https://docs.aws.amazon.com/sdk-for-java/v2/developer-guide/basics.html) via the automatically generated wrappers from [zio-aws](https://gaithub.com/vigoo/zio-aws).
+[ZIO SQS](https://github.com/zio/zio-sqs) is a ZIO-powered client for AWS SQS. It is built on top of the [AWS SDK for Java 2.0](https://docs.aws.amazon.com/sdk-for-java/v2/developer-guide/basics.html) via the automatically generated wrappers from [zio-aws](https://gaithub.com/vigoo/zio-aws).
 
 ### Introduction
 
